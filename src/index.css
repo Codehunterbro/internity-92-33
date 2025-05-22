@@ -1,0 +1,199 @@
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 222.2 84% 4.9%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 222.2 84% 4.9%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 222.2 84% 4.9%;
+
+    --primary: 267 84% 60%;
+    --primary-foreground: 210 40% 98%;
+
+    --secondary: 260 20% 96%;
+    --secondary-foreground: 267 84% 40%;
+
+    --muted: 260 20% 96%;
+    --muted-foreground: 215 16% 47%;
+
+    --accent: 260 20% 96%;
+    --accent-foreground: 267 84% 40%;
+
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 210 40% 98%;
+
+    --border: 214 32% 91%;
+    --input: 214 32% 91%;
+    --ring: 267 84% 60%;
+
+    --radius: 0.75rem;
+
+    --sidebar-background: 0 0% 98%;
+    --sidebar-foreground: 240 5% 26%;
+    --sidebar-primary: 267 84% 60%;
+    --sidebar-primary-foreground: 0 0% 98%;
+    --sidebar-accent: 240 5% 96%;
+    --sidebar-accent-foreground: 240 6% 10%;
+    --sidebar-border: 220 13% 91%;
+    --sidebar-ring: 267 84% 60%;
+  }
+
+  .dark {
+    --background: 222.2 84% 4.9%;
+    --foreground: 210 40% 98%;
+
+    --card: 222.2 84% 4.9%;
+    --card-foreground: 210 40% 98%;
+
+    --popover: 222.2 84% 4.9%;
+    --popover-foreground: 210 40% 98%;
+
+    --primary: 267 84% 60%;
+    --primary-foreground: 210 40% 98%;
+
+    --secondary: 217 33% 17%;
+    --secondary-foreground: 210 40% 98%;
+
+    --muted: 217 33% 17%;
+    --muted-foreground: 215 20% 65%;
+
+    --accent: 217 33% 17%;
+    --accent-foreground: 210 40% 98%;
+
+    --destructive: 0 63% 31%;
+    --destructive-foreground: 210 40% 98%;
+
+    --border: 217 33% 17%;
+    --input: 217 33% 17%;
+    --ring: 267 84% 60%;
+    
+    --sidebar-background: 240 6% 10%;
+    --sidebar-foreground: 240 5% 96%;
+    --sidebar-primary: 267 84% 60%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 240 4% 16%;
+    --sidebar-accent-foreground: 240 5% 96%;
+    --sidebar-border: 240 4% 16%;
+    --sidebar-ring: 267 84% 60%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  
+  body {
+    @apply bg-background text-foreground font-inter;
+    font-feature-settings: "rlig" 1, "calt" 1;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-medium tracking-tight;
+  }
+
+  h1 {
+    @apply text-4xl sm:text-5xl lg:text-6xl;
+  }
+
+  h2 {
+    @apply text-3xl sm:text-4xl;
+  }
+
+  h3 {
+    @apply text-2xl sm:text-3xl;
+  }
+
+  h4 {
+    @apply text-xl sm:text-2xl;
+  }
+
+  h5 {
+    @apply text-lg sm:text-xl;
+  }
+
+  h6 {
+    @apply text-base sm:text-lg;
+  }
+}
+
+@layer components {
+  .glass-card {
+    @apply bg-white/80 backdrop-blur-lg shadow-glass rounded-2xl border border-white/30 p-6;
+  }
+  
+  .glass-form {
+    @apply bg-white/90 backdrop-blur-lg shadow-glass rounded-2xl border border-white/30 p-8;
+  }
+  
+  .card-hover {
+    @apply transition-all duration-300 hover:shadow-glass-lg hover:-translate-y-1;
+  }
+  
+  .btn-primary {
+    @apply bg-brand-purple text-white hover:bg-brand-purple-hover transition-colors duration-300 rounded-xl py-3 px-8 font-medium;
+  }
+  
+  .btn-outline {
+    @apply bg-transparent border border-brand-purple text-brand-purple hover:bg-brand-purple-glass transition-colors duration-300 rounded-xl py-3 px-8 font-medium;
+  }
+  
+  .btn-secondary {
+    @apply bg-secondary text-secondary-foreground hover:bg-secondary/80 transition-colors duration-300 rounded-xl py-3 px-8 font-medium;
+  }
+  
+  .blob-shape {
+    @apply absolute animate-blob opacity-30 filter blur-xl;
+  }
+  
+  .section {
+    @apply py-16 md:py-24;
+  }
+  
+  .nav-link {
+    @apply text-foreground/80 hover:text-foreground transition-colors duration-300;
+  }
+  
+  .active-nav-link {
+    @apply text-brand-purple font-medium;
+  }
+  
+  .gradient-text {
+    @apply bg-clip-text text-transparent bg-purple-gradient;
+  }
+}
+
+/* Special animations and effects */
+.backdrop-blur {
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+/* Image transitions for lazy loading */
+.image-wrapper {
+  position: relative;
+  overflow: hidden;
+}
+
+.image-wrapper img {
+  transition: opacity 0.4s ease, filter 0.4s ease;
+}
+
+.image-loading {
+  opacity: 0;
+  filter: blur(10px);
+}
+
+.image-loaded {
+  opacity: 1;
+  filter: blur(0);
+}

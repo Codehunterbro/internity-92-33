@@ -1,0 +1,253 @@
+
+import { useEffect, useState } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import CourseSidebar, { Module as CourseSidebarModule } from '@/components/learning/CourseSidebar';
+import LessonContent from '@/components/learning/LessonContent';
+import QuizSection from '@/components/learning/QuizSection';
+import ProjectSubmissionView from '@/components/learning/ProjectSubmissionView';
+import { useToast } from '@/hooks/use-toast';
+import { getLessonById } from '@/services/lessonService';
+import { getLessonContent } from '@/services/lessonContentService';
+import { Skeleton } from '@/components/ui/skeleton';
+import CustomWelcomeMessage from '@/components/learning/CustomWelcomeMessage';
+import { checkUserPurchasedCoursesCount } from '@/services/coursePurchaseService';
+import { getCourseById } from '@/services/courseService';
+import { toast } from '@/components/ui/use-toast';
+
+// Define interfaces for lesson types
+interface Lesson {
+  id: string;
+  title: string;
+  subtitle?: string;
+  type: 'video' | 'reading' | 'quiz' | 'project';
+  content?: string;
+  is_locked?: boolean;
+  duration?: string;
+  video_type?: string;
+  video_id?: string;
+  module_id: string;
+  week_id?: string;
+  order_index: number;
+}
+
+const CourseContent = () => {
+  const { courseId, lessonId } = useParams();
+  const navigate = useNavigate();
+  const [currentLesson, setCurrentLesson] = useState<Lesson | null>(null);
+  const [lessonContent, setLessonContent] = useState<any>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isPurchased, setIsPurchased] = useState(false);
+  const [isCollapsed, setIsCollapsed] = useState(false);
+  const [courseTitle, setCourseTitle] = useState('');
+
+  // Check if course is purchased and get course title
+  useEffect(() => {
+    const fetchCourseData = async () => {
+      if (!courseId) return;
+      
+      try {
+        setIsLoading(true);
+        
+        // Check purchase status
+        const count = await checkUserPurchasedCoursesCount();
+        setIsPurchased(count >= 1);
+        
+        // Get course details for title
+        const course = await getCourseById(courseId);
+        if (course) {
+          setCourseTitle(course.title);
+          console.log("Course loaded:", course.title);
+        } else {
+          console.error("Course not found with ID:", courseId);
+          toast({
+            title: 'Error',
+            description: 'Course not found. Please try again.',
+            variant: 'destructive',
+          });
+          navigate('/dashboard/my-courses');
+        }
+      } catch (error) {
+        console.error('Error fetching course data:', error);
+        toast({
+          title: 'Error',
+          description: 'Failed to load course. Please try again.',
+          variant: 'destructive',
+        });
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    
+    fetchCourseData();
+  }, [courseId, navigate]);
+
+  // Fetch lessons when the course ID changes
+  useEffect(() => {
+    const fetchLesson = async () => {
+      if (!lessonId && !courseId) return;
+      
+      try {
+        setIsLoading(true);
+        
+        if (lessonId) {
+          const lesson = await getLessonById(lessonId);
+          if (lesson) {
+            setCurrentLesson(lesson as Lesson);
+          }
+        }
+      } catch (error) {
+        console.error('Error fetching lesson:', error);
+        toast({
+          title: 'Error',
+          description: 'Failed to load lesson. Please try again.',
+          variant: 'destructive',
+        });
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    
+    fetchLesson();
+  }, [courseId, lessonId]);
+
+  // Fetch lesson content when the current lesson changes
+  useEffect(() => {
+    const fetchLessonContent = async () => {
+      if (!currentLesson) {
+        setLessonContent(null);
+        return;
+      }
+      
+      try {
+        setIsLoading(true);
+        const content = await getLessonContent(currentLesson.id);
+        setLessonContent(content);
+      } catch (error) {
+        console.error('Error fetching lesson content:', error);
+        toast({
+          title: 'Error',
+          description: 'Failed to load lesson content. Please try again.',
+          variant: 'destructive',
+        });
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    
+    fetchLessonContent();
+  }, [currentLesson]);
+
+  // Create a dummy Module array for CourseSidebar that matches the expected structure
+  const modulesForSidebar: CourseSidebarModule[] = courseId 
+    ? [
+        { 
+          id: courseId, 
+          title: courseTitle || 'Course Content',
+          description: '',
+          weeks: [] // Empty array of weeks to satisfy the type
+        }
+      ] 
+    : [];
+
+  const handleToggleCollapse = () => {
+    setIsCollapsed(!isCollapsed);
+  };
+
+  const handleLessonClick = (moduleId: string, weekId: string, lessonId: string) => {
+    navigate(`/learn/course/${courseId}/lesson/${lessonId}`);
+  };
+
+  console.log("CourseContent rendering with courseId:", courseId, "and isPurchased:", isPurchased);
+
+  return (
+    <div className="flex h-screen overflow-hidden bg-white">
+      {/* Sidebar */}
+      <div className={`${isCollapsed ? 'w-16' : 'w-72'} border-r border-gray-200 overflow-y-auto transition-all duration-300`}>
+        <CourseSidebar 
+          modules={modulesForSidebar}
+          isCollapsed={isCollapsed}
+          onToggleCollapse={handleToggleCollapse}
+          onLessonClick={handleLessonClick}
+          isLoading={isLoading}
+        />
+      </div>
+      
+      {/* Main Content */}
+      <div className="flex-1 overflow-y-auto">
+        {isLoading ? (
+          <div className="p-8 space-y-4">
+            <Skeleton className="h-8 w-1/3" />
+            <Skeleton className="h-4 w-1/2" />
+            <Skeleton className="h-64 w-full" />
+          </div>
+        ) : !currentLesson && !lessonId ? (
+          <CustomWelcomeMessage isPurchased={isPurchased} />
+        ) : (
+          <div className="p-6">
+            {currentLesson && (
+              <>
+                <div className="mb-6">
+                  <h1 className="text-2xl font-bold mb-2">{currentLesson.title}</h1>
+                  <p className="text-gray-500">{currentLesson.subtitle}</p>
+                </div>
+                
+                <Tabs defaultValue="content" className="mb-6">
+                  <TabsList>
+                    <TabsTrigger value="content">Content</TabsTrigger>
+                    {currentLesson.type === 'quiz' && <TabsTrigger value="quiz">Quiz</TabsTrigger>}
+                    {currentLesson.type === 'project' && <TabsTrigger value="project">Project</TabsTrigger>}
+                  </TabsList>
+                  
+                  <TabsContent value="content" className="pt-4">
+                    <LessonContent 
+                      lesson={{
+                        id: currentLesson.id,
+                        title: currentLesson.title,
+                        subtitle: currentLesson.subtitle,
+                        type: currentLesson.type as 'video' | 'reading' | 'quiz',
+                        content: currentLesson.content || '',
+                        video_type: currentLesson.video_type,
+                        video_id: currentLesson.video_id
+                      }}
+                      resources={lessonContent?.resources || []}
+                      quizQuestions={[]}
+                    />
+                  </TabsContent>
+                  
+                  {currentLesson.type === 'quiz' && (
+                    <TabsContent value="quiz" className="pt-4">
+                      <QuizSection 
+                        lessonId={parseInt(currentLesson.id, 10)} // Convert string to number with base 10
+                        onComplete={() => {}} // Adding required props
+                        completed={false} // Adding required props
+                        questions={[]}
+                      />
+                    </TabsContent>
+                  )}
+                  
+                  {currentLesson.type === 'project' && (
+                    <TabsContent value="project" className="pt-4">
+                      <ProjectSubmissionView
+                        type="minor"
+                        moduleId={currentLesson.id}
+                        weekId={currentLesson.week_id}
+                      />
+                    </TabsContent>
+                  )}
+                </Tabs>
+              </>
+            )}
+            {!currentLesson && lessonId && (
+              <div className="flex flex-col items-center justify-center h-64">
+                <p className="text-gray-500">Lesson not found</p>
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
+
+export default CourseContent;
