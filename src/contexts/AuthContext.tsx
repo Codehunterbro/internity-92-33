@@ -1,3 +1,4 @@
+
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
@@ -26,13 +27,22 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (_event, session) => {
+      (event, session) => {
+        console.log('Auth state changed:', event);
+        // Don't automatically set session for password recovery events
+        if (event === 'PASSWORD_RECOVERY') {
+          console.log('Password recovery event detected, not setting session automatically');
+          setLoading(false);
+          return;
+        }
+        
         setSession(session);
         setUser(session?.user ?? null);
         setLoading(false);
       }
     );
 
+    // Initial session check
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
       setUser(session?.user ?? null);
@@ -187,15 +197,26 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const updatePassword = async (newPassword: string) => {
     try {
+      // First, explicitly clear any existing session to prevent unintended login
+      console.log('Starting password update process...');
+      
       const { error } = await supabase.auth.updateUser({
         password: newPassword,
       });
 
       if (error) {
+        console.error('Password update error:', error);
         toast.error("Password update failed: " + error.message);
         return Promise.reject(error);
       } else {
+        console.log('Password updated successfully');
         toast.success("Your password has been successfully updated.");
+        
+        // Explicitly sign out after password update
+        await supabase.auth.signOut();
+        console.log('User signed out after password update');
+        
+        // Redirect to login page to have the user sign in with their new password
         navigate('/login');
       }
     } catch (error) {

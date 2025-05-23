@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { useNavigate, useLocation, useSearchParams } from 'react-router-dom';
 import { z } from 'zod';
@@ -38,6 +39,15 @@ const ResetPassword = () => {
   
   // Improved token extraction using URL parameters, hash fragments, and direct URL parsing
   useEffect(() => {
+    // First, ensure we're signed out when reaching this page
+    // This prevents auto-redirection to dashboard
+    const ensureSignedOut = async () => {
+      await supabase.auth.signOut();
+      console.log('Signed out on reset password page load');
+    };
+    
+    ensureSignedOut();
+    
     const extractAndProcessToken = async () => {
       try {
         console.log('Current URL:', window.location.href);
@@ -93,24 +103,33 @@ const ResetPassword = () => {
         // If we found a token, try to set the session
         if (accessToken) {
           console.log('Token found. Type:', type);
-          setHasToken(true);
           
-          try {
-            const { error } = await supabase.auth.setSession({
-              access_token: accessToken,
-              refresh_token: refreshToken,
-            });
+          // Check if this is a recovery token
+          if (type === 'recovery' || location.pathname.includes('reset-password')) {
+            setHasToken(true);
             
-            if (error) {
-              console.error('Error setting recovery session:', error);
-              toast.error("Invalid or expired recovery link. Please request a new password reset link.");
+            try {
+              const { error } = await supabase.auth.setSession({
+                access_token: accessToken,
+                refresh_token: refreshToken,
+              });
+              
+              if (error) {
+                console.error('Error setting recovery session:', error);
+                toast.error("Invalid or expired recovery link. Please request a new password reset link.");
+                navigate('/forgot-password');
+              } else {
+                toast.success("Password reset link verified. Please set your new password.");
+              }
+            } catch (sessionError) {
+              console.error('Session error:', sessionError);
+              toast.error("Failed to process recovery token. Please request a new password reset link.");
               navigate('/forgot-password');
-            } else {
-              toast.success("Password reset link verified. Please set your new password.");
             }
-          } catch (sessionError) {
-            console.error('Session error:', sessionError);
-            toast.error("Failed to process recovery token. Please request a new password reset link.");
+          } else {
+            // Not a recovery token - don't allow password reset
+            console.log('Token found but not a recovery token');
+            toast.error("Invalid recovery link. Please request a password reset link.");
             navigate('/forgot-password');
           }
         } else if (location.pathname.includes('reset-password')) {
@@ -159,13 +178,14 @@ const ResetPassword = () => {
     try {
       await updatePassword(values.password);
       toast.success("Your password has been reset successfully. Please login with your new password.");
-      // After successfully resetting password, sign out to ensure clean session
-      await supabase.auth.signOut();
-      navigate('/login');
+      
+      // This will be handled in the updatePassword method:
+      // 1. Update the password
+      // 2. Sign out the user
+      // 3. Navigate to login
     } catch (error) {
       console.error('Error updating password:', error);
       toast.error("Failed to update password. Please try again.");
-    } finally {
       setIsSubmitting(false);
     }
   };

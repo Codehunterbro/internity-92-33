@@ -1,3 +1,4 @@
+
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
@@ -50,7 +51,7 @@ function App() {
                   <Route path="/about" element={<About />} />
                   <Route path="/contact" element={<Contact />} />
                   <Route path="/courses" element={<LandCourses />} />
-                   <Route path="/forgot-password" element={<ForgotPassword />} />
+                  <Route path="/forgot-password" element={<ForgotPassword />} />
                   
                   {/* Reset password routes - Enhanced to be more comprehensive */}
                   <Route path="/reset-password" element={<ResetPassword />} />
@@ -88,18 +89,15 @@ function App() {
                   <Route path="/checkout" element={<ProtectedRoute><Checkout /></ProtectedRoute>} />
                   
                   {/* Learning routes - also protected */}
-                   <Route path="/learn/courses/:courseId" element={<ProtectedRoute><CourseContent /></ProtectedRoute>} />
+                  <Route path="/learn/courses/:courseId" element={<ProtectedRoute><CourseContent /></ProtectedRoute>} />
                   <Route path="/learn/course/:courseId" element={<ProtectedRoute><CourseContent /></ProtectedRoute>} />
                   <Route path="/learn/course/:courseId/lesson/:lessonId" element={<ProtectedRoute><CourseContent /></ProtectedRoute>} />
                   
-                  
-                   {/* This will catch any URL with tokens as a special case */}
-                  <Route path="*access_token=*" element={<ResetPassword />} />
+                  {/* This will catch any URL with tokens as a special case - fixed format */}
+                  <Route path="*/*access_token=*" element={<ResetPassword />} />
 
                   {/* For any unmatched routes, show auth loading instead of 404 error */}
                   <Route path="*" element={<AuthLoading />} />
-
-
                 </Routes>
                 <Toaster />
               </TooltipProvider>
