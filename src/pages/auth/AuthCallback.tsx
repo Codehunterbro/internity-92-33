@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
@@ -20,6 +21,9 @@ const AuthCallback = () => {
         const currentUrl = window.location.href;
         console.log('Current callback URL:', currentUrl);
         
+        // Clean up the URL immediately to prevent showing confusing hash
+        window.history.replaceState({}, document.title, '/');
+        
         // Get the current session without relying on URL hash which might cause 404s
         const { data, error } = await supabase.auth.getSession();
         setProgress(70);
@@ -30,7 +34,7 @@ const AuthCallback = () => {
           toast.error('Authentication failed', {
             description: error.message
           });
-          setTimeout(() => navigate('/login'), 3000); // Redirect after showing error
+          setTimeout(() => navigate('/', { replace: true }), 3000);
           return;
         }
         
@@ -39,13 +43,12 @@ const AuthCallback = () => {
           console.log('Successfully authenticated in callback');
           setProgress(100);
           toast.success('Successfully logged in');
-          navigate('/dashboard', { replace: true }); // Use replace to prevent back button issues
+          navigate('/dashboard', { replace: true });
         } else {
           // No session found, but no error either
           console.log('No session found in callback, checking URL hash');
           
           // Try to handle the URL hash directly in case the session wasn't automatically processed
-          // This is a fallback mechanism for browsers that might not process the hash correctly
           const hashParams = new URLSearchParams(window.location.hash.substring(1));
           const accessToken = hashParams.get('access_token');
           
@@ -64,7 +67,7 @@ const AuthCallback = () => {
               toast.error('Authentication failed', {
                 description: 'Failed to complete the login process'
               });
-              setTimeout(() => navigate('/login'), 3000);
+              setTimeout(() => navigate('/', { replace: true }), 3000);
               return;
             }
             
@@ -78,19 +81,19 @@ const AuthCallback = () => {
             }
           }
           
-          // Final fallback - if all else fails
-          console.log('No authentication data found, redirecting to login');
-          setError('Authentication incomplete. Redirecting to login...');
+          // Final fallback - redirect to home instead of login
+          console.log('No authentication data found, redirecting to home');
+          setError('Authentication incomplete. Redirecting to home...');
           toast.error('Authentication incomplete', {
             description: 'Please try logging in again'
           });
-          setTimeout(() => navigate('/login', { replace: true }), 3000);
+          setTimeout(() => navigate('/', { replace: true }), 3000);
         }
       } catch (err) {
         console.error('Unexpected error in auth callback:', err);
         setError('An unexpected error occurred');
         toast.error('An unexpected error occurred');
-        setTimeout(() => navigate('/login', { replace: true }), 3000);
+        setTimeout(() => navigate('/', { replace: true }), 3000);
       }
     };
     
@@ -108,7 +111,7 @@ const AuthCallback = () => {
           <div className="mb-4 text-red-500">
             <p className="font-medium">Error</p>
             <p className="text-sm">{error}</p>
-            <p className="text-sm mt-2">Redirecting you to login...</p>
+            <p className="text-sm mt-2">Redirecting you to home...</p>
             <Progress value={progress} className="mt-4" />
           </div>
         ) : (

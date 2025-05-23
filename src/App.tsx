@@ -53,23 +53,14 @@ function App() {
                   <Route path="/courses" element={<LandCourses />} />
                   <Route path="/forgot-password" element={<ForgotPassword />} />
                   
-                  {/* Reset password routes - Enhanced to be more comprehensive */}
+                  {/* Reset password routes */}
                   <Route path="/reset-password" element={<ResetPassword />} />
-                  <Route path="reset-password" element={<ResetPassword />} />
                   <Route path="/reset-password/:token" element={<ResetPassword />} />
-                  <Route path="reset-password/:token" element={<ResetPassword />} />
                   
-                  {/* Special routes to handle various token formats */}
-                  <Route path="/reset-password/*" element={<ResetPassword />} />
-                  <Route path="reset-password/*" element={<ResetPassword />} />
-                  
-                  {/* Auth callback routes - comprehensive handling of all potential patterns */}
+                  {/* Auth callback route - clean handling */}
                   <Route path="/auth/callback" element={<AuthCallback />} />
-                  <Route path="auth/callback" element={<Navigate to="/auth/callback" replace />} />
-                  <Route path="/#/auth/callback" element={<Navigate to="/auth/callback" replace />} />
-                  <Route path="callback" element={<Navigate to="/auth/callback" replace />} />
                   
-                  {/* Auth loading screen - shown during authentication processing */}
+                  {/* Auth loading screen */}
                   <Route path="/auth/loading" element={<AuthLoading />} />
                   
                   {/* Legal routes */}
@@ -85,19 +76,16 @@ function App() {
                   <Route path="/dashboard/assignments" element={<ProtectedRoute><CourseRequiredRoute><Assignments /></CourseRequiredRoute></ProtectedRoute>} />
                   <Route path="/dashboard/achievements" element={<ProtectedRoute><CourseRequiredRoute><Achievements /></CourseRequiredRoute></ProtectedRoute>} />
                   
-                  {/* Checkout route - also protected */}
+                  {/* Checkout route */}
                   <Route path="/checkout" element={<ProtectedRoute><Checkout /></ProtectedRoute>} />
                   
-                  {/* Learning routes - also protected */}
+                  {/* Learning routes */}
                   <Route path="/learn/courses/:courseId" element={<ProtectedRoute><CourseContent /></ProtectedRoute>} />
                   <Route path="/learn/course/:courseId" element={<ProtectedRoute><CourseContent /></ProtectedRoute>} />
                   <Route path="/learn/course/:courseId/lesson/:lessonId" element={<ProtectedRoute><CourseContent /></ProtectedRoute>} />
                   
-                  {/* This will catch any URL with tokens as a special case - fixed format */}
-                  <Route path="*/*access_token=*" element={<ResetPassword />} />
-
-                  {/* For any unmatched routes, show auth loading instead of 404 error */}
-                  <Route path="*" element={<AuthLoading />} />
+                  {/* Catch-all route */}
+                  <Route path="*" element={<NotFound />} />
                 </Routes>
                 <Toaster />
               </TooltipProvider>
