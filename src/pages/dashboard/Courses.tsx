@@ -1,6 +1,5 @@
-
 import { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import DashboardLayout from '@/components/dashboard/DashboardLayout';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -33,6 +32,7 @@ const Courses = () => {
   const [hasPurchasedCourses, setHasPurchasedCourses] = useState(false);
   const [isRegistrationOpen, setIsRegistrationOpen] = useState(false);
   const [isAlreadyRegistered, setIsAlreadyRegistered] = useState(false);
+  const navigate = useNavigate();
   
   const { toast } = useToast();
   const { selectedCourses, addCourse, removeCourse, hasReachedLimit } = useCart();
@@ -198,11 +198,12 @@ const Courses = () => {
               return (
                 <Card 
                   key={course.id} 
-                  className={`overflow-hidden transition-shadow h-full flex flex-col ${
+                  className={`overflow-hidden transition-shadow h-full flex flex-col cursor-pointer hover:shadow-md ${
                     isCourseSelected 
                       ? 'border-2 border-brand-purple shadow-md' 
-                      : 'hover:shadow-md'
+                      : ''
                   }`}
+                  onClick={() => navigate(`/dashboard/courses/${course.id}`)}
                 >
                   <div className="relative">
                     <img 
@@ -245,10 +246,8 @@ const Courses = () => {
                       )}
                     </div>
                     
-                    <Link to={`/dashboard/courses/${course.id}`} className="group">
-                      <h3 className="font-semibold text-lg mb-2 group-hover:text-brand-purple transition-colors">{course.title}</h3>
-                      <p className="text-sm text-muted-foreground mb-4 line-clamp-2">{course.description}</p>
-                    </Link>
+                    <h3 className="font-semibold text-lg mb-2 hover:text-brand-purple transition-colors">{course.title}</h3>
+                    <p className="text-sm text-muted-foreground mb-4 line-clamp-2">{course.description}</p>
                     
                     <div className="flex items-center justify-between mb-4 text-sm mt-auto">
                       <div className="flex items-center">
