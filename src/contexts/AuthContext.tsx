@@ -2,7 +2,7 @@ import { createContext, useContext, useState, useEffect, ReactNode } from 'react
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { User, Session } from '@supabase/supabase-js';
-import { toast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 
 type AuthContextType = {
   user: User | null;
@@ -47,25 +47,14 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       const { error } = await supabase.auth.signInWithPassword({ email, password });
       
       if (error) {
-        toast({
-          title: "Login failed",
-          description: error.message,
-          variant: "destructive",
-        });
+        toast.error("Login failed: " + error.message);
       } else {
-        toast({
-          title: "Login successful",
-          description: "Welcome back!",
-        });
+        toast.success("Login successful");
         navigate('/dashboard');
       }
     } catch (error) {
       console.error('Error signing in:', error);
-      toast({
-        title: "Login failed",
-        description: "An unexpected error occurred.",
-        variant: "destructive",
-      });
+      toast.error("Login failed: An unexpected error occurred.");
     }
   };
 
@@ -84,49 +73,29 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       if (error) {
         // Check for specific error messages
         if (error.message.includes('already registered')) {
-          toast({
-            title: "Account exists",
-            description: "An account with this email already exists. Try logging in instead.",
-            variant: "info",
-          });
+          toast.error("Account exists: An account with this email already exists. Try logging in instead.");
           navigate('/login');
           return;
         } else if (error.message.includes('confirmation email')) {
           // This means the account was created but there was an issue with the email
           console.log('Signup successful but email confirmation failed:', error.message);
-          toast({
-            title: "Account created",
-            description: "Your account has been created successfully. You can now log in with your credentials.",
-            variant: "info",
-          });
+          toast.success("Account created: Your account has been created successfully. You can now log in with your credentials.");
           navigate('/login');
           return;
         } else {
-          toast({
-            title: "Signup failed",
-            description: error.message,
-            variant: "destructive",
-          });
+          toast.error("Signup failed: " + error.message);
         }
       } else {
         // Handle successful signup
         console.log('Signup successful:', data);
-        toast({
-          title: "Account created",
-          description: "Your account has been created successfully. You can now log in with your credentials.",
-          variant: "info",
-        });
+        toast.success("Account created: Your account has been created successfully. You can now log in with your credentials.");
         
         // Redirect to login page
         navigate('/login');
       }
     } catch (error) {
       console.error('Error signing up:', error);
-      toast({
-        title: "Signup failed",
-        description: "An unexpected error occurred, but your account might still have been created. Try logging in with your credentials.",
-        variant: "info",
-      });
+      toast.error("Signup failed: An unexpected error occurred, but your account might still have been created. Try logging in with your credentials.");
       // Still redirect to login to let them try
       navigate('/login');
     }
@@ -136,10 +105,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     try {
       await supabase.auth.signOut();
       navigate('/login');
-      toast({
-        title: "Logged out",
-        description: "You have been successfully logged out.",
-      });
+      toast.success("Logged out");
     } catch (error) {
       console.error('Error signing out:', error);
     }
@@ -178,11 +144,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       
       if (error) {
         console.error('Google sign-in error:', error);
-        toast({
-          title: "Google login failed",
-          description: error.message,
-          variant: "destructive",
-        });
+        toast.error("Google login failed: " + error.message);
       } else if (data) {
         console.log('Auth data received, redirecting:', data);
         // The redirectTo option handles the redirect to Google
@@ -190,45 +152,35 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       }
     } catch (error) {
       console.error('Error signing in with Google:', error);
-      toast({
-        title: "Google login failed",
-        description: "An unexpected error occurred.",
-        variant: "destructive",
-      });
+      toast.error("Google login failed: An unexpected error occurred.");
     }
   };
 
   const resetPassword = async (email: string) => {
     try {
-      // Get the current URL's origin for the redirect
+      // Get the absolute URL with hash routing support
       const origin = window.location.origin;
-      const redirectTo = `${origin}/reset-password`;
+      
+      // Create an absolute URL that works with hash-based routing
+      // This format ensures that Supabase's auth system redirects properly
+      const redirectTo = `${origin}/#/reset-password`;
+      
+      console.log('Password reset redirect URL:', redirectTo);
       
       const { error } = await supabase.auth.resetPasswordForEmail(email, {
         redirectTo: redirectTo,
       });
 
       if (error) {
-        console.error('Password reset error details:', error);
-        toast({
-          title: "Password reset failed",
-          description: error.message,
-          variant: "destructive",
-        });
+        console.error('Password reset error:', error);
+        toast.error("Password reset failed: " + error.message);
         return Promise.reject(error);
       } else {
-        toast({
-          title: "Password reset email sent",
-          description: "Check your email for the password reset link.",
-        });
+        toast.success("Password reset email sent. Check your email for the reset link.");
       }
     } catch (error) {
       console.error('Error resetting password:', error);
-      toast({
-        title: "Password reset failed",
-        description: "An unexpected error occurred.",
-        variant: "destructive",
-      });
+      toast.error("An unexpected error occurred during password reset.");
       return Promise.reject(error);
     }
   };
@@ -240,26 +192,15 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       });
 
       if (error) {
-        toast({
-          title: "Password update failed",
-          description: error.message,
-          variant: "destructive",
-        });
+        toast.error("Password update failed: " + error.message);
         return Promise.reject(error);
       } else {
-        toast({
-          title: "Password updated",
-          description: "Your password has been successfully updated.",
-        });
+        toast.success("Your password has been successfully updated.");
         navigate('/login');
       }
     } catch (error) {
       console.error('Error updating password:', error);
-      toast({
-        title: "Password update failed",
-        description: "An unexpected error occurred.",
-        variant: "destructive",
-      });
+      toast.error("An unexpected error occurred while updating your password.");
       return Promise.reject(error);
     }
   };

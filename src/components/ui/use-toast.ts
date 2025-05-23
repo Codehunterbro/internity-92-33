@@ -1,5 +1,6 @@
 
-// Re-export the toast functionality from the hooks
-import { useToast, toast } from "@/hooks/use-toast";
+// Re-export the toast functionality from our hook
+// This ensures a consistent interface across the application
+import { toast, useToast } from '@/hooks/use-toast';
 
-export { useToast, toast };
+export { toast, useToast };
