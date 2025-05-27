@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import DashboardLayout from '@/components/dashboard/DashboardLayout';
@@ -451,7 +452,7 @@ const CourseDetail = () => {
           <div className="lg:col-span-1">
             <Card className="sticky top-24">
               <CardContent className="p-6">
-                <h3 className="text-3xl font-bold mb-4">₹{course.priceINR?.toLocaleString('en-IN') || (course.price * 83).toLocaleString('en-IN')}</h3>
+                <h3 className="text-3xl font-bold mb-4">₹3,500</h3>
                 
                 <div className="space-y-4 mb-6">
                   {isPurchased ? (

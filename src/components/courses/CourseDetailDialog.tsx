@@ -1,3 +1,4 @@
+
 import { Check, BookOpen, Users, Clock } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
@@ -285,7 +286,7 @@ const CourseDetailDialog = ({
           </Card>
 
           <Button className="w-full py-6 text-lg" onClick={onPurchase}>
-            Enroll Now for ₹{course.priceINR?.toLocaleString('en-IN') || (course.price * 83).toLocaleString('en-IN')}
+            Enroll Now for ₹3,500
           </Button>
         </div>
       </DialogContent>
