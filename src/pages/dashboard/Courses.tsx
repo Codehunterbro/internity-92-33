@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import DashboardLayout from '@/components/dashboard/DashboardLayout';
@@ -97,10 +96,10 @@ const Courses = () => {
             <p className="text-sm sm:text-base text-muted-foreground">Select any 2 courses to begin your journey with Internity</p>
           </div>
           
-          {/* Course selection info and register button - Mobile First */}
-          <div className="flex flex-col sm:flex-row items-center gap-3 sm:gap-4">
-            <div className="w-full sm:w-auto bg-gray-100 rounded-lg px-4 py-2 flex items-center justify-center">
-              <ShoppingCart className="h-5 w-5 text-brand-purple mr-2" />
+          {/* Course selection info and register button - Improved Mobile Accessibility */}
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 sm:gap-4">
+            <div className="w-full sm:w-auto bg-gray-100 rounded-lg px-4 py-3 flex items-center justify-center">
+              <ShoppingCart className="h-5 w-5 text-brand-purple mr-2 flex-shrink-0" />
               <span className="font-medium text-sm sm:text-base">
                 {selectedCourses.length}/2 courses selected
               </span>
@@ -109,7 +108,8 @@ const Courses = () => {
             <Button 
               onClick={() => setIsRegistrationOpen(true)} 
               disabled={selectedCourses.length !== 2 || hasPurchasedCourses || isAlreadyRegistered} 
-              className="w-full sm:w-auto bg-brand-purple hover:bg-brand-purple/90 text-sm sm:text-base px-4 sm:px-6 py-2 sm:py-3"
+              className="w-full sm:w-auto bg-brand-purple hover:bg-brand-purple/90 text-sm sm:text-base px-6 py-3 h-auto min-h-[44px] touch-manipulation"
+              aria-label={`Register now with ${selectedCourses.length} of 2 courses selected`}
             >
               Register Now
             </Button>

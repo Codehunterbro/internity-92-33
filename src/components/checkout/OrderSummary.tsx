@@ -10,7 +10,7 @@ const OrderSummary = () => {
   const { selectedCourses, removeCourse } = useCart();
   
   const subtotal = selectedCourses.reduce((total, course) => total + course.priceINR, 0);
-  const discount = Math.round(subtotal * 0.10); // 10% discount
+  const discount = 1000; // Fixed discount of ₹1000 instead of percentage
   const total = subtotal - discount;
 
   return (

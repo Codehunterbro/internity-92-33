@@ -11,9 +11,11 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/co
 import { useNavigate } from 'react-router-dom';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { supabase } from '@/integrations/supabase/client';
+
 interface DashboardHeaderProps {
   onToggleSidebar: () => void;
 }
+
 const DashboardHeader = ({
   onToggleSidebar
 }: DashboardHeaderProps) => {
@@ -32,7 +34,7 @@ const DashboardHeader = ({
     removeCourse
   } = useCart();
   const totalAmount = selectedCourses.reduce((sum, course) => sum + course.priceINR, 0);
-  const discount = Math.round(totalAmount * 0.10); // 10% discount
+  const discount = 1000; // Fixed discount of ₹1000 instead of percentage
   const finalAmount = totalAmount - discount;
 
   // Fetch profile picture when user changes
@@ -97,7 +99,7 @@ const DashboardHeader = ({
                       <span>₹{totalAmount.toLocaleString('en-IN')}</span>
                     </div>
                     <div className="flex justify-between">
-                      <span className="text-muted-foreground">- Registration Fees </span>
+                      <span className="text-muted-foreground">- Registration Fees </span>
                       <span className="text-green-600">-₹{discount.toLocaleString('en-IN')}</span>
                     </div>
                     <div className="flex justify-between font-medium pt-2 border-t">
@@ -157,4 +159,5 @@ const DashboardHeader = ({
       <SettingsDialog isOpen={showSettings} onClose={() => setShowSettings(false)} />
     </header>;
 };
+
 export default DashboardHeader;
