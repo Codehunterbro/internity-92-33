@@ -1,4 +1,3 @@
-
 import { Button } from '@/components/ui/button';
 import { useCart } from '@/contexts/CartContext';
 import { useAuth } from '@/contexts/AuthContext';
@@ -44,14 +43,11 @@ const CourseEnrollButton = ({ course }: CourseEnrollButtonProps) => {
       return;
     }
 
-    // Use the actual course price from database, with fallback to price * 83 if priceINR not available
-    const finalPriceINR = course.priceINR || Math.round(course.price * 83);
-
     addCourse({
       id: courseStringId,
       title: course.title,
       price: course.price,
-      priceINR: finalPriceINR,
+      priceINR: 3500, // Standardized INR price
       image: course.image,
     });
   };

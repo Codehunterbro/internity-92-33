@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowRight, Star, Clock, Users, Bookmark } from 'lucide-react';
@@ -64,7 +63,7 @@ const CourseCard = ({ course, onClick }: { course: Course, onClick: () => void }
         {/* Price and button */}
         <div className="flex items-center justify-between mt-auto pt-4 border-t border-gray-100">
           <div>
-            <p className="text-brand-purple font-bold">₹{course.priceINR?.toLocaleString('en-IN')}</p>
+            <p className="text-brand-purple font-bold">₹3,500</p>
             <p className="text-xs text-muted-foreground">Full program access</p>
           </div>
           <button 

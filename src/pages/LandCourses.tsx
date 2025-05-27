@@ -141,7 +141,10 @@ const LandCourses = () => {
             {filteredCourses.map((course) => (
               <CourseCard
                 key={course.id}
-                course={course}
+                course={{
+                  ...course,
+                  priceINR: 3500 // Ensure all courses show ₹3500
+                }}
                 onClick={() => handleCourseClick(course)}
               />
             ))}

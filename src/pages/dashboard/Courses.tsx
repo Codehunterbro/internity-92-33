@@ -90,14 +90,11 @@ const Courses = () => {
     if (isCourseSelected) {
       removeCourse(String(course.id));
     } else {
-      // Use the actual database prices
-      const finalPriceINR = course.priceINR || Math.round(course.price * 83);
-      
       addCourse({
         id: String(course.id),
         title: course.title,
         price: course.price, // Original USD price from database
-        priceINR: finalPriceINR, // INR price from database or calculated
+        priceINR: 3500, // Standardized INR price
         image: course.image || '/placeholder.svg',
       });
     }
@@ -276,7 +273,7 @@ const Courses = () => {
                         <p className="text-xs text-muted-foreground">{course.instructorRole || "Instructor"}</p>
                       </div>
                       <div className="ml-auto text-brand-purple font-bold">
-                        ₹{(course.priceINR || Math.round(course.price * 83)).toLocaleString('en-IN')}
+                        ₹3,500
                       </div>
                     </div>
                   </CardContent>
