@@ -35,6 +35,13 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
   // Check if user has reached the maximum limit
   const hasReachedLimit = selectedCourses.length >= MAX_COURSES;
 
+  // Debug logging for selected courses
+  useEffect(() => {
+    console.log('Cart: Selected courses count:', selectedCourses.length);
+    console.log('Cart: Selected courses:', selectedCourses);
+    console.log('Cart: Has reached limit:', hasReachedLimit);
+  }, [selectedCourses, hasReachedLimit]);
+
   // Fetch checkout settings on component mount
   useEffect(() => {
     const fetchCheckoutSettings = async () => {
@@ -78,7 +85,12 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
       return;
     }
     
-    setSelectedCourses([...selectedCourses, courseWithStringId]);
+    setSelectedCourses(prev => {
+      const newCourses = [...prev, courseWithStringId];
+      console.log('Cart: Adding course, new count:', newCourses.length);
+      return newCourses;
+    });
+    
     toast({
       title: "Course added",
       description: `${course.title} has been added to your selection.`,
@@ -86,7 +98,12 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const removeCourse = (courseId: string) => {
-    setSelectedCourses(selectedCourses.filter(c => c.id !== courseId));
+    setSelectedCourses(prev => {
+      const newCourses = prev.filter(c => c.id !== courseId);
+      console.log('Cart: Removing course, new count:', newCourses.length);
+      return newCourses;
+    });
+    
     toast({
       title: "Course removed",
       description: "The course has been removed from your selection.",
@@ -95,6 +112,7 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
 
   const clearCart = () => {
     setSelectedCourses([]);
+    console.log('Cart: Cleared all courses');
   };
 
   return (

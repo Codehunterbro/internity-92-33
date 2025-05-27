@@ -27,13 +27,25 @@ const Courses = () => {
   const { toast } = useToast();
   const { selectedCourses, addCourse, removeCourse, hasReachedLimit } = useCart();
 
+  // Debug logging for registration button state
+  useEffect(() => {
+    console.log('Registration button state check:');
+    console.log('- Selected courses count:', selectedCourses.length);
+    console.log('- Has purchased courses:', hasPurchasedCourses);
+    console.log('- Is already registered:', isAlreadyRegistered);
+    console.log('- Should button be enabled:', selectedCourses.length === 2 && !hasPurchasedCourses && !isAlreadyRegistered);
+  }, [selectedCourses.length, hasPurchasedCourses, isAlreadyRegistered]);
+
   // Check if user has purchased courses on component mount
   useEffect(() => {
     const checkUserStatus = async () => {
       try {
         const count = await checkUserPurchasedCoursesCount();
+        console.log('User purchased courses count:', count);
         setHasPurchasedCourses(count >= 2);
+        
         const { isRegistered } = await getUserRegistrationStatus();
+        console.log('User registration status:', isRegistered);
         setIsAlreadyRegistered(isRegistered);
       } catch (error) {
         console.error("Failed to check user status:", error);
@@ -86,6 +98,9 @@ const Courses = () => {
     }
   };
 
+  // Check if register button should be enabled
+  const canRegister = selectedCourses.length === 2 && !hasPurchasedCourses && !isAlreadyRegistered;
+
   return (
     <DashboardLayout>
       <div className="p-3 sm:p-4 lg:p-6 space-y-4 sm:space-y-6">
@@ -106,11 +121,16 @@ const Courses = () => {
             </div>
             
             <Button 
-              onClick={() => setIsRegistrationOpen(true)} 
-              disabled={selectedCourses.length !== 2 || hasPurchasedCourses || isAlreadyRegistered} 
+              onClick={() => {
+                console.log('Register button clicked, canRegister:', canRegister);
+                if (canRegister) {
+                  setIsRegistrationOpen(true);
+                }
+              }} 
+              disabled={!canRegister} 
               className="w-full sm:w-auto bg-brand-purple hover:bg-brand-purple/90 text-white px-6 py-3 rounded-lg font-medium text-sm sm:text-base min-h-[48px] disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
             >
-              Register Now
+              Register Now {selectedCourses.length < 2 && `(${2 - selectedCourses.length} more needed)`}
             </Button>
           </div>
         </div>
