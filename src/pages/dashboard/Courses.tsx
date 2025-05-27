@@ -4,7 +4,7 @@ import DashboardLayout from '@/components/dashboard/DashboardLayout';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { BookOpen, Clock, Search, Star, Users, ShoppingCart } from 'lucide-react';
+import { BookOpen, Clock, Search, Star, Users, ShoppingCart, Shield, RefreshCw } from 'lucide-react';
 import { getAllCourses, Course } from '@/services/courseService';
 import { useToast } from '@/hooks/use-toast';
 import { useCart } from '@/contexts/CartContext';
@@ -14,6 +14,7 @@ import RegistrationForm from '@/components/registration/RegistrationForm';
 
 // Course categories
 const categories = ['All Courses', 'Web Development', 'Mobile Development', 'UI/UX Design', 'Data Science', 'Machine Learning', 'Cloud Computing'];
+
 const Courses = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('All Courses');
@@ -23,15 +24,8 @@ const Courses = () => {
   const [isRegistrationOpen, setIsRegistrationOpen] = useState(false);
   const [isAlreadyRegistered, setIsAlreadyRegistered] = useState(false);
   const navigate = useNavigate();
-  const {
-    toast
-  } = useToast();
-  const {
-    selectedCourses,
-    addCourse,
-    removeCourse,
-    hasReachedLimit
-  } = useCart();
+  const { toast } = useToast();
+  const { selectedCourses, addCourse, removeCourse, hasReachedLimit } = useCart();
 
   // Check if user has purchased courses on component mount
   useEffect(() => {
@@ -39,9 +33,7 @@ const Courses = () => {
       try {
         const count = await checkUserPurchasedCoursesCount();
         setHasPurchasedCourses(count >= 2);
-        const {
-          isRegistered
-        } = await getUserRegistrationStatus();
+        const { isRegistered } = await getUserRegistrationStatus();
         setIsAlreadyRegistered(isRegistered);
       } catch (error) {
         console.error("Failed to check user status:", error);
@@ -49,6 +41,8 @@ const Courses = () => {
     };
     checkUserStatus();
   }, []);
+
+  // Fetch courses on component mount
   useEffect(() => {
     const fetchCourses = async () => {
       try {
@@ -86,14 +80,14 @@ const Courses = () => {
         id: String(course.id),
         title: course.title,
         price: course.price,
-        // Original USD price from database
         priceINR: 3500,
-        // Standardized INR price
         image: course.image || '/placeholder.svg'
       });
     }
   };
-  return <DashboardLayout>
+
+  return (
+    <DashboardLayout>
       <div className="p-6 space-y-6">
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
           <div>
@@ -116,15 +110,77 @@ const Courses = () => {
           </div>
         </div>
         
-        {hasPurchasedCourses && <div className="bg-green-50 border border-green-200 rounded-lg p-4 mb-6">
+        {hasPurchasedCourses && (
+          <div className="bg-green-50 border border-green-200 rounded-lg p-4 mb-6">
             <p className="text-green-700 font-medium">You have already registered for the required courses. Your application is pending.</p>
-          </div>}
+          </div>
+        )}
         
-        {!hasPurchasedCourses && <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
-            <p className="text-blue-700 font-medium">
-              You need to select and register for 2 courses to unlock all features. Other sections will be available after registration.
-            </p>
-          </div>}
+        {!hasPurchasedCourses && (
+          <div className="relative overflow-hidden bg-gradient-to-r from-blue-600 via-blue-500 to-purple-600 rounded-2xl p-8 mb-6 shadow-xl">
+            {/* Background decorative elements */}
+            <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -translate-y-8 translate-x-8"></div>
+            <div className="absolute bottom-0 left-0 w-24 h-24 bg-white/10 rounded-full translate-y-4 -translate-x-4"></div>
+            
+            <div className="relative z-10">
+              <div className="flex items-start gap-4 mb-6">
+                <div className="bg-white/20 p-3 rounded-full">
+                  <Shield className="h-8 w-8 text-white" />
+                </div>
+                <div className="flex-1">
+                  <h3 className="text-2xl font-bold text-white mb-2">
+                    🚀 Start Your Tech Journey Today!
+                  </h3>
+                  <p className="text-blue-100 text-lg leading-relaxed">
+                    You need to select and register for <span className="font-bold text-white">2 courses</span> to unlock all features. 
+                    Other sections will be available after registration.
+                  </p>
+                </div>
+              </div>
+              
+              {/* Risk-free guarantee section */}
+              <div className="bg-white/15 backdrop-blur-sm rounded-xl p-6 border border-white/20">
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="bg-green-500 p-2 rounded-full">
+                    <Shield className="h-5 w-5 text-white" />
+                  </div>
+                  <h4 className="text-xl font-bold text-white">
+                    💯 100% RISK-FREE REGISTRATION
+                  </h4>
+                </div>
+                
+                <div className="grid md:grid-cols-2 gap-4">
+                  <div className="flex items-center gap-3">
+                    <div className="bg-green-500/20 p-2 rounded-full">
+                      <Shield className="h-4 w-4 text-green-200" />
+                    </div>
+                    <div>
+                      <p className="text-white font-bold">0% RISK</p>
+                      <p className="text-blue-100 text-sm">Complete safety guaranteed</p>
+                    </div>
+                  </div>
+                  
+                  <div className="flex items-center gap-3">
+                    <div className="bg-blue-500/20 p-2 rounded-full">
+                      <RefreshCw className="h-4 w-4 text-blue-200" />
+                    </div>
+                    <div>
+                      <p className="text-white font-bold">FULL REFUND</p>
+                      <p className="text-blue-100 text-sm">If not selected for program</p>
+                    </div>
+                  </div>
+                </div>
+                
+                <div className="mt-4 p-4 bg-yellow-400/20 rounded-lg border border-yellow-300/30">
+                  <p className="text-white font-bold text-center">
+                    ⚡ <span className="text-yellow-200">GUARANTEED:</span> If you're not selected for the internship program, 
+                    <span className="text-yellow-200 underline"> your complete payment will be refunded!</span> ⚡
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
         
         {/* Search and filters */}
         <div className="flex flex-col md:flex-row gap-4">
@@ -138,46 +194,55 @@ const Courses = () => {
         <div className="flex items-center justify-center w-full">
           <div className="w-full max-w-6xl overflow-x-auto no-scrollbar">
             <div className="flex flex-wrap justify-center gap-3 py-2 px-4">
-              {categories.map(category => <button key={category} onClick={() => setSelectedCategory(category)} className={`px-6 py-2.5 rounded-full whitespace-nowrap text-sm font-medium transition-all duration-200 ${selectedCategory === category ? 'bg-brand-purple text-white shadow-md scale-105' : 'bg-gray-50 text-gray-700 hover:bg-gray-100 hover:scale-105'}`}>
+              {categories.map(category => (
+                <button key={category} onClick={() => setSelectedCategory(category)} className={`px-6 py-2.5 rounded-full whitespace-nowrap text-sm font-medium transition-all duration-200 ${selectedCategory === category ? 'bg-brand-purple text-white shadow-md scale-105' : 'bg-gray-50 text-gray-700 hover:bg-gray-100 hover:scale-105'}`}>
                   {category}
-                </button>)}
+                </button>
+              ))}
             </div>
           </div>
         </div>
         
         {/* Loading state */}
-        {isLoading && <div className="text-center py-12">
+        {isLoading && (
+          <div className="text-center py-12">
             <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-brand-purple border-r-transparent align-[-0.125em] motion-reduce:animate-[spin_1.5s_linear_infinite]" role="status">
               <span className="!absolute !-m-px !h-px !w-px !overflow-hidden !whitespace-nowrap !border-0 !p-0 ![clip:rect(0,0,0,0)]">Loading...</span>
             </div>
             <p className="mt-4 text-muted-foreground">Loading courses...</p>
-          </div>}
+          </div>
+        )}
         
         {/* Courses grid */}
-        {!isLoading && <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+        {!isLoading && (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
             {filteredCourses.map(course => {
-          const isCourseSelected = selectedCourses.some(c => c.id === String(course.id));
-          return <Card key={course.id} className={`overflow-hidden transition-shadow h-full flex flex-col cursor-pointer hover:shadow-md ${isCourseSelected ? 'border-2 border-brand-purple shadow-md' : ''}`} onClick={() => navigate(`/dashboard/courses/${course.id}`)}>
+              const isCourseSelected = selectedCourses.some(c => c.id === String(course.id));
+              return (
+                <Card key={course.id} className={`overflow-hidden transition-shadow h-full flex flex-col cursor-pointer hover:shadow-md ${isCourseSelected ? 'border-2 border-brand-purple shadow-md' : ''}`} onClick={() => navigate(`/dashboard/courses/${course.id}`)}>
                   <div className="relative">
                     <img src={course.image || '/placeholder.svg'} alt={course.title} className="w-full h-48 object-cover" />
                     <Button onClick={e => {
-                e.preventDefault();
-                e.stopPropagation();
-                handleCourseSelection(course);
-              }} variant={isCourseSelected ? "destructive" : "secondary"} size="sm" className={`absolute top-2 right-2 ${!isCourseSelected && hasReachedLimit ? 'opacity-50 cursor-not-allowed' : ''}`} disabled={!isCourseSelected && hasReachedLimit}>
+                      e.preventDefault();
+                      e.stopPropagation();
+                      handleCourseSelection(course);
+                    }} variant={isCourseSelected ? "destructive" : "secondary"} size="sm" className={`absolute top-2 right-2 ${!isCourseSelected && hasReachedLimit ? 'opacity-50 cursor-not-allowed' : ''}`} disabled={!isCourseSelected && hasReachedLimit}>
                       {isCourseSelected ? 'Remove' : 'Select'}
                     </Button>
                   </div>
                   
                   <CardContent className="p-5 flex-1 flex flex-col">
-                    {/* Tags */}
                     <div className="flex flex-wrap gap-2 mb-3">
-                      {course.tags?.slice(0, 2).map((tag, index) => <span key={index} className="text-xs font-medium bg-gray-100 px-2 py-1 rounded-full text-gray-700">
+                      {course.tags?.slice(0, 2).map((tag, index) => (
+                        <span key={index} className="text-xs font-medium bg-gray-100 px-2 py-1 rounded-full text-gray-700">
                           {tag}
-                        </span>)}
-                      {course.tags && course.tags.length > 2 && <span className="text-xs font-medium bg-gray-100 px-2 py-1 rounded-full text-gray-700">
+                        </span>
+                      ))}
+                      {course.tags && course.tags.length > 2 && (
+                        <span className="text-xs font-medium bg-gray-100 px-2 py-1 rounded-full text-gray-700">
                           +{course.tags.length - 2}
-                        </span>}
+                        </span>
+                      )}
                     </div>
                     
                     <h3 className="font-semibold text-lg mb-2 hover:text-brand-purple transition-colors">{course.title}</h3>
@@ -211,22 +276,28 @@ const Courses = () => {
                       </div>
                     </div>
                   </CardContent>
-                </Card>;
-        })}
-          </div>}
+                </Card>
+              );
+            })}
+          </div>
+        )}
         
         {/* No courses found message */}
-        {!isLoading && filteredCourses.length === 0 && <div className="text-center py-12">
+        {!isLoading && filteredCourses.length === 0 && (
+          <div className="text-center py-12">
             <BookOpen className="mx-auto h-12 w-12 text-muted-foreground opacity-30" />
             <h3 className="mt-4 text-lg font-medium">No courses found</h3>
             <p className="mt-1 text-muted-foreground">
               Try adjusting your search or filter to find what you're looking for.
             </p>
-          </div>}
+          </div>
+        )}
       </div>
       
       {/* Registration form dialog */}
       <RegistrationForm isOpen={isRegistrationOpen} onClose={() => setIsRegistrationOpen(false)} />
-    </DashboardLayout>;
+    </DashboardLayout>
+  );
 };
+
 export default Courses;
