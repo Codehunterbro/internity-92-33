@@ -9,6 +9,7 @@ import ProjectSubmissionView from '@/components/learning/ProjectSubmissionView';
 import { useToast } from '@/hooks/use-toast';
 import { getLessonById } from '@/services/lessonService';
 import { getLessonContent } from '@/services/lessonContentService';
+import { getModulesWithLessonsForCourse } from '@/services/moduleService';
 import { Skeleton } from '@/components/ui/skeleton';
 import CustomWelcomeMessage from '@/components/learning/CustomWelcomeMessage';
 import { checkUserPurchasedCoursesCount } from '@/services/coursePurchaseService';
@@ -40,6 +41,7 @@ const CourseContent = () => {
   const [isPurchased, setIsPurchased] = useState(false);
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [courseTitle, setCourseTitle] = useState('');
+  const [modules, setModules] = useState<CourseSidebarModule[]>([]);
 
   // Check if course is purchased and get course title
   useEffect(() => {
@@ -67,6 +69,12 @@ const CourseContent = () => {
           });
           navigate('/dashboard/my-courses');
         }
+
+        // Fetch modules with lessons
+        const modulesData = await getModulesWithLessonsForCourse(courseId);
+        console.log("Modules data fetched:", modulesData);
+        setModules(modulesData);
+        
       } catch (error) {
         console.error('Error fetching course data:', error);
         toast({
@@ -138,18 +146,6 @@ const CourseContent = () => {
     fetchLessonContent();
   }, [currentLesson]);
 
-  // Create a dummy Module array for CourseSidebar that matches the expected structure
-  const modulesForSidebar: CourseSidebarModule[] = courseId 
-    ? [
-        { 
-          id: courseId, 
-          title: courseTitle || 'Course Content',
-          description: '',
-          weeks: [] // Empty array of weeks to satisfy the type
-        }
-      ] 
-    : [];
-
   const handleToggleCollapse = () => {
     setIsCollapsed(!isCollapsed);
   };
@@ -158,17 +154,24 @@ const CourseContent = () => {
     navigate(`/learn/course/${courseId}/lesson/${lessonId}`);
   };
 
+  const handleProjectClick = (type: 'minor' | 'major', moduleId: string, weekId?: string) => {
+    console.log(`Project clicked: ${type}, module: ${moduleId}, week: ${weekId}`);
+    // You can navigate to a project submission page here if needed
+  };
+
   console.log("CourseContent rendering with courseId:", courseId, "and isPurchased:", isPurchased);
+  console.log("Modules for sidebar:", modules);
 
   return (
     <div className="flex h-screen overflow-hidden bg-white">
       {/* Sidebar */}
       <div className={`${isCollapsed ? 'w-16' : 'w-72'} border-r border-gray-200 overflow-y-auto transition-all duration-300`}>
         <CourseSidebar 
-          modules={modulesForSidebar}
+          modules={modules}
           isCollapsed={isCollapsed}
           onToggleCollapse={handleToggleCollapse}
           onLessonClick={handleLessonClick}
+          onProjectClick={handleProjectClick}
           isLoading={isLoading}
         />
       </div>
@@ -218,9 +221,9 @@ const CourseContent = () => {
                   {currentLesson.type === 'quiz' && (
                     <TabsContent value="quiz" className="pt-4">
                       <QuizSection 
-                        lessonId={parseInt(currentLesson.id, 10)} // Convert string to number with base 10
-                        onComplete={() => {}} // Adding required props
-                        completed={false} // Adding required props
+                        lessonId={parseInt(currentLesson.id, 10)}
+                        onComplete={() => {}}
+                        completed={false}
                         questions={[]}
                       />
                     </TabsContent>

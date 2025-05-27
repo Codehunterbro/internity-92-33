@@ -24,7 +24,11 @@ export async function getLessonsByModuleId(moduleId: string) {
     return [];
   }
 
-  return data || [];
+  // Unlock all lessons for students
+  return data?.map(lesson => ({
+    ...lesson,
+    is_locked: false
+  })) || [];
 }
 
 export async function getAllLessons(courseId: string) {
@@ -70,7 +74,11 @@ export async function getAllLessons(courseId: string) {
       return [];
     }
     
-    return lessons || [];
+    // Unlock all lessons for students
+    return lessons?.map(lesson => ({
+      ...lesson,
+      is_locked: false
+    })) || [];
   } catch (error) {
     console.error('Error in getAllLessons:', error);
     return [];
@@ -92,7 +100,11 @@ export const getLessonById = async (lessonId: string) => {
       return null;
     }
     
-    return data;
+    // Unlock the lesson for students
+    return {
+      ...data,
+      is_locked: false
+    };
   } catch (error) {
     console.error('Error in getLessonById:', error);
     return null;
