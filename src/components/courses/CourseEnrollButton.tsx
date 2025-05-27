@@ -12,6 +12,7 @@ interface CourseEnrollButtonProps {
     id: string | number;
     title: string;
     price: number;
+    priceINR?: number;
     image: string;
   };
 }
@@ -43,11 +44,14 @@ const CourseEnrollButton = ({ course }: CourseEnrollButtonProps) => {
       return;
     }
 
+    // Use the actual course price from database, with fallback to price * 83 if priceINR not available
+    const finalPriceINR = course.priceINR || Math.round(course.price * 83);
+
     addCourse({
-      id: courseStringId, // Always use string ID
+      id: courseStringId,
       title: course.title,
       price: course.price,
-      priceINR: Math.round(course.price * 83),
+      priceINR: finalPriceINR,
       image: course.image,
     });
   };

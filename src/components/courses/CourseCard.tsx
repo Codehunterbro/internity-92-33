@@ -90,13 +90,14 @@ const CourseCard = ({ course, onClick }: CourseCardProps) => {
         
         <div className="flex items-center justify-between mt-auto pt-4 border-t border-gray-100">
           <div className="text-lg font-bold text-brand-purple">
-            ₹{course.priceINR?.toLocaleString('en-IN') || "N/A"}
+            ₹{(course.priceINR || Math.round(course.price * 83)).toLocaleString('en-IN')}
           </div>
           <CourseEnrollButton course={{
             id: course.id,
             title: course.title,
-            price: course.price,
-            image: course.image || '/placeholder.svg', // Ensure image is never undefined
+            price: course.price, // Original USD price from database
+            priceINR: course.priceINR, // INR price from database
+            image: course.image || '/placeholder.svg',
           }} />
         </div>
       </CardContent>

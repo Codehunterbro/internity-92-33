@@ -1,10 +1,11 @@
+
 import { Toaster as SonnerToaster } from "sonner";
 import { AlertCircle, Check, Bell } from "lucide-react";
 
 export function Toaster() {
   return (
     <SonnerToaster
-      position="top-right"
+      position="bottom-right"
       toastOptions={{
         classNames: {
           toast: "group toast group-[.toaster]:bg-background group-[.toaster]:text-foreground group-[.toaster]:border-border group-[.toaster]:shadow-lg",
