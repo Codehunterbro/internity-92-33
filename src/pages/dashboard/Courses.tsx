@@ -44,9 +44,14 @@ const Courses = () => {
         console.log('User purchased courses count:', count);
         setHasPurchasedCourses(count >= 2);
         
-        const { isRegistered } = await getUserRegistrationStatus();
-        console.log('User registration status:', isRegistered);
-        setIsAlreadyRegistered(isRegistered);
+        // Only check registration status if user hasn't purchased courses
+        if (count < 2) {
+          const { isRegistered } = await getUserRegistrationStatus();
+          console.log('User registration status:', isRegistered);
+          setIsAlreadyRegistered(isRegistered);
+        } else {
+          setIsAlreadyRegistered(false);
+        }
       } catch (error) {
         console.error("Failed to check user status:", error);
       }
@@ -98,8 +103,8 @@ const Courses = () => {
     }
   };
 
-  // Check if register button should be enabled
-  const canRegister = selectedCourses.length === 2 && !hasPurchasedCourses && !isAlreadyRegistered;
+  // Check if register button should be enabled - simplified logic
+  const canRegister = selectedCourses.length === 2 && !hasPurchasedCourses;
 
   return (
     <DashboardLayout>
@@ -128,9 +133,13 @@ const Courses = () => {
                 }
               }} 
               disabled={!canRegister} 
-              className="w-full sm:w-auto bg-brand-purple hover:bg-brand-purple/90 text-white px-6 py-3 rounded-lg font-medium text-sm sm:text-base min-h-[48px] disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
+              className={`w-full sm:w-auto px-6 py-3 rounded-lg font-medium text-sm sm:text-base min-h-[48px] disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 ${
+                canRegister 
+                  ? 'bg-green-600 hover:bg-green-700 text-white border-green-600 shadow-lg transform hover:scale-105' 
+                  : 'bg-brand-purple hover:bg-brand-purple/90 text-white'
+              }`}
             >
-              Register Now {selectedCourses.length < 2 && `(${2 - selectedCourses.length} more needed)`}
+              {canRegister ? '🎉 Register Now!' : `Register Now ${selectedCourses.length < 2 ? `(${2 - selectedCourses.length} more needed)` : ''}`}
             </Button>
           </div>
         </div>
