@@ -89,17 +89,17 @@ const Courses = () => {
   return (
     <DashboardLayout>
       <div className="p-3 sm:p-4 lg:p-6 space-y-4 sm:space-y-6">
-        {/* Header Section - Responsive */}
+        {/* Header Section */}
         <div className="flex flex-col gap-4">
           <div className="text-center sm:text-left">
             <h1 className="text-xl sm:text-2xl font-bold mb-2">Select Your Courses</h1>
             <p className="text-sm sm:text-base text-muted-foreground">Select any 2 courses to begin your journey with Internity</p>
           </div>
           
-          {/* Course selection info and register button - Improved Mobile Accessibility */}
-          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 sm:gap-4">
-            <div className="w-full sm:w-auto bg-gray-100 rounded-lg px-4 py-3 flex items-center justify-center">
-              <ShoppingCart className="h-5 w-5 text-brand-purple mr-2 flex-shrink-0" />
+          {/* Course selection info and register button */}
+          <div className="flex flex-col sm:flex-row items-center gap-3 sm:gap-4 w-full">
+            <div className="flex items-center bg-gray-100 rounded-lg px-4 py-3 w-full sm:w-auto">
+              <ShoppingCart className="h-5 w-5 text-brand-purple mr-2" />
               <span className="font-medium text-sm sm:text-base">
                 {selectedCourses.length}/2 courses selected
               </span>
@@ -108,8 +108,7 @@ const Courses = () => {
             <Button 
               onClick={() => setIsRegistrationOpen(true)} 
               disabled={selectedCourses.length !== 2 || hasPurchasedCourses || isAlreadyRegistered} 
-              className="w-full sm:w-auto bg-brand-purple hover:bg-brand-purple/90 text-sm sm:text-base px-6 py-3 h-auto min-h-[44px] touch-manipulation"
-              aria-label={`Register now with ${selectedCourses.length} of 2 courses selected`}
+              className="w-full sm:w-auto bg-brand-purple hover:bg-brand-purple/90 text-white px-6 py-3 rounded-lg font-medium text-sm sm:text-base min-h-[48px] disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
             >
               Register Now
             </Button>
@@ -188,7 +187,7 @@ const Courses = () => {
           </div>
         )}
         
-        {/* Search and filters - Mobile responsive */}
+        {/* Search and filters */}
         <div className="flex flex-col gap-3 sm:gap-4">
           <div className="relative">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
@@ -202,7 +201,7 @@ const Courses = () => {
           </div>
         </div>
         
-        {/* Categories - Mobile scrollable */}
+        {/* Categories */}
         <div className="w-full">
           <div className="overflow-x-auto pb-2">
             <div className="flex gap-2 sm:gap-3 min-w-max px-1">
@@ -233,7 +232,7 @@ const Courses = () => {
           </div>
         )}
         
-        {/* Courses grid - Responsive grid */}
+        {/* Courses grid */}
         {!isLoading && (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4 lg:gap-6">
             {filteredCourses.map(course => {
