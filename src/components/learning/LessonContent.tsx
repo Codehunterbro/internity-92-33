@@ -38,26 +38,22 @@ const LessonContent = ({
   const [activeTab, setActiveTab] = useState('content');
   const [quizCompleted, setQuizCompleted] = useState(false);
   const { user } = useAuth();
-  const [isLoadingProgress, setIsLoadingProgress] = useState(false);
   const [isLoadingQuiz, setIsLoadingQuiz] = useState(false);
   const [quizQuestions, setQuizQuestions] = useState(initialQuizQuestions || []);
 
   useEffect(() => {
     if (user && lesson.id) {
       const fetchLessonProgress = async () => {
-        setIsLoadingProgress(true);
         const progress = await getLessonProgress(user.id, lesson.id);
         if (progress && progress.status === 'completed') {
           setQuizCompleted(true);
         }
-        setIsLoadingProgress(false);
       };
       
       fetchLessonProgress();
     }
   }, [lesson.id, user]);
 
-  // Fetch quiz questions if not provided or if tab changes to quiz
   useEffect(() => {
     const fetchQuizQuestions = async () => {
       if (activeTab === 'quiz' && user && lesson.id && quizQuestions.length === 0) {
@@ -94,7 +90,56 @@ const LessonContent = ({
     }
   };
 
-  return <div className="p-6">
+  const renderLessonContent = () => {
+    if (lesson.content && lesson.content.trim()) {
+      return (
+        <div className="prose max-w-none" dangerouslySetInnerHTML={{
+          __html: lesson.content
+        }} />
+      );
+    }
+    
+    return (
+      <div className="space-y-4">
+        <div className="bg-blue-50 border border-blue-200 rounded-lg p-6">
+          <h3 className="text-lg font-semibold text-blue-800 mb-2">Lesson Overview</h3>
+          <p className="text-blue-700">
+            This lesson covers: <strong>{lesson.title}</strong>
+          </p>
+          {lesson.subtitle && (
+            <p className="text-blue-600 mt-2">{lesson.subtitle}</p>
+          )}
+        </div>
+        
+        {lesson.type === 'video' && lesson.video_id && (
+          <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+            <p className="text-green-700">
+              📹 Watch the video above to learn about this topic in detail.
+            </p>
+          </div>
+        )}
+        
+        {lesson.type === 'quiz' && (
+          <div className="bg-purple-50 border border-purple-200 rounded-lg p-4">
+            <p className="text-purple-700">
+              📝 Complete the quiz to test your understanding of this lesson.
+            </p>
+          </div>
+        )}
+        
+        {resources.length > 0 && (
+          <div className="bg-orange-50 border border-orange-200 rounded-lg p-4">
+            <p className="text-orange-700">
+              📚 Check the Resources tab for additional learning materials.
+            </p>
+          </div>
+        )}
+      </div>
+    );
+  };
+
+  return (
+    <div className="p-6">
       <h1 className="text-2xl font-bold mb-2">{lesson.title}</h1>
       {lesson.subtitle && <p className="text-gray-600 mb-6">{lesson.subtitle}</p>}
       
@@ -115,32 +160,32 @@ const LessonContent = ({
         </TabsList>
         
         <TabsContent value="content" className="p-0 mt-0">
-          {lesson.type === 'video' && lesson.video_id && <div className="mb-6">
-              <VideoPlayer lessonData={{
-            title: lesson.title,
-            subtitle: lesson.subtitle || '',
-            videoType: 'youtube' as 'youtube',
-            videoId: lesson.video_id,
-            videoTitle: lesson.title,
-            videoDescription: lesson.subtitle || '',
-            resources: resources.map(r => ({
-              name: r.name,
-              type: r.type,
-              size: r.size
-            }))
-          }} />
-            </div>}
+          {lesson.type === 'video' && lesson.video_id && (
+            <VideoPlayer lessonData={{
+              title: lesson.title,
+              subtitle: lesson.subtitle || '',
+              videoType: 'youtube' as 'youtube',
+              videoId: lesson.video_id,
+              videoTitle: lesson.title,
+              videoDescription: lesson.subtitle || '',
+              resources: resources.map(r => ({
+                name: r.name,
+                type: r.type,
+                size: r.size
+              }))
+            }} />
+          )}
           
-          <div className="prose max-w-none" dangerouslySetInnerHTML={{
-          __html: lesson.content
-        }} />
+          {renderLessonContent()}
         </TabsContent>
         
         <TabsContent value="resources" className="p-0 mt-0">
-          {resources.length > 0 ? <div className="space-y-4">
+          {resources.length > 0 ? (
+            <div className="space-y-4">
               <h2 className="text-xl font-semibold">Lesson Resources</h2>
               <div className="grid grid-cols-1 gap-4">
-                {resources.map(resource => <div key={resource.id} className="border rounded-md p-4 flex items-center">
+                {resources.map(resource => (
+                  <div key={resource.id} className="border rounded-md p-4 flex items-center">
                     <FileText className="h-10 w-10 text-brand-purple mr-4" />
                     <div className="flex-1">
                       <h3 className="font-medium text-lg">{resource.name}</h3>
@@ -149,13 +194,17 @@ const LessonContent = ({
                     <a href={resource.url} target="_blank" rel="noopener noreferrer" className="bg-brand-purple hover:bg-brand-purple/90 text-white py-1 px-3 rounded text-sm">
                       Download
                     </a>
-                  </div>)}
+                  </div>
+                ))}
               </div>
-            </div> : <div className="text-center py-10">
+            </div>
+          ) : (
+            <div className="text-center py-10">
               <FileText className="h-12 w-12 mx-auto text-gray-400 mb-4" />
               <h3 className="text-lg font-medium text-gray-700">No resources available</h3>
               <p className="text-gray-500">This lesson doesn't have any downloadable resources.</p>
-            </div>}
+            </div>
+          )}
         </TabsContent>
         
         <TabsContent value="quiz" className="p-0 mt-0">
@@ -180,7 +229,8 @@ const LessonContent = ({
           )}
         </TabsContent>
       </Tabs>
-    </div>;
+    </div>
+  );
 };
 
 export default LessonContent;
