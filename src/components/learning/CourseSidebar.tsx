@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from 'react';
 import { Link, useParams, useNavigate } from 'react-router-dom';
 import { ChevronDown, CheckCircle, Circle, Lock, PlayCircle, FileText, Book, Calendar, ArrowLeft, PanelLeft, PanelRight, File } from 'lucide-react';
@@ -56,6 +55,7 @@ const CourseSidebar = ({
   const navigate = useNavigate();
   
   const [expandedModules, setExpandedModules] = useState<string[]>(
+    // By default, expand all modules
     modules.map(module => module.id)
   );
   
@@ -69,6 +69,7 @@ const CourseSidebar = ({
   const toggleModule = (moduleId: string, event: React.MouseEvent) => {
     event.preventDefault();
     
+    // Call the onModuleClick callback if provided
     if (onModuleClick) {
       onModuleClick(moduleId);
     }
@@ -83,6 +84,7 @@ const CourseSidebar = ({
   const toggleWeek = (moduleId: string, weekId: string, event: React.MouseEvent) => {
     event.preventDefault();
     
+    // Call the onWeekClick callback if provided
     if (onWeekClick) {
       onWeekClick(moduleId, weekId);
     }
@@ -96,35 +98,24 @@ const CourseSidebar = ({
   };
 
   const handleLessonClick = (moduleId: string, weekId: string, lessonId: string, isLocked: boolean) => {
-    if (isLocked) {
-      console.log('Lesson is locked, cannot access');
-      return;
-    }
+    if (isLocked) return;
     
+    // Call the onLessonClick callback if provided
     if (onLessonClick) {
       onLessonClick(moduleId, weekId, lessonId);
     }
     
+    // Navigate to the lesson
     navigate(`/learn/course/${courseId}/lesson/${lessonId}`);
   };
 
   const handleProjectClick = (type: 'minor' | 'major', moduleId: string, weekId?: string) => {
-    console.log(`Project clicked: ${type}, module: ${moduleId}, week: ${weekId}`);
-    
     if (onProjectClick) {
       onProjectClick(type, moduleId, weekId);
     }
-    
-    // Navigate to project submission page
-    const projectPath = type === 'minor' 
-      ? `/learn/course/${courseId}/project/minor/${moduleId}/${weekId}`
-      : `/learn/course/${courseId}/project/major/${moduleId}`;
-    
-    navigate(projectPath);
   };
 
-  const getLessonIcon = (type: string, isCompleted: boolean, isLocked: boolean) => {
-    if (isLocked) return <Lock className="w-4 h-4 text-gray-400" />;
+  const getLessonIcon = (type: string, isCompleted: boolean) => {
     if (isCompleted) return <CheckCircle className="w-4 h-4 text-green-500" />;
     
     switch (type) {
@@ -256,21 +247,20 @@ const CourseSidebar = ({
                                 className={`flex items-center py-2 px-3 rounded-md text-sm cursor-pointer ${
                                   lessonId === lesson.id
                                     ? 'bg-gray-100 text-blue-600'
-                                    : lesson.isLocked 
-                                      ? 'text-gray-400 cursor-not-allowed opacity-60'
-                                      : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
-                                }`}
+                                    : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
+                                } ${lesson.isLocked ? 'opacity-60' : ''}`}
                                 onClick={() => handleLessonClick(module.id, week.id, lesson.id, lesson.isLocked)}
                               >
                                 <div className="mr-3 flex-shrink-0">
-                                  {getLessonIcon(lesson.type, lesson.isCompleted, lesson.isLocked)}
+                                  {lesson.isLocked ? (
+                                    <Lock className="w-4 h-4 text-gray-400" />
+                                  ) : (
+                                    getLessonIcon(lesson.type, lesson.isCompleted)
+                                  )}
                                 </div>
                                 <span className="truncate">Day {index + 1}: {lesson.title}</span>
-                                {lesson.duration && !lesson.isLocked && (
+                                {lesson.duration && (
                                   <span className="ml-auto text-xs text-gray-400">{lesson.duration}</span>
-                                )}
-                                {lesson.isLocked && (
-                                  <Lock className="w-3 h-3 text-gray-400 ml-auto" />
                                 )}
                               </div>
                             ))}
