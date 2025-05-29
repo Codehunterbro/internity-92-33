@@ -28,6 +28,7 @@ export interface MajorProject {
   is_locked: boolean;
   attachment_url?: string;
   video_url?: string;
+  // Note: Removed title field as it doesn't exist in the schema
 }
 
 export interface ProjectDocument {
@@ -130,7 +131,7 @@ export async function submitMinorProject(projectId: string, submissionData: any)
     const { data, error } = await supabase
       .from('minor_projects')
       .update({
-        status: 'submitted' as const,
+        status: 'submitted',
         submission_date: new Date().toISOString(),
         ...submissionData
       })
@@ -154,7 +155,7 @@ export async function submitMajorProject(projectId: string, submissionData: any)
     const { data, error } = await supabase
       .from('major_projects')
       .update({
-        status: 'submitted' as const,
+        status: 'submitted',
         submission_date: new Date().toISOString(),
         ...submissionData
       })
@@ -239,7 +240,8 @@ export async function createMajorProjectIfNotExists(moduleId: string, userId: st
     // Get the project document to copy title/description if available
     const projectDoc = await getMajorProjectDocument(moduleId);
     
-    // If not, create a new project
+    // If not, create a new project - make sure fields match the database schema
+    // Important: Do NOT include 'title' field as it doesn't exist in the schema
     const { data, error } = await supabase
       .from('major_projects')
       .insert({
@@ -270,34 +272,19 @@ export async function createMajorProjectIfNotExists(moduleId: string, userId: st
 
 export async function uploadProjectFile(file: File, userId: string, projectType: 'major' | 'minor', projectId: string) {
   try {
-    // Use the correct bucket names
-    const bucketName = projectType === 'major' ? 'Major Project Submissions' : 'Minor Project Submissions';
+    // Ensure we use the correct bucket ID format that matches what exists in Supabase
+    const bucketId = projectType === 'major' ? 'major_project_submissions' : 'minor_project_submissions';
     
     // Create a unique file path to avoid conflicts
     const timestamp = new Date().getTime();
     const fileExt = file.name.split('.').pop();
-    const cleanFileName = file.name.replace(/[^a-zA-Z0-9.-]/g, '_');
+    const cleanFileName = file.name.replace(/[^a-zA-Z0-9.]/g, '_');
     const filePath = `${userId}/${projectId}/${timestamp}_${cleanFileName}`;
     
-    console.log(`Uploading ${projectType} project file to bucket '${bucketName}':`, filePath);
-    
-    // First, check if the bucket exists
-    const { data: buckets, error: bucketsError } = await supabase.storage.listBuckets();
-    
-    if (bucketsError) {
-      console.error('Error listing buckets:', bucketsError);
-      throw new Error('Failed to access storage');
-    }
-    
-    const bucketExists = buckets.some(bucket => bucket.name === bucketName);
-    
-    if (!bucketExists) {
-      console.error(`Bucket '${bucketName}' does not exist. Available buckets:`, buckets.map(b => b.name));
-      throw new Error(`Storage bucket '${bucketName}' not found`);
-    }
+    console.log(`Uploading ${projectType} project file to bucket '${bucketId}':`, filePath);
     
     const { data, error } = await supabase.storage
-      .from(bucketName)
+      .from(bucketId)
       .upload(filePath, file, {
         cacheControl: '3600',
         upsert: true
@@ -305,20 +292,20 @@ export async function uploadProjectFile(file: File, userId: string, projectType:
       
     if (error) {
       console.error(`Error uploading ${projectType} project file:`, error);
-      throw new Error(`Upload failed: ${error.message}`);
+      return null;
     }
     
     console.log(`Successfully uploaded file:`, data);
     
     // Get the public URL
     const { data: publicUrlData } = supabase.storage
-      .from(bucketName)
+      .from(bucketId)
       .getPublicUrl(filePath);
       
     console.log(`Generated public URL:`, publicUrlData.publicUrl);
     return publicUrlData.publicUrl;
   } catch (error) {
     console.error(`Error in uploadProjectFile for ${projectType} project:`, error);
-    throw error;
+    return null;
   }
 }
