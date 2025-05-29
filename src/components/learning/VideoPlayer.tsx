@@ -36,6 +36,9 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ lessonData }) => {
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [controlsVisible, setControlsVisible] = useState(true);
   const [overlayVisible, setOverlayVisible] = useState(true);
+  const [showTooltip, setShowTooltip] = useState(false);
+  const [tooltipPos, setTooltipPos] = useState(0);
+  const [tooltipTime, setTooltipTime] = useState('0:00');
 
   console.log('VideoPlayer - lessonData:', lessonData);
   console.log('VideoPlayer - videoId:', lessonData?.videoId);
@@ -217,6 +220,7 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ lessonData }) => {
       }
     }
   };
+
   const adjustVolume = (vol: number) => {
     if (playerRef.current && youtubeReady) {
       playerRef.current.setVolume(vol);
@@ -229,32 +233,36 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ lessonData }) => {
       }
     }
   };
+
   const handleProgressMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
     if (duration) {
       const container = e.currentTarget;
       const rect = container.getBoundingClientRect();
       const position = Math.max(0, Math.min(100, (e.clientX - rect.left) / rect.width * 100));
-      // setTooltipPos(position);
-      // setTooltipTime(formatTime(position / 100 * duration));
-      // setShowTooltip(true);
-      // if (isProgressDragging) {
-      //   setProgress(position);
-      // }
+      setTooltipPos(position);
+      setTooltipTime(formatTime(position / 100 * duration));
+      setShowTooltip(true);
+      if (isProgressDragging) {
+        setProgress(position);
+      }
     }
   };
+
   const handleProgressMouseDown = (e: React.MouseEvent<HTMLDivElement>) => {
     const container = e.currentTarget;
     const rect = container.getBoundingClientRect();
     const position = Math.max(0, Math.min(100, (e.clientX - rect.left) / rect.width * 100));
-    // setIsProgressDragging(true);
-    // setProgress(position);
+    setIsProgressDragging(true);
+    setProgress(position);
   };
+
   const handleProgressMouseUp = () => {
-    // if (isProgressDragging) {
-    //   seekToPosition(progress);
-    //   setIsProgressDragging(false);
-    // }
+    if (isProgressDragging) {
+      seekToPosition(progress);
+      setIsProgressDragging(false);
+    }
   };
+
   useEffect(() => {
     document.addEventListener('mouseup', handleProgressMouseUp);
     return () => {
@@ -315,13 +323,21 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ lessonData }) => {
             )}
             
             <div className={`absolute bottom-0 left-0 right-0 custom-controls z-20 transition-opacity duration-300 ${controlsVisible ? 'opacity-100' : 'opacity-0'}`}>
-              <div className="progress-container relative h-2 bg-white/30 rounded-full cursor-pointer mb-2" onMouseMove={handleProgressMouseMove} onMouseDown={handleProgressMouseDown} onMouseLeave={() => setShowTooltip(false)}>
+              <div 
+                className="progress-container relative h-2 bg-white/30 rounded-full cursor-pointer mb-2" 
+                onMouseMove={handleProgressMouseMove} 
+                onMouseDown={handleProgressMouseDown} 
+                onMouseLeave={() => setShowTooltip(false)}
+              >
                 <div className="progress-bar h-full bg-red-600 rounded-full" style={{ width: `${progress}%` }} />
-                 {/* {showTooltip && <div className="progress-tooltip absolute -top-8 bg-black/80 text-white text-xs py-1 px-2 rounded transform -translate-x-1/2" style={{
-                left: `${tooltipPos}%`
-              }}>
+                {showTooltip && (
+                  <div 
+                    className="progress-tooltip absolute -top-8 bg-black/80 text-white text-xs py-1 px-2 rounded transform -translate-x-1/2" 
+                    style={{ left: `${tooltipPos}%` }}
+                  >
                     {tooltipTime}
-                  </div>} */}
+                  </div>
+                )}
               </div>
               
               <div className="controls-container flex items-center gap-4 pb-2 px-4">
@@ -335,13 +351,11 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ lessonData }) => {
                   </button>
                   
                   <div className="volume-slider hidden group-hover:block w-20 h-1 bg-white/30 rounded cursor-pointer ml-2" onClick={e => {
-                  const rect = e.currentTarget.getBoundingClientRect();
-                  const newVolume = Math.max(0, Math.min(100, (e.clientX - rect.left) / rect.width * 100));
-                  adjustVolume(newVolume);
-                }}>
-                    <div className="volume-level h-full bg-white rounded" style={{
-                    width: `${volume}%`
-                  }} />
+                    const rect = e.currentTarget.getBoundingClientRect();
+                    const newVolume = Math.max(0, Math.min(100, (e.clientX - rect.left) / rect.width * 100));
+                    adjustVolume(newVolume);
+                  }}>
+                    <div className="volume-level h-full bg-white rounded" style={{ width: `${volume}%` }} />
                   </div>
                 </div>
                 
