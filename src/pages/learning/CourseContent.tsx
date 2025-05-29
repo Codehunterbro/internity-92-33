@@ -13,7 +13,6 @@ import { Skeleton } from '@/components/ui/skeleton';
 import CustomWelcomeMessage from '@/components/learning/CustomWelcomeMessage';
 import { checkUserPurchasedCoursesCount } from '@/services/coursePurchaseService';
 import { getCourseById } from '@/services/courseService';
-import { toast } from '@/components/ui/use-toast';
 import { Lock } from 'lucide-react';
 
 // Define interfaces for lesson types
@@ -41,6 +40,7 @@ const CourseContent = () => {
     projectWeekId
   } = useParams();
   const navigate = useNavigate();
+  const { toast } = useToast();
   const [currentLesson, setCurrentLesson] = useState<Lesson | null>(null);
   const [lessonContent, setLessonContent] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -144,7 +144,11 @@ const CourseContent = () => {
   
   const handleProjectClick = (type: 'minor' | 'major', moduleId: string, weekId?: string) => {
     console.log(`Project clicked: ${type}, module: ${moduleId}, week: ${weekId}`);
-    // Navigation will be handled by the sidebar component
+    if (type === 'minor' && weekId) {
+      navigate(`/learn/course/${courseId}/project/minor/${moduleId}/${weekId}`);
+    } else if (type === 'major') {
+      navigate(`/learn/course/${courseId}/project/major/${moduleId}`);
+    }
   };
 
   console.log("CourseContent rendering with courseId:", courseId, "and isPurchased:", isPurchased);
@@ -185,7 +189,10 @@ const CourseContent = () => {
             weekId={projectWeekId}
           />
         ) : !currentLesson && !lessonId ? (
-          <CustomWelcomeMessage isPurchased={isPurchased} />
+          <CustomWelcomeMessage 
+            isPurchased={isPurchased} 
+            courseTitle={courseTitle}
+          />
         ) : (
           <div className="p-6">
             {currentLesson && (
