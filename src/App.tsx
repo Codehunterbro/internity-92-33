@@ -79,10 +79,12 @@ function App() {
                   {/* Checkout route */}
                   <Route path="/checkout" element={<ProtectedRoute><Checkout /></ProtectedRoute>} />
                   
-                  {/* Learning routes */}
+                  {/* Learning routes - Updated to handle project routes */}
                   <Route path="/learn/courses/:courseId" element={<ProtectedRoute><CourseContent /></ProtectedRoute>} />
                   <Route path="/learn/course/:courseId" element={<ProtectedRoute><CourseContent /></ProtectedRoute>} />
                   <Route path="/learn/course/:courseId/lesson/:lessonId" element={<ProtectedRoute><CourseContent /></ProtectedRoute>} />
+                  <Route path="/learn/course/:courseId/project/minor/:projectModuleId/:projectWeekId" element={<ProtectedRoute><CourseContent /></ProtectedRoute>} />
+                  <Route path="/learn/course/:courseId/project/major/:projectModuleId" element={<ProtectedRoute><CourseContent /></ProtectedRoute>} />
                   
                   {/* Catch-all route */}
                   <Route path="*" element={<NotFound />} />

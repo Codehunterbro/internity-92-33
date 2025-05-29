@@ -36,7 +36,6 @@ const CourseContent = () => {
   const {
     courseId,
     lessonId,
-    projectType,
     projectModuleId,
     projectWeekId
   } = useParams();
@@ -50,8 +49,12 @@ const CourseContent = () => {
   const [courseTitle, setCourseTitle] = useState('');
   const [modules, setModules] = useState<CourseSidebarModule[]>([]);
 
-  // Check if we're viewing a project
-  const isProjectView = projectType && projectModuleId;
+  // Determine if we're viewing a project based on URL params
+  const isProjectView = projectModuleId && (projectWeekId || projectModuleId);
+  const projectType = projectWeekId ? 'minor' : 'major';
+
+  console.log("Route params:", { courseId, lessonId, projectModuleId, projectWeekId });
+  console.log("Is project view:", isProjectView, "Project type:", projectType);
 
   // Check if course is purchased and get course title
   useEffect(() => {
