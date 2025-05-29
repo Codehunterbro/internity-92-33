@@ -1,7 +1,6 @@
-
 import { useState, useEffect } from 'react';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
-import { FileText, BookOpen, HelpCircle } from 'lucide-react';
+import { FileText, BookOpen, HelpCircle, Video } from 'lucide-react';
 import VideoPlayer from '@/components/learning/VideoPlayer';
 import QuizSection from '@/components/learning/QuizSection';
 import { updateLessonProgress, getLessonProgress, getQuizQuestionsByLessonId } from '@/services/lessonService';
@@ -90,6 +89,63 @@ const LessonContent = ({
     }
   };
 
+  const renderVideoContent = () => {
+    // Check if lesson has a video_id (YouTube video)
+    if (lesson.video_id && lesson.video_type === 'youtube') {
+      return (
+        <VideoPlayer lessonData={{
+          title: lesson.title,
+          subtitle: lesson.subtitle || '',
+          videoType: 'youtube' as 'youtube',
+          videoId: lesson.video_id,
+          videoTitle: lesson.title,
+          videoDescription: lesson.subtitle || '',
+          resources: resources.map(r => ({
+            name: r.name,
+            type: r.type,
+            size: r.size
+          }))
+        }} />
+      );
+    }
+    
+    // Check if there are any video resources uploaded
+    const videoResources = resources.filter(r => 
+      r.type.toLowerCase().includes('video') || 
+      r.url.toLowerCase().includes('.mp4') ||
+      r.url.toLowerCase().includes('.webm') ||
+      r.url.toLowerCase().includes('.mov')
+    );
+    
+    if (videoResources.length > 0) {
+      return (
+        <div className="space-y-4">
+          {videoResources.map(video => (
+            <div key={video.id} className="bg-white rounded-lg shadow-md overflow-hidden mb-6">
+              <div className="aspect-video bg-black">
+                <video 
+                  controls 
+                  className="w-full h-full"
+                  preload="metadata"
+                >
+                  <source src={video.url} type="video/mp4" />
+                  <source src={video.url} type="video/webm" />
+                  Your browser does not support the video tag.
+                </video>
+              </div>
+              <div className="p-6">
+                <h3 className="text-xl font-semibold mb-2">{video.name}</h3>
+                <p className="text-gray-600">Video resource for this lesson</p>
+              </div>
+            </div>
+          ))}
+        </div>
+      );
+    }
+    
+    return null;
+  };
+
   const renderLessonContent = () => {
     if (lesson.content && lesson.content.trim()) {
       return (
@@ -160,22 +216,10 @@ const LessonContent = ({
         </TabsList>
         
         <TabsContent value="content" className="p-0 mt-0">
-          {lesson.type === 'video' && lesson.video_id && (
-            <VideoPlayer lessonData={{
-              title: lesson.title,
-              subtitle: lesson.subtitle || '',
-              videoType: 'youtube' as 'youtube',
-              videoId: lesson.video_id,
-              videoTitle: lesson.title,
-              videoDescription: lesson.subtitle || '',
-              resources: resources.map(r => ({
-                name: r.name,
-                type: r.type,
-                size: r.size
-              }))
-            }} />
-          )}
+          {/* Display video content first if available */}
+          {renderVideoContent()}
           
+          {/* Then display lesson content */}
           {renderLessonContent()}
         </TabsContent>
         
@@ -186,13 +230,17 @@ const LessonContent = ({
               <div className="grid grid-cols-1 gap-4">
                 {resources.map(resource => (
                   <div key={resource.id} className="border rounded-md p-4 flex items-center">
-                    <FileText className="h-10 w-10 text-brand-purple mr-4" />
+                    {resource.type.toLowerCase().includes('video') ? (
+                      <Video className="h-10 w-10 text-brand-purple mr-4" />
+                    ) : (
+                      <FileText className="h-10 w-10 text-brand-purple mr-4" />
+                    )}
                     <div className="flex-1">
                       <h3 className="font-medium text-lg">{resource.name}</h3>
                       <p className="text-sm text-gray-500">{resource.type} · {resource.size}</p>
                     </div>
                     <a href={resource.url} target="_blank" rel="noopener noreferrer" className="bg-brand-purple hover:bg-brand-purple/90 text-white py-1 px-3 rounded text-sm">
-                      Download
+                      {resource.type.toLowerCase().includes('video') ? 'View' : 'Download'}
                     </a>
                   </div>
                 ))}
