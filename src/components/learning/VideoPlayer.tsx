@@ -54,7 +54,7 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ lessonData }) => {
   if (!lessonData || !lessonData.videoType || !lessonData.videoId) {
     console.log('VideoPlayer - No video data available');
     return (
-      <div className="bg-white rounded-lg shadow-md p-6 text-center">
+      <div className="bg-white rounded-lg shadow-md p-6 text-center mb-6">
         <p className="text-gray-600">No video content available for this lesson.</p>
       </div>
     );

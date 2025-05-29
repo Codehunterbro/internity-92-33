@@ -1,4 +1,3 @@
-
 import { supabase } from "@/integrations/supabase/client";
 
 export interface MinorProject {
@@ -139,13 +138,18 @@ export async function getMajorProjectDocument(moduleId: string) {
 
 export async function submitMinorProject(projectId: string, submissionData: any) {
   try {
+    const updateData = {
+      status: 'submitted',
+      submission_date: new Date().toISOString(),
+      attachment_url: submissionData.attachment_url || null,
+      video_url: submissionData.video_url || null
+    };
+
+    console.log('Updating minor project with data:', updateData);
+
     const { data, error } = await supabase
       .from('minor_projects')
-      .update({
-        status: 'submitted',
-        submission_date: new Date().toISOString(),
-        ...submissionData
-      })
+      .update(updateData)
       .eq('id', projectId)
       .select();
       
@@ -154,6 +158,7 @@ export async function submitMinorProject(projectId: string, submissionData: any)
       return { success: false, error };
     }
     
+    console.log('Successfully updated minor project:', data);
     return { success: true, data };
   } catch (error) {
     console.error('Error in submitMinorProject:', error);
@@ -163,13 +168,18 @@ export async function submitMinorProject(projectId: string, submissionData: any)
 
 export async function submitMajorProject(projectId: string, submissionData: any) {
   try {
+    const updateData = {
+      status: 'submitted',
+      submission_date: new Date().toISOString(),
+      attachment_url: submissionData.attachment_url || null,
+      video_url: submissionData.video_url || null
+    };
+
+    console.log('Updating major project with data:', updateData);
+
     const { data, error } = await supabase
       .from('major_projects')
-      .update({
-        status: 'submitted',
-        submission_date: new Date().toISOString(),
-        ...submissionData
-      })
+      .update(updateData)
       .eq('id', projectId)
       .select();
       
@@ -178,6 +188,7 @@ export async function submitMajorProject(projectId: string, submissionData: any)
       return { success: false, error };
     }
     
+    console.log('Successfully updated major project:', data);
     return { success: true, data };
   } catch (error) {
     console.error('Error in submitMajorProject:', error);
@@ -279,8 +290,8 @@ export async function createMajorProjectIfNotExists(moduleId: string, userId: st
 
 export async function uploadProjectFile(file: File, userId: string, projectType: 'major' | 'minor', projectId: string) {
   try {
-    // Use the correct bucket names exactly as specified
-    const bucketId = projectType === 'major' ? 'Major Project Documents' : 'Minor Project Documents';
+    // Use the correct submission bucket names
+    const bucketId = projectType === 'major' ? 'Major Project Submissions' : 'Minor Project Submissions';
     
     // Create a unique file path to avoid conflicts
     const timestamp = new Date().getTime();
@@ -288,7 +299,7 @@ export async function uploadProjectFile(file: File, userId: string, projectType:
     const cleanFileName = file.name.replace(/[^a-zA-Z0-9.]/g, '_');
     const filePath = `${userId}/${projectId}/${timestamp}_${cleanFileName}`;
     
-    console.log(`Uploading ${projectType} project file to bucket '${bucketId}':`, filePath);
+    console.log(`Uploading ${projectType} project submission to bucket '${bucketId}':`, filePath);
     
     const { data, error } = await supabase.storage
       .from(bucketId)
@@ -298,21 +309,21 @@ export async function uploadProjectFile(file: File, userId: string, projectType:
       });
       
     if (error) {
-      console.error(`Error uploading ${projectType} project file:`, error);
+      console.error(`Error uploading ${projectType} project submission:`, error);
       return null;
     }
     
-    console.log(`Successfully uploaded file:`, data);
+    console.log(`Successfully uploaded submission file:`, data);
     
     // Get the public URL
     const { data: publicUrlData } = supabase.storage
       .from(bucketId)
       .getPublicUrl(filePath);
       
-    console.log(`Generated public URL:`, publicUrlData.publicUrl);
+    console.log(`Generated public URL for submission:`, publicUrlData.publicUrl);
     return publicUrlData.publicUrl;
   } catch (error) {
-    console.error(`Error in uploadProjectFile for ${projectType} project:`, error);
+    console.error(`Error in uploadProjectFile for ${projectType} project submission:`, error);
     return null;
   }
 }
