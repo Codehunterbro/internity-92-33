@@ -279,8 +279,8 @@ export async function createMajorProjectIfNotExists(moduleId: string, userId: st
 
 export async function uploadProjectFile(file: File, userId: string, projectType: 'major' | 'minor', projectId: string) {
   try {
-    // Ensure we use the correct bucket ID format that matches what exists in Supabase
-    const bucketId = projectType === 'major' ? 'major_project_submissions' : 'minor_project_submissions';
+    // Use the correct bucket names that match your Supabase buckets
+    const bucketId = projectType === 'major' ? 'Major Project Submissions' : 'Minor Project Submissions';
     
     // Create a unique file path to avoid conflicts
     const timestamp = new Date().getTime();
