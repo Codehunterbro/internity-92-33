@@ -1,4 +1,3 @@
-
 import { supabase } from "@/integrations/supabase/client";
 
 export interface MinorProject {
@@ -44,6 +43,8 @@ export interface ProjectDocument {
 
 export async function getMinorProjectByModuleAndWeek(moduleId: string, weekId: string, userId: string) {
   try {
+    console.log('Fetching minor project for:', { moduleId, weekId, userId });
+    
     const { data, error } = await supabase
       .from('minor_projects')
       .select('*')
@@ -57,6 +58,7 @@ export async function getMinorProjectByModuleAndWeek(moduleId: string, weekId: s
       return null;
     }
     
+    console.log('Fetched minor project:', data);
     return data;
   } catch (error) {
     console.error('Error in getMinorProjectByModuleAndWeek:', error);
@@ -66,6 +68,8 @@ export async function getMinorProjectByModuleAndWeek(moduleId: string, weekId: s
 
 export async function getMajorProjectByModule(moduleId: string, userId: string) {
   try {
+    console.log('Fetching major project for:', { moduleId, userId });
+    
     const { data, error } = await supabase
       .from('major_projects')
       .select('*')
@@ -78,6 +82,7 @@ export async function getMajorProjectByModule(moduleId: string, userId: string) 
       return null;
     }
     
+    console.log('Fetched major project:', data);
     return data;
   } catch (error) {
     console.error('Error in getMajorProjectByModule:', error);
@@ -87,18 +92,21 @@ export async function getMajorProjectByModule(moduleId: string, userId: string) 
 
 export async function getMinorProjectDocument(moduleId: string, weekId: string) {
   try {
+    console.log('Fetching minor project document for:', { moduleId, weekId });
+    
     const { data, error } = await supabase
       .from('minor_project_documents')
       .select('*')
       .eq('module_id', moduleId)
       .eq('week_id', weekId)
-      .single();
+      .maybeSingle();
       
     if (error) {
       console.error('Error fetching minor project document:', error);
       return null;
     }
     
+    console.log('Fetched minor project document:', data);
     return data;
   } catch (error) {
     console.error('Error in getMinorProjectDocument:', error);
@@ -108,17 +116,20 @@ export async function getMinorProjectDocument(moduleId: string, weekId: string) 
 
 export async function getMajorProjectDocument(moduleId: string) {
   try {
+    console.log('Fetching major project document for module:', moduleId);
+    
     const { data, error } = await supabase
       .from('major_project_documents')
       .select('*')
       .eq('module_id', moduleId)
-      .single();
+      .maybeSingle();
       
     if (error) {
       console.error('Error fetching major project document:', error);
       return null;
     }
     
+    console.log('Fetched major project document:', data);
     return data;
   } catch (error) {
     console.error('Error in getMajorProjectDocument:', error);
@@ -240,8 +251,7 @@ export async function createMajorProjectIfNotExists(moduleId: string, userId: st
     // Get the project document to copy title/description if available
     const projectDoc = await getMajorProjectDocument(moduleId);
     
-    // If not, create a new project - make sure fields match the database schema
-    // Important: Do NOT include 'title' field as it doesn't exist in the schema
+    // If not, create a new project
     const { data, error } = await supabase
       .from('major_projects')
       .insert({
@@ -250,9 +260,6 @@ export async function createMajorProjectIfNotExists(moduleId: string, userId: st
         deadline: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(), // 30 days from now
         status: 'not_submitted',
         is_locked: false,
-        // Set description from project document if available
-        description: projectDoc?.description || null,
-        // Set instructions from project document if available
         instructions: projectDoc?.description || null
       })
       .select();
