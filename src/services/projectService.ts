@@ -1,3 +1,4 @@
+
 import { supabase } from "@/integrations/supabase/client";
 
 export interface MinorProject {
@@ -139,7 +140,7 @@ export async function getMajorProjectDocument(moduleId: string) {
 export async function submitMinorProject(projectId: string, submissionData: any) {
   try {
     const updateData = {
-      status: 'submitted',
+      status: 'submitted' as const,
       submission_date: new Date().toISOString(),
       attachment_url: submissionData.attachment_url || null,
       video_url: submissionData.video_url || null
@@ -169,7 +170,7 @@ export async function submitMinorProject(projectId: string, submissionData: any)
 export async function submitMajorProject(projectId: string, submissionData: any) {
   try {
     const updateData = {
-      status: 'submitted',
+      status: 'submitted' as const,
       submission_date: new Date().toISOString(),
       attachment_url: submissionData.attachment_url || null,
       video_url: submissionData.video_url || null
