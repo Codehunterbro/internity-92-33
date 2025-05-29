@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -31,7 +30,6 @@ interface Lesson {
   week_id?: string;
   order_index: number;
 }
-
 const CourseContent = () => {
   const {
     courseId,
@@ -40,7 +38,9 @@ const CourseContent = () => {
     projectWeekId
   } = useParams();
   const navigate = useNavigate();
-  const { toast } = useToast();
+  const {
+    toast
+  } = useToast();
   const [currentLesson, setCurrentLesson] = useState<Lesson | null>(null);
   const [lessonContent, setLessonContent] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -52,8 +52,12 @@ const CourseContent = () => {
   // Determine if we're viewing a project based on URL params
   const isProjectView = projectModuleId && (projectWeekId || projectModuleId);
   const projectType = projectWeekId ? 'minor' : 'major';
-
-  console.log("Route params:", { courseId, lessonId, projectModuleId, projectWeekId });
+  console.log("Route params:", {
+    courseId,
+    lessonId,
+    projectModuleId,
+    projectWeekId
+  });
   console.log("Is project view:", isProjectView, "Project type:", projectType);
 
   // Check if course is purchased and get course title
@@ -137,15 +141,12 @@ const CourseContent = () => {
     };
     fetchLesson();
   }, [lessonId, toast]);
-
   const handleToggleCollapse = () => {
     setIsCollapsed(!isCollapsed);
   };
-  
   const handleLessonClick = (moduleId: string, weekId: string, lessonId: string) => {
     navigate(`/learn/course/${courseId}/lesson/${lessonId}`);
   };
-  
   const handleProjectClick = (type: 'minor' | 'major', moduleId: string, weekId?: string) => {
     console.log(`Project clicked: ${type}, module: ${moduleId}, week: ${weekId}`);
     if (type === 'minor' && weekId) {
@@ -154,7 +155,6 @@ const CourseContent = () => {
       navigate(`/learn/course/${courseId}/project/major/${moduleId}`);
     }
   };
-
   console.log("CourseContent rendering with courseId:", courseId, "and isPurchased:", isPurchased);
   console.log("Current lesson:", currentLesson);
   console.log("Lesson content:", lessonContent);
@@ -162,108 +162,56 @@ const CourseContent = () => {
 
   // Check if current lesson is locked
   const isContentLocked = currentLesson?.is_locked && !isPurchased;
-
-  return (
-    <div className="flex h-screen overflow-hidden bg-white">
+  return <div className="flex h-screen overflow-hidden bg-white">
       {/* Sidebar */}
       <div className={`${isCollapsed ? 'w-16' : 'w-72'} border-r border-gray-200 overflow-y-auto transition-all duration-300`}>
-        <CourseSidebar 
-          modules={modules} 
-          isCollapsed={isCollapsed} 
-          onToggleCollapse={handleToggleCollapse} 
-          onLessonClick={handleLessonClick} 
-          onProjectClick={handleProjectClick} 
-          isLoading={isLoading} 
-        />
+        <CourseSidebar modules={modules} isCollapsed={isCollapsed} onToggleCollapse={handleToggleCollapse} onLessonClick={handleLessonClick} onProjectClick={handleProjectClick} isLoading={isLoading} />
       </div>
       
       {/* Main Content */}
       <div className="flex-1 overflow-y-auto">
-        {isLoading ? (
-          <div className="p-8 space-y-4">
+        {isLoading ? <div className="p-8 space-y-4">
             <Skeleton className="h-8 w-1/3" />
             <Skeleton className="h-4 w-1/2" />
             <Skeleton className="h-64 w-full" />
-          </div>
-        ) : isProjectView ? (
-          // Show project submission view
-          <ProjectSubmissionView 
-            type={projectType as 'minor' | 'major'}
-            moduleId={projectModuleId!}
-            weekId={projectWeekId}
-          />
-        ) : !currentLesson && !lessonId ? (
-          <CustomWelcomeMessage 
-            isPurchased={isPurchased} 
-            courseTitle={courseTitle}
-          />
-        ) : (
-          <div className="p-6">
-            {currentLesson && (
-              <>
-                {isContentLocked ? (
-                  <div className="flex flex-col items-center justify-center h-64 text-center">
+          </div> : isProjectView ?
+      // Show project submission view
+      <ProjectSubmissionView type={projectType as 'minor' | 'major'} moduleId={projectModuleId!} weekId={projectWeekId} /> : !currentLesson && !lessonId ? <CustomWelcomeMessage isPurchased={isPurchased} courseTitle={courseTitle} /> : <div className="p-6">
+            {currentLesson && <>
+                {isContentLocked ? <div className="flex flex-col items-center justify-center h-64 text-center">
                     <Lock className="h-16 w-16 text-gray-400 mb-4" />
                     <h3 className="text-xl font-semibold text-gray-700 mb-2">Content Locked</h3>
                     <p className="text-gray-500 mb-4">
                       This lesson is locked. Please purchase the course to access this content.
                     </p>
-                    <button 
-                      onClick={() => navigate('/dashboard/courses')}
-                      className="bg-brand-purple text-white px-6 py-2 rounded-md hover:bg-brand-purple/90 transition-colors"
-                    >
+                    <button onClick={() => navigate('/dashboard/courses')} className="bg-brand-purple text-white px-6 py-2 rounded-md hover:bg-brand-purple/90 transition-colors">
                       View Course Details
                     </button>
-                  </div>
-                ) : (
-                  <Tabs defaultValue="content" className="mb-6">
-                    <TabsList className="mb-4">
-                      <TabsTrigger value="content">Content</TabsTrigger>
-                      {currentLesson.type === 'quiz' && (
-                        <TabsTrigger value="quiz">Quiz</TabsTrigger>
-                      )}
-                    </TabsList>
+                  </div> : <Tabs defaultValue="content" className="mb-6">
+                    
                     
                     <TabsContent value="content" className="pt-4">
-                      <LessonContent 
-                        lesson={{
-                          id: currentLesson.id,
-                          title: currentLesson.title,
-                          subtitle: currentLesson.subtitle,
-                          type: currentLesson.type as 'video' | 'reading' | 'quiz',
-                          content: currentLesson.content || '',
-                          video_type: currentLesson.video_type,
-                          video_id: currentLesson.video_id
-                        }} 
-                        resources={lessonContent?.resources || []} 
-                        quizQuestions={lessonContent?.quizQuestions || []} 
-                      />
+                      <LessonContent lesson={{
+                id: currentLesson.id,
+                title: currentLesson.title,
+                subtitle: currentLesson.subtitle,
+                type: currentLesson.type as 'video' | 'reading' | 'quiz',
+                content: currentLesson.content || '',
+                video_type: currentLesson.video_type,
+                video_id: currentLesson.video_id
+              }} resources={lessonContent?.resources || []} quizQuestions={lessonContent?.quizQuestions || []} />
                     </TabsContent>
                     
-                    {currentLesson.type === 'quiz' && (
-                      <TabsContent value="quiz" className="pt-4">
-                        <QuizSection 
-                          lessonId={parseInt(currentLesson.id, 10)} 
-                          onComplete={() => {}} 
-                          completed={false} 
-                          questions={lessonContent?.quizQuestions || []} 
-                        />
-                      </TabsContent>
-                    )}
-                  </Tabs>
-                )}
-              </>
-            )}
-            {!currentLesson && lessonId && (
-              <div className="flex flex-col items-center justify-center h-64">
+                    {currentLesson.type === 'quiz' && <TabsContent value="quiz" className="pt-4">
+                        <QuizSection lessonId={parseInt(currentLesson.id, 10)} onComplete={() => {}} completed={false} questions={lessonContent?.quizQuestions || []} />
+                      </TabsContent>}
+                  </Tabs>}
+              </>}
+            {!currentLesson && lessonId && <div className="flex flex-col items-center justify-center h-64">
                 <p className="text-gray-500">Lesson not found</p>
-              </div>
-            )}
-          </div>
-        )}
+              </div>}
+          </div>}
       </div>
-    </div>
-  );
+    </div>;
 };
-
 export default CourseContent;
