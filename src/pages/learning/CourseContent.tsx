@@ -35,7 +35,10 @@ interface Lesson {
 const CourseContent = () => {
   const {
     courseId,
-    lessonId
+    lessonId,
+    projectType,
+    projectModuleId,
+    projectWeekId
   } = useParams();
   const navigate = useNavigate();
   const [currentLesson, setCurrentLesson] = useState<Lesson | null>(null);
@@ -45,6 +48,9 @@ const CourseContent = () => {
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [courseTitle, setCourseTitle] = useState('');
   const [modules, setModules] = useState<CourseSidebarModule[]>([]);
+
+  // Check if we're viewing a project
+  const isProjectView = projectType && projectModuleId;
 
   // Check if course is purchased and get course title
   useEffect(() => {
@@ -138,11 +144,13 @@ const CourseContent = () => {
   
   const handleProjectClick = (type: 'minor' | 'major', moduleId: string, weekId?: string) => {
     console.log(`Project clicked: ${type}, module: ${moduleId}, week: ${weekId}`);
+    // Navigation will be handled by the sidebar component
   };
 
   console.log("CourseContent rendering with courseId:", courseId, "and isPurchased:", isPurchased);
   console.log("Current lesson:", currentLesson);
   console.log("Lesson content:", lessonContent);
+  console.log("Project view:", isProjectView, projectType, projectModuleId, projectWeekId);
 
   // Check if current lesson is locked
   const isContentLocked = currentLesson?.is_locked && !isPurchased;
@@ -169,6 +177,13 @@ const CourseContent = () => {
             <Skeleton className="h-4 w-1/2" />
             <Skeleton className="h-64 w-full" />
           </div>
+        ) : isProjectView ? (
+          // Show project submission view
+          <ProjectSubmissionView 
+            type={projectType as 'minor' | 'major'}
+            moduleId={projectModuleId!}
+            weekId={projectWeekId}
+          />
         ) : !currentLesson && !lessonId ? (
           <CustomWelcomeMessage isPurchased={isPurchased} />
         ) : (
@@ -196,9 +211,6 @@ const CourseContent = () => {
                       {currentLesson.type === 'quiz' && (
                         <TabsTrigger value="quiz">Quiz</TabsTrigger>
                       )}
-                      {currentLesson.type === 'project' && (
-                        <TabsTrigger value="project">Project</TabsTrigger>
-                      )}
                     </TabsList>
                     
                     <TabsContent value="content" className="pt-4">
@@ -224,16 +236,6 @@ const CourseContent = () => {
                           onComplete={() => {}} 
                           completed={false} 
                           questions={lessonContent?.quizQuestions || []} 
-                        />
-                      </TabsContent>
-                    )}
-                    
-                    {currentLesson.type === 'project' && (
-                      <TabsContent value="project" className="pt-4">
-                        <ProjectSubmissionView 
-                          type="minor" 
-                          moduleId={currentLesson.module_id} 
-                          weekId={currentLesson.week_id} 
                         />
                       </TabsContent>
                     )}

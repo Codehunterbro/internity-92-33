@@ -36,7 +36,7 @@ const ProjectSubmissionView: React.FC<ProjectSubmissionViewProps> = ({
     try {
       console.log(`Fetching ${type} project data for module: ${moduleId}, week: ${weekId}`);
       
-      // Fetch project document (instructions, resources, etc.)
+      // Fetch project document (instructions, resources, etc.) from document tables
       let documentData = null;
       if (type === 'minor' && weekId) {
         documentData = await getMinorProjectDocument(moduleId, weekId);
@@ -48,7 +48,7 @@ const ProjectSubmissionView: React.FC<ProjectSubmissionViewProps> = ({
       
       setProjectDocument(documentData);
       
-      // Check if the project document exists and is locked
+      // Check if the project document exists
       if (!documentData) {
         console.log(`${type} project document not found`);
         setError(`${type === 'major' ? 'Major' : 'Minor'} project not available`);
@@ -56,8 +56,9 @@ const ProjectSubmissionView: React.FC<ProjectSubmissionViewProps> = ({
         return;
       }
       
+      // Check if project is locked from the document table
       if (documentData?.is_locked) {
-        console.log(`${type} project is locked`);
+        console.log(`${type} project is locked based on document table`);
         setIsLoading(false);
         return;
       }
@@ -112,7 +113,7 @@ const ProjectSubmissionView: React.FC<ProjectSubmissionViewProps> = ({
     );
   }
 
-  // Check if project document is locked
+  // Check if project document is locked based on is_locked from document table
   if (!projectDocument || projectDocument?.is_locked) {
     return (
       <div className="p-6 max-w-4xl mx-auto">
