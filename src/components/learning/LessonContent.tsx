@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { FileText, BookOpen, HelpCircle, Lock } from 'lucide-react';
@@ -42,8 +43,8 @@ const LessonContent = ({
   const [quizQuestions, setQuizQuestions] = useState(initialQuizQuestions || []);
 
   console.log('LessonContent - lesson data:', lesson);
-  console.log('LessonContent - resources:', resources);
   console.log('LessonContent - video_id:', lesson.video_id);
+  console.log('LessonContent - video_type:', lesson.video_type);
 
   useEffect(() => {
     if (user && lesson.id) {
@@ -96,6 +97,10 @@ const LessonContent = ({
     }
   };
 
+  // Check if lesson has video content
+  const hasVideo = lesson.video_id && lesson.video_type;
+  console.log('Has video:', hasVideo);
+
   return (
     <div className="p-6">
       <h1 className="text-2xl font-bold mb-2">{lesson.title}</h1>
@@ -118,7 +123,8 @@ const LessonContent = ({
         </TabsList>
         
         <TabsContent value="content" className="p-0 mt-0">
-          {lesson.type === 'video' && lesson.video_id && (
+          {/* Show video if available */}
+          {hasVideo && (
             <div className="mb-6">
               <VideoPlayer 
                 lessonData={{
@@ -138,17 +144,19 @@ const LessonContent = ({
             </div>
           )}
           
+          {/* Show text content if available */}
           {lesson.content && (
             <div className="prose max-w-none" dangerouslySetInnerHTML={{
               __html: lesson.content
             }} />
           )}
 
-          {!lesson.content && lesson.type !== 'video' && (
+          {/* Show placeholder if no content */}
+          {!lesson.content && !hasVideo && (
             <div className="text-center py-10">
               <BookOpen className="h-12 w-12 mx-auto text-gray-400 mb-4" />
               <h3 className="text-lg font-medium text-gray-700">No content available</h3>
-              <p className="text-gray-500">This lesson doesn't have text content yet.</p>
+              <p className="text-gray-500">This lesson doesn't have content yet.</p>
             </div>
           )}
         </TabsContent>

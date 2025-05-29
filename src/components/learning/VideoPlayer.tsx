@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState, CSSProperties } from 'react';
 import YouTube, { YouTubeProps, YouTubeEvent } from 'react-youtube';
 import { FileText, Download, Volume2, Volume1, VolumeX, Maximize, Minimize, Play, Pause } from 'lucide-react';
+
 export interface LessonVideoContent {
   title: string;
   subtitle: string;
@@ -14,12 +15,12 @@ export interface LessonVideoContent {
     size: string;
   }[];
 }
+
 interface VideoPlayerProps {
   lessonData: LessonVideoContent | null;
 }
-const VideoPlayer: React.FC<VideoPlayerProps> = ({
-  lessonData
-}) => {
+
+const VideoPlayer: React.FC<VideoPlayerProps> = ({ lessonData }) => {
   const playerRef = useRef<any>(null);
   const playerContainerRef = useRef<HTMLDivElement>(null);
   const progressIntervalRef = useRef<number | null>(null);
@@ -31,14 +32,14 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
   const [progress, setProgress] = useState(0);
   const [volume, setVolume] = useState(100);
   const [isProgressDragging, setIsProgressDragging] = useState(false);
-  const [isVolumeDragging, setIsVolumeDragging] = useState(false);
-  const [showTooltip, setShowTooltip] = useState(false);
-  const [tooltipPos, setTooltipPos] = useState(0);
-  const [tooltipTime, setTooltipTime] = useState('0:00');
   const [youtubeReady, setYoutubeReady] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [controlsVisible, setControlsVisible] = useState(true);
   const [overlayVisible, setOverlayVisible] = useState(true);
+
+  console.log('VideoPlayer - lessonData:', lessonData);
+  console.log('VideoPlayer - videoId:', lessonData?.videoId);
+
   const styles: {
     videoSection: CSSProperties;
     videoContainer: CSSProperties;
@@ -65,6 +66,7 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
       position: 'relative'
     }
   };
+
   const youtubeOpts: YouTubeProps['opts'] = {
     height: '100%',
     width: '100%',
@@ -82,6 +84,24 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
       origin: window.location.origin
     }
   };
+
+  const onPlayerReady = (event: YouTubeEvent) => {
+    console.log('YouTube player ready');
+    playerRef.current = event.target;
+    setDuration(event.target.getDuration());
+    setYoutubeReady(true);
+    updateProgressBar();
+  };
+
+  const onPlayerStateChange = (event: YouTubeEvent) => {
+    console.log('YouTube player state changed:', event.data);
+    if (event.data === 1) {
+      setIsPlaying(true);
+    } else if (event.data === 2 || event.data === 0) {
+      setIsPlaying(false);
+    }
+  };
+
   const updateProgressBar = () => {
     if (progressIntervalRef.current) {
       window.clearInterval(progressIntervalRef.current);
@@ -98,6 +118,7 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
       }
     }, 100);
   };
+
   const startHideControlsTimer = () => {
     if (hideControlsTimerRef.current) {
       window.clearTimeout(hideControlsTimerRef.current);
@@ -108,15 +129,18 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
       }
     }, 3000);
   };
+
   const handleMouseMove = () => {
     setControlsVisible(true);
     startHideControlsTimer();
   };
+
   useEffect(() => {
     if (controlsVisible && isPlaying) {
       startHideControlsTimer();
     }
   }, [controlsVisible, isPlaying]);
+
   useEffect(() => {
     if (isPlaying) {
       setOverlayVisible(false);
@@ -129,6 +153,7 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
       }
     }
   }, [isPlaying]);
+
   useEffect(() => {
     return () => {
       if (progressIntervalRef.current) {
@@ -139,24 +164,13 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
       }
     };
   }, []);
-  const onPlayerReady = (event: YouTubeEvent) => {
-    playerRef.current = event.target;
-    setDuration(event.target.getDuration());
-    setYoutubeReady(true);
-    updateProgressBar();
-  };
-  const onPlayerStateChange = (event: YouTubeEvent) => {
-    if (event.data === 1) {
-      setIsPlaying(true);
-    } else if (event.data === 2 || event.data === 0) {
-      setIsPlaying(false);
-    }
-  };
+
   const formatTime = (seconds: number) => {
     const minutes = Math.floor(seconds / 60);
     const secs = Math.floor(seconds % 60);
     return `${minutes}:${secs.toString().padStart(2, '0')}`;
   };
+
   const togglePlayPause = () => {
     if (playerRef.current && youtubeReady) {
       if (isPlaying) {
@@ -166,6 +180,7 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
       }
     }
   };
+
   const toggleFullscreen = () => {
     const videoContainer = playerContainerRef.current?.closest('.video-container');
     if (videoContainer) {
@@ -178,15 +193,7 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
       }
     }
   };
-  useEffect(() => {
-    const handleFullscreenChange = () => {
-      setIsFullscreen(!!document.fullscreenElement);
-    };
-    document.addEventListener('fullscreenchange', handleFullscreenChange);
-    return () => {
-      document.removeEventListener('fullscreenchange', handleFullscreenChange);
-    };
-  }, []);
+
   const toggleMute = () => {
     if (playerRef.current && youtubeReady) {
       if (isMuted) {
@@ -199,6 +206,7 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
       setIsMuted(!isMuted);
     }
   };
+
   const seekToPosition = (position: number) => {
     if (playerRef.current && youtubeReady) {
       const targetTime = position / 100 * duration;
@@ -226,26 +234,26 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
       const container = e.currentTarget;
       const rect = container.getBoundingClientRect();
       const position = Math.max(0, Math.min(100, (e.clientX - rect.left) / rect.width * 100));
-      setTooltipPos(position);
-      setTooltipTime(formatTime(position / 100 * duration));
-      setShowTooltip(true);
-      if (isProgressDragging) {
-        setProgress(position);
-      }
+      // setTooltipPos(position);
+      // setTooltipTime(formatTime(position / 100 * duration));
+      // setShowTooltip(true);
+      // if (isProgressDragging) {
+      //   setProgress(position);
+      // }
     }
   };
   const handleProgressMouseDown = (e: React.MouseEvent<HTMLDivElement>) => {
     const container = e.currentTarget;
     const rect = container.getBoundingClientRect();
     const position = Math.max(0, Math.min(100, (e.clientX - rect.left) / rect.width * 100));
-    setIsProgressDragging(true);
-    setProgress(position);
+    // setIsProgressDragging(true);
+    // setProgress(position);
   };
   const handleProgressMouseUp = () => {
-    if (isProgressDragging) {
-      seekToPosition(progress);
-      setIsProgressDragging(false);
-    }
+    // if (isProgressDragging) {
+    //   seekToPosition(progress);
+    //   setIsProgressDragging(false);
+    // }
   };
   useEffect(() => {
     document.addEventListener('mouseup', handleProgressMouseUp);
@@ -253,57 +261,72 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
       document.removeEventListener('mouseup', handleProgressMouseUp);
     };
   }, [isProgressDragging, progress]);
-  if (!lessonData || !lessonData.videoType) {
-    return <div className="flex flex-col gap-6 w-full">
+
+  if (!lessonData || !lessonData.videoType || !lessonData.videoId) {
+    console.log('VideoPlayer - No video data available');
+    return (
+      <div className="flex flex-col gap-6 w-full">
         <div className="bg-white rounded-lg shadow-md p-6 text-center">
           <p className="text-gray-600">No video content available for this lesson.</p>
         </div>
-      </div>;
+      </div>
+    );
   }
-  return <div className="flex flex-col gap-6 w-full">
+
+  console.log('VideoPlayer - Rendering with videoId:', lessonData.videoId);
+
+  return (
+    <div className="flex flex-col gap-6 w-full">
       <div className="bg-white rounded-lg shadow-md overflow-hidden mb-0 w-full" style={styles.videoSection}>
         <div className="video-section">
-          <div className="relative aspect-video bg-black video-container overflow-hidden" onMouseMove={handleMouseMove} style={styles.videoContainer}>
+          <div 
+            className="relative aspect-video bg-black video-container overflow-hidden" 
+            onMouseMove={handleMouseMove} 
+            style={styles.videoContainer}
+          >
             <div ref={playerContainerRef} className="w-full h-full overflow-hidden" style={styles.videoPlayer}>
-              {lessonData.videoId && <div className="youtube-container">
-                  <YouTube videoId={lessonData.videoId} opts={youtubeOpts} onReady={onPlayerReady} onStateChange={onPlayerStateChange} className="absolute" iframeClassName="absolute" style={{
-                position: 'absolute',
-                top: '0',
-                left: '0',
-                width: '100%',
-                height: '100%'
-              }} />
-                </div>}
+              <div className="youtube-container">
+                <YouTube 
+                  videoId={lessonData.videoId} 
+                  opts={youtubeOpts} 
+                  onReady={onPlayerReady} 
+                  onStateChange={onPlayerStateChange} 
+                  className="absolute" 
+                  iframeClassName="absolute" 
+                  style={{
+                    position: 'absolute',
+                    top: '0',
+                    left: '0',
+                    width: '100%',
+                    height: '100%'
+                  }} 
+                />
+              </div>
             </div>
             
             <div className="absolute inset-0 z-10" onClick={togglePlayPause} />
             
-            {overlayVisible && <div className="absolute inset-0 flex items-center justify-center z-20" onClick={togglePlayPause}>
-                <button className="w-20 h-20 bg-black hover:bg-black/90 rounded-full flex items-center justify-center transition-colors">
-                  {isPlaying ? <Pause className="w-12 h-12 text-white" /> : <Play className="w-12 h-12 text-black ml-2" />}
+            {overlayVisible && (
+              <div className="absolute inset-0 flex items-center justify-center z-20" onClick={togglePlayPause}>
+                <button className="w-20 h-20 bg-black/60 hover:bg-black/90 rounded-full flex items-center justify-center transition-colors">
+                  {isPlaying ? <Pause className="w-12 h-12 text-white" /> : <Play className="w-12 h-12 text-white ml-2" />}
                 </button>
-              </div>}
+              </div>
+            )}
             
             <div className={`absolute bottom-0 left-0 right-0 custom-controls z-20 transition-opacity duration-300 ${controlsVisible ? 'opacity-100' : 'opacity-0'}`}>
               <div className="progress-container relative h-2 bg-white/30 rounded-full cursor-pointer mb-2" onMouseMove={handleProgressMouseMove} onMouseDown={handleProgressMouseDown} onMouseLeave={() => setShowTooltip(false)}>
-                <div className="progress-bar h-full bg-primary rounded-full" style={{
-                width: `${progress}%`
-              }} />
-                {showTooltip && <div className="progress-tooltip absolute -top-8 bg-black/80 text-white text-xs py-1 px-2 rounded transform -translate-x-1/2" style={{
+                <div className="progress-bar h-full bg-red-600 rounded-full" style={{ width: `${progress}%` }} />
+                 {/* {showTooltip && <div className="progress-tooltip absolute -top-8 bg-black/80 text-white text-xs py-1 px-2 rounded transform -translate-x-1/2" style={{
                 left: `${tooltipPos}%`
               }}>
                     {tooltipTime}
-                  </div>}
+                  </div>} */}
               </div>
               
-              <div className="controls-container flex items-center gap-4 pb-2">
+              <div className="controls-container flex items-center gap-4 pb-2 px-4">
                 <button onClick={togglePlayPause} className="control-button bg-transparent border-none text-white cursor-pointer p-2 rounded-full hover:bg-white/10">
-                  {isPlaying ? <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                      <rect x="6" y="4" width="4" height="16" fill="white" />
-                      <rect x="14" y="4" width="4" height="16" fill="white" />
-                    </svg> : <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                      <path d="M5 3L19 12L5 21V3Z" fill="white" />
-                    </svg>}
+                  {isPlaying ? <Pause className="h-5 w-5" /> : <Play className="h-5 w-5" />}
                 </button>
                 
                 <div className="volume-container flex items-center group">
@@ -341,8 +364,8 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
           </div>
         </div>
       </div>
-      
-      
-    </div>;
+    </div>
+  );
 };
+
 export default VideoPlayer;
