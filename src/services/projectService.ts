@@ -279,8 +279,8 @@ export async function createMajorProjectIfNotExists(moduleId: string, userId: st
 
 export async function uploadProjectFile(file: File, userId: string, projectType: 'major' | 'minor', projectId: string) {
   try {
-    // Use the correct bucket names with spaces and capital letters
-    const bucketId = projectType === 'major' ? 'Major Project Submissions' : 'Minor Project Submissions';
+    // Use the correct bucket names exactly as specified
+    const bucketId = projectType === 'major' ? 'Major Project Documents' : 'Minor Project Documents';
     
     // Create a unique file path to avoid conflicts
     const timestamp = new Date().getTime();
