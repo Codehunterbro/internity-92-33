@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
-import { Loader2 } from 'lucide-react';
+import { Loader2, Lock } from 'lucide-react';
 import { 
   getMinorProjectByModuleAndWeek, 
   getMajorProjectByModule,
@@ -34,22 +34,35 @@ const ProjectSubmissionView: React.FC<ProjectSubmissionViewProps> = ({
     setError(null);
     
     try {
+      console.log(`Fetching ${type} project data for module: ${moduleId}, week: ${weekId}`);
+      
       // Fetch project document (instructions, resources, etc.)
       let documentData = null;
       if (type === 'minor' && weekId) {
         documentData = await getMinorProjectDocument(moduleId, weekId);
-      } else {
+        console.log('Minor project document fetched:', documentData);
+      } else if (type === 'major') {
         documentData = await getMajorProjectDocument(moduleId);
+        console.log('Major project document fetched:', documentData);
       }
       
       setProjectDocument(documentData);
+      
+      // Check if the project is locked
+      if (documentData?.is_locked) {
+        console.log(`${type} project is locked`);
+        setIsLoading(false);
+        return;
+      }
       
       // Fetch user's existing submission if any
       let submissionData = null;
       if (type === 'minor' && weekId) {
         submissionData = await getMinorProjectByModuleAndWeek(moduleId, weekId, user.id);
-      } else {
+        console.log('Minor project submission fetched:', submissionData);
+      } else if (type === 'major') {
         submissionData = await getMajorProjectByModule(moduleId, user.id);
+        console.log('Major project submission fetched:', submissionData);
       }
       
       setExistingSubmission(submissionData);
@@ -88,6 +101,26 @@ const ProjectSubmissionView: React.FC<ProjectSubmissionViewProps> = ({
         >
           Try Again
         </button>
+      </div>
+    );
+  }
+
+  // Check if project is locked
+  if (projectDocument?.is_locked) {
+    return (
+      <div className="p-6 max-w-4xl mx-auto">
+        <div className="flex flex-col items-center justify-center h-64 text-center border-2 border-dashed border-gray-300 rounded-lg">
+          <Lock className="h-16 w-16 text-gray-400 mb-4" />
+          <h3 className="text-xl font-semibold text-gray-700 mb-2">
+            {type === 'major' ? 'Major Project' : 'Minor Project'} Locked
+          </h3>
+          <p className="text-gray-500 mb-4">
+            This project is currently locked and not available for submission.
+          </p>
+          <p className="text-sm text-gray-400">
+            Please check back later or contact your instructor for more information.
+          </p>
+        </div>
       </div>
     );
   }

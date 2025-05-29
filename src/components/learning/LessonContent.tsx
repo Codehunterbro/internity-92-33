@@ -1,7 +1,6 @@
-
 import { useState, useEffect } from 'react';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
-import { FileText, BookOpen, HelpCircle } from 'lucide-react';
+import { FileText, BookOpen, HelpCircle, Lock } from 'lucide-react';
 import VideoPlayer from '@/components/learning/VideoPlayer';
 import QuizSection from '@/components/learning/QuizSection';
 import { updateLessonProgress, getLessonProgress, getQuizQuestionsByLessonId } from '@/services/lessonService';
@@ -44,6 +43,7 @@ const LessonContent = ({
 
   console.log('LessonContent - lesson data:', lesson);
   console.log('LessonContent - resources:', resources);
+  console.log('LessonContent - video_id:', lesson.video_id);
 
   useEffect(() => {
     if (user && lesson.id) {
@@ -60,7 +60,6 @@ const LessonContent = ({
     }
   }, [lesson.id, user]);
 
-  // Fetch quiz questions if not provided or if tab changes to quiz
   useEffect(() => {
     const fetchQuizQuestions = async () => {
       if (activeTab === 'quiz' && user && lesson.id && quizQuestions.length === 0) {

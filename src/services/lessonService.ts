@@ -24,11 +24,8 @@ export async function getLessonsByModuleId(moduleId: string) {
     return [];
   }
 
-  // Unlock all lessons for students
-  return data?.map(lesson => ({
-    ...lesson,
-    is_locked: false
-  })) || [];
+  // Return lessons with their actual locked status from database
+  return data || [];
 }
 
 export async function getAllLessons(courseId: string) {
@@ -74,11 +71,8 @@ export async function getAllLessons(courseId: string) {
       return [];
     }
     
-    // Unlock all lessons for students
-    return lessons?.map(lesson => ({
-      ...lesson,
-      is_locked: false
-    })) || [];
+    // Return lessons with their actual locked status from database
+    return lessons || [];
   } catch (error) {
     console.error('Error in getAllLessons:', error);
     return [];
@@ -89,6 +83,7 @@ export const getLessonById = async (lessonId: string) => {
   if (!lessonId) return null;
   
   try {
+    console.log('Fetching lesson by ID:', lessonId);
     const { data, error } = await supabase
       .from('lessons')
       .select('*')
@@ -100,11 +95,10 @@ export const getLessonById = async (lessonId: string) => {
       return null;
     }
     
-    // Unlock the lesson for students
-    return {
-      ...data,
-      is_locked: false
-    };
+    console.log('Lesson fetched from database:', data);
+    
+    // Return the lesson with its actual locked status from database
+    return data;
   } catch (error) {
     console.error('Error in getLessonById:', error);
     return null;
@@ -143,7 +137,8 @@ export async function getQuizQuestionsByLessonId(lessonId: string) {
         options,
         correct_answer,
         explanation,
-        order_index
+        order_index,
+        is_quiz_locked
       `)
       .eq('lesson_id', lessonId)
       .order('order_index');
@@ -154,6 +149,12 @@ export async function getQuizQuestionsByLessonId(lessonId: string) {
     }
 
     console.log("Quiz questions data:", data);
+    
+    // Check if quiz is locked
+    if (data && data.length > 0 && data[0].is_quiz_locked) {
+      console.log("Quiz is locked for lesson:", lessonId);
+      return [];
+    }
     
     // Process the quiz questions to ensure options are properly formatted
     const processedData = data?.map(question => {
