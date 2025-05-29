@@ -48,7 +48,14 @@ const ProjectSubmissionView: React.FC<ProjectSubmissionViewProps> = ({
       
       setProjectDocument(documentData);
       
-      // Check if the project is locked
+      // Check if the project document exists and is locked
+      if (!documentData) {
+        console.log(`${type} project document not found`);
+        setError(`${type === 'major' ? 'Major' : 'Minor'} project not available`);
+        setIsLoading(false);
+        return;
+      }
+      
       if (documentData?.is_locked) {
         console.log(`${type} project is locked`);
         setIsLoading(false);
@@ -105,8 +112,8 @@ const ProjectSubmissionView: React.FC<ProjectSubmissionViewProps> = ({
     );
   }
 
-  // Check if project is locked
-  if (projectDocument?.is_locked) {
+  // Check if project document is locked
+  if (!projectDocument || projectDocument?.is_locked) {
     return (
       <div className="p-6 max-w-4xl mx-auto">
         <div className="flex flex-col items-center justify-center h-64 text-center border-2 border-dashed border-gray-300 rounded-lg">

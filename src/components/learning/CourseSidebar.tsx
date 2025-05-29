@@ -55,7 +55,6 @@ const CourseSidebar = ({
   const navigate = useNavigate();
   
   const [expandedModules, setExpandedModules] = useState<string[]>(
-    // By default, expand all modules
     modules.map(module => module.id)
   );
   
@@ -115,7 +114,8 @@ const CourseSidebar = ({
     }
   };
 
-  const getLessonIcon = (type: string, isCompleted: boolean) => {
+  const getLessonIcon = (type: string, isCompleted: boolean, isLocked: boolean) => {
+    if (isLocked) return <Lock className="w-4 h-4 text-gray-400" />;
     if (isCompleted) return <CheckCircle className="w-4 h-4 text-green-500" />;
     
     switch (type) {
@@ -252,15 +252,14 @@ const CourseSidebar = ({
                                 onClick={() => handleLessonClick(module.id, week.id, lesson.id, lesson.isLocked)}
                               >
                                 <div className="mr-3 flex-shrink-0">
-                                  {lesson.isLocked ? (
-                                    <Lock className="w-4 h-4 text-gray-400" />
-                                  ) : (
-                                    getLessonIcon(lesson.type, lesson.isCompleted)
-                                  )}
+                                  {getLessonIcon(lesson.type, lesson.isCompleted, lesson.isLocked)}
                                 </div>
                                 <span className="truncate">Day {index + 1}: {lesson.title}</span>
                                 {lesson.duration && (
                                   <span className="ml-auto text-xs text-gray-400">{lesson.duration}</span>
+                                )}
+                                {lesson.isLocked && (
+                                  <Lock className="w-3 h-3 text-gray-400 ml-1" />
                                 )}
                               </div>
                             ))}

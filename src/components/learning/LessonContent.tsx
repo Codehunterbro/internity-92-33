@@ -41,6 +41,7 @@ const LessonContent = ({
   const [isLoadingProgress, setIsLoadingProgress] = useState(false);
   const [isLoadingQuiz, setIsLoadingQuiz] = useState(false);
   const [quizQuestions, setQuizQuestions] = useState(initialQuizQuestions || []);
+  const [isQuizLocked, setIsQuizLocked] = useState(false);
 
   console.log('LessonContent - lesson data:', lesson);
   console.log('LessonContent - video_id:', lesson.video_id);
@@ -69,8 +70,17 @@ const LessonContent = ({
           console.log("Fetching quiz questions for lesson ID:", lesson.id);
           const questions = await getQuizQuestionsByLessonId(lesson.id);
           console.log("Fetched quiz questions:", questions);
+          
+          // Check if quiz is locked based on is_quiz_locked field
           if (questions && questions.length > 0) {
-            setQuizQuestions(questions);
+            const firstQuestion = questions[0];
+            if (firstQuestion.is_quiz_locked) {
+              setIsQuizLocked(true);
+              console.log("Quiz is locked for this lesson");
+            } else {
+              setQuizQuestions(questions);
+              setIsQuizLocked(false);
+            }
           }
         } catch (error) {
           console.error("Error loading quiz questions:", error);
@@ -117,8 +127,9 @@ const LessonContent = ({
             <span>Resources</span>
           </TabsTrigger>
           <TabsTrigger value="quiz" className="flex items-center gap-2">
-            <HelpCircle className="h-4 w-4" />
+            {isQuizLocked ? <Lock className="h-4 w-4" /> : <HelpCircle className="h-4 w-4" />}
             <span>Quiz</span>
+            {isQuizLocked && <Lock className="h-3 w-3 ml-1" />}
           </TabsTrigger>
         </TabsList>
         
@@ -199,6 +210,12 @@ const LessonContent = ({
             <div className="text-center py-10">
               <div className="h-12 w-12 animate-spin rounded-full border-4 border-solid border-brand-purple border-r-transparent mx-auto mb-4"></div>
               <h3 className="text-lg font-medium text-gray-700">Loading quiz...</h3>
+            </div>
+          ) : isQuizLocked ? (
+            <div className="text-center py-10">
+              <Lock className="h-12 w-12 mx-auto text-gray-400 mb-4" />
+              <h3 className="text-lg font-medium text-gray-700">Quiz Locked</h3>
+              <p className="text-gray-500">This quiz is currently locked and not available.</p>
             </div>
           ) : quizQuestions.length > 0 ? (
             <QuizSection 

@@ -1,3 +1,4 @@
+
 import { supabase } from "@/integrations/supabase/client";
 
 export interface MinorProject {
@@ -27,7 +28,6 @@ export interface MajorProject {
   is_locked: boolean;
   attachment_url?: string;
   video_url?: string;
-  // Note: Removed title field as it doesn't exist in the schema
 }
 
 export interface ProjectDocument {
