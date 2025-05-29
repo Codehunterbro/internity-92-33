@@ -8,7 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Lock, FileUp, Youtube, Upload, CheckCircle } from 'lucide-react';
-import { toast } from '@/components/ui/use-toast';
+import { toast } from 'sonner';
 import { 
   ProjectDocument, 
   uploadProjectFile, 
@@ -72,11 +72,7 @@ const ProjectSubmissionForm: React.FC<ProjectSubmissionFormProps> = ({
       
       // Check file size (10MB limit)
       if (file.size > 10 * 1024 * 1024) {
-        toast({
-          title: "File too large",
-          description: "Please select a file smaller than 10MB",
-          variant: "destructive"
-        });
+        toast.error("File too large. Please select a file smaller than 10MB");
         return;
       }
       
@@ -107,11 +103,7 @@ const ProjectSubmissionForm: React.FC<ProjectSubmissionFormProps> = ({
 
   const onSubmit = async (values: any) => {
     if (!user) {
-      toast({
-        title: "Authentication Error",
-        description: "You must be logged in to submit a project",
-        variant: "destructive"
-      });
+      toast.error("You must be logged in to submit a project");
       return;
     }
 
@@ -124,6 +116,8 @@ const ProjectSubmissionForm: React.FC<ProjectSubmissionFormProps> = ({
       
       if (!projectId) {
         setUploadProgress(20);
+        console.log("Creating new project...");
+        
         if (type === 'minor' && weekId) {
           projectId = await createMinorProjectIfNotExists(moduleId, weekId, user.id, projectDocument?.title || "Minor Project");
         } else {
@@ -148,11 +142,17 @@ const ProjectSubmissionForm: React.FC<ProjectSubmissionFormProps> = ({
       if (selectedFile) {
         console.log("Uploading file:", selectedFile.name);
         setUploadProgress(60);
-        attachmentUrl = await uploadProjectFile(selectedFile, user.id, type, projectId);
-        console.log("File upload result:", attachmentUrl);
         
-        if (!attachmentUrl) {
-          throw new Error("Failed to upload file");
+        try {
+          attachmentUrl = await uploadProjectFile(selectedFile, user.id, type, projectId);
+          console.log("File upload result:", attachmentUrl);
+          
+          if (!attachmentUrl) {
+            throw new Error("Failed to upload file");
+          }
+        } catch (uploadError) {
+          console.error("Upload error:", uploadError);
+          throw new Error("File upload failed. Please try again.");
         }
       }
       
@@ -180,21 +180,14 @@ const ProjectSubmissionForm: React.FC<ProjectSubmissionFormProps> = ({
       
       setUploadProgress(100);
       
-      toast({
-        title: "Project Submitted",
-        description: "Your project has been successfully submitted",
-      });
+      toast.success("Project submitted successfully!");
       
       if (onSubmissionComplete) {
         onSubmissionComplete();
       }
     } catch (error) {
       console.error("Error submitting project:", error);
-      toast({
-        title: "Submission Failed",
-        description: "There was an error submitting your project. Please try again.",
-        variant: "destructive"
-      });
+      toast.error(error instanceof Error ? error.message : "There was an error submitting your project. Please try again.");
     } finally {
       setIsSubmitting(false);
       setUploadProgress(0);
