@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { useAuth } from '@/contexts/AuthContext';
@@ -15,7 +16,8 @@ import {
   submitMinorProject, 
   submitMajorProject,
   createMinorProjectIfNotExists,
-  createMajorProjectIfNotExists
+  createMajorProjectIfNotExists,
+  extractYouTubeVideoId
 } from '@/services/projectService';
 
 interface ProjectSubmissionFormProps {
@@ -177,6 +179,9 @@ const ProjectSubmissionForm: React.FC<ProjectSubmissionFormProps> = ({
     }
   };
 
+  // Extract YouTube video ID from project document
+  const instructionVideoId = projectDocument?.video_url ? extractYouTubeVideoId(projectDocument.video_url) : null;
+
   if (isLocked) {
     return (
       <Card className="mb-6">
@@ -220,15 +225,16 @@ const ProjectSubmissionForm: React.FC<ProjectSubmissionFormProps> = ({
             <div className="space-y-4">
               <h3 className="text-lg font-medium">Project Resources</h3>
               
-              {projectDocument?.video_url && (
+              {instructionVideoId && (
                 <div className="border rounded-md p-4">
                   <h4 className="font-medium mb-2">Project Instruction Video</h4>
                   <div className="aspect-video">
                     <iframe 
-                      src={`https://www.youtube.com/embed/${projectDocument.video_url}`} 
+                      src={`https://www.youtube.com/embed/${instructionVideoId}`} 
                       className="w-full h-full rounded"
                       allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                       allowFullScreen
+                      title="Project Instructions"
                     ></iframe>
                   </div>
                 </div>
