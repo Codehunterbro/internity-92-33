@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -31,9 +30,11 @@ interface Lesson {
   week_id?: string;
   order_index: number;
 }
-
 const CourseContent = () => {
-  const { courseId, lessonId } = useParams();
+  const {
+    courseId,
+    lessonId
+  } = useParams();
   const navigate = useNavigate();
   const [currentLesson, setCurrentLesson] = useState<Lesson | null>(null);
   const [lessonContent, setLessonContent] = useState<any>(null);
@@ -91,17 +92,14 @@ const CourseContent = () => {
   useEffect(() => {
     const fetchLesson = async () => {
       if (!lessonId) return;
-      
       try {
         setIsLoading(true);
         console.log('Fetching lesson with ID:', lessonId);
-        
         const lesson = await getLessonById(lessonId);
         console.log('Fetched lesson data:', lesson);
-        
         if (lesson) {
           setCurrentLesson(lesson as Lesson);
-          
+
           // Fetch lesson content including resources
           const content = await getLessonContent(lesson.id);
           console.log('Fetched lesson content:', content);
@@ -125,116 +123,65 @@ const CourseContent = () => {
         setIsLoading(false);
       }
     };
-
     fetchLesson();
   }, [lessonId]);
-
   const handleToggleCollapse = () => {
     setIsCollapsed(!isCollapsed);
   };
-
   const handleLessonClick = (moduleId: string, weekId: string, lessonId: string) => {
     navigate(`/learn/course/${courseId}/lesson/${lessonId}`);
   };
-
   const handleProjectClick = (type: 'minor' | 'major', moduleId: string, weekId?: string) => {
     console.log(`Project clicked: ${type}, module: ${moduleId}, week: ${weekId}`);
     // Navigate to project view within the same course content area
     // For now, we'll show the project submission view in the main content area
   };
-
   console.log("CourseContent rendering with courseId:", courseId, "and isPurchased:", isPurchased);
   console.log("Current lesson:", currentLesson);
   console.log("Lesson content:", lessonContent);
-
-  return (
-    <div className="flex h-screen overflow-hidden bg-white">
+  return <div className="flex h-screen overflow-hidden bg-white">
       {/* Sidebar */}
       <div className={`${isCollapsed ? 'w-16' : 'w-72'} border-r border-gray-200 overflow-y-auto transition-all duration-300`}>
-        <CourseSidebar 
-          modules={modules} 
-          isCollapsed={isCollapsed} 
-          onToggleCollapse={handleToggleCollapse} 
-          onLessonClick={handleLessonClick} 
-          onProjectClick={handleProjectClick} 
-          isLoading={isLoading} 
-        />
+        <CourseSidebar modules={modules} isCollapsed={isCollapsed} onToggleCollapse={handleToggleCollapse} onLessonClick={handleLessonClick} onProjectClick={handleProjectClick} isLoading={isLoading} />
       </div>
       
       {/* Main Content */}
       <div className="flex-1 overflow-y-auto">
-        {isLoading ? (
-          <div className="p-8 space-y-4">
+        {isLoading ? <div className="p-8 space-y-4">
             <Skeleton className="h-8 w-1/3" />
             <Skeleton className="h-4 w-1/2" />
             <Skeleton className="h-64 w-full" />
-          </div>
-        ) : !currentLesson && !lessonId ? (
-          <CustomWelcomeMessage isPurchased={isPurchased} />
-        ) : (
-          <div className="p-6">
-            {currentLesson && (
-              <>
+          </div> : !currentLesson && !lessonId ? <CustomWelcomeMessage isPurchased={isPurchased} /> : <div className="p-6">
+            {currentLesson && <>
                 <Tabs defaultValue="content" className="mb-6">
-                  <TabsList className="mb-6">
-                    <TabsTrigger value="content">Content</TabsTrigger>
-                    {currentLesson.type === 'quiz' && (
-                      <TabsTrigger value="quiz">Quiz</TabsTrigger>
-                    )}
-                    {currentLesson.type === 'project' && (
-                      <TabsTrigger value="project">Project</TabsTrigger>
-                    )}
-                  </TabsList>
+                  
                   
                   <TabsContent value="content" className="pt-4">
-                    <LessonContent 
-                      lesson={{
-                        id: currentLesson.id,
-                        title: currentLesson.title,
-                        subtitle: currentLesson.subtitle,
-                        type: currentLesson.type as 'video' | 'reading' | 'quiz',
-                        content: currentLesson.content || '',
-                        video_type: currentLesson.video_type,
-                        video_id: currentLesson.video_id
-                      }} 
-                      resources={lessonContent?.resources || []} 
-                      quizQuestions={[]} 
-                    />
+                    <LessonContent lesson={{
+                id: currentLesson.id,
+                title: currentLesson.title,
+                subtitle: currentLesson.subtitle,
+                type: currentLesson.type as 'video' | 'reading' | 'quiz',
+                content: currentLesson.content || '',
+                video_type: currentLesson.video_type,
+                video_id: currentLesson.video_id
+              }} resources={lessonContent?.resources || []} quizQuestions={[]} />
                   </TabsContent>
                   
-                  {currentLesson.type === 'quiz' && (
-                    <TabsContent value="quiz" className="pt-4">
-                      <QuizSection 
-                        lessonId={parseInt(currentLesson.id, 10)} 
-                        onComplete={() => {}} 
-                        completed={false} 
-                        questions={[]} 
-                      />
-                    </TabsContent>
-                  )}
+                  {currentLesson.type === 'quiz' && <TabsContent value="quiz" className="pt-4">
+                      <QuizSection lessonId={parseInt(currentLesson.id, 10)} onComplete={() => {}} completed={false} questions={[]} />
+                    </TabsContent>}
                   
-                  {currentLesson.type === 'project' && (
-                    <TabsContent value="project" className="pt-4">
-                      <ProjectSubmissionView 
-                        type="minor" 
-                        moduleId={currentLesson.module_id} 
-                        weekId={currentLesson.week_id} 
-                      />
-                    </TabsContent>
-                  )}
+                  {currentLesson.type === 'project' && <TabsContent value="project" className="pt-4">
+                      <ProjectSubmissionView type="minor" moduleId={currentLesson.module_id} weekId={currentLesson.week_id} />
+                    </TabsContent>}
                 </Tabs>
-              </>
-            )}
-            {!currentLesson && lessonId && (
-              <div className="flex flex-col items-center justify-center h-64">
+              </>}
+            {!currentLesson && lessonId && <div className="flex flex-col items-center justify-center h-64">
                 <p className="text-gray-500">Lesson not found</p>
-              </div>
-            )}
-          </div>
-        )}
+              </div>}
+          </div>}
       </div>
-    </div>
-  );
+    </div>;
 };
-
 export default CourseContent;
