@@ -28,6 +28,7 @@ export interface MajorProject {
   is_locked: boolean;
   attachment_url?: string;
   video_url?: string;
+  // Note: Removed title field as it doesn't exist in the schema
 }
 
 export interface ProjectDocument {
@@ -43,8 +44,6 @@ export interface ProjectDocument {
 
 export async function getMinorProjectByModuleAndWeek(moduleId: string, weekId: string, userId: string) {
   try {
-    console.log('Fetching minor project for:', { moduleId, weekId, userId });
-    
     const { data, error } = await supabase
       .from('minor_projects')
       .select('*')
@@ -58,7 +57,6 @@ export async function getMinorProjectByModuleAndWeek(moduleId: string, weekId: s
       return null;
     }
     
-    console.log('Fetched minor project:', data);
     return data;
   } catch (error) {
     console.error('Error in getMinorProjectByModuleAndWeek:', error);
@@ -68,8 +66,6 @@ export async function getMinorProjectByModuleAndWeek(moduleId: string, weekId: s
 
 export async function getMajorProjectByModule(moduleId: string, userId: string) {
   try {
-    console.log('Fetching major project for:', { moduleId, userId });
-    
     const { data, error } = await supabase
       .from('major_projects')
       .select('*')
@@ -82,7 +78,6 @@ export async function getMajorProjectByModule(moduleId: string, userId: string) 
       return null;
     }
     
-    console.log('Fetched major project:', data);
     return data;
   } catch (error) {
     console.error('Error in getMajorProjectByModule:', error);
@@ -92,21 +87,18 @@ export async function getMajorProjectByModule(moduleId: string, userId: string) 
 
 export async function getMinorProjectDocument(moduleId: string, weekId: string) {
   try {
-    console.log('Fetching minor project document for:', { moduleId, weekId });
-    
     const { data, error } = await supabase
       .from('minor_project_documents')
       .select('*')
       .eq('module_id', moduleId)
       .eq('week_id', weekId)
-      .maybeSingle();
+      .single();
       
     if (error) {
       console.error('Error fetching minor project document:', error);
       return null;
     }
     
-    console.log('Fetched minor project document:', data);
     return data;
   } catch (error) {
     console.error('Error in getMinorProjectDocument:', error);
@@ -116,20 +108,17 @@ export async function getMinorProjectDocument(moduleId: string, weekId: string) 
 
 export async function getMajorProjectDocument(moduleId: string) {
   try {
-    console.log('Fetching major project document for module:', moduleId);
-    
     const { data, error } = await supabase
       .from('major_project_documents')
       .select('*')
       .eq('module_id', moduleId)
-      .maybeSingle();
+      .single();
       
     if (error) {
       console.error('Error fetching major project document:', error);
       return null;
     }
     
-    console.log('Fetched major project document:', data);
     return data;
   } catch (error) {
     console.error('Error in getMajorProjectDocument:', error);
@@ -139,18 +128,13 @@ export async function getMajorProjectDocument(moduleId: string) {
 
 export async function submitMinorProject(projectId: string, submissionData: any) {
   try {
-    const updateData = {
-      status: 'submitted' as const,
-      submission_date: new Date().toISOString(),
-      attachment_url: submissionData.attachment_url || null,
-      video_url: submissionData.video_url || null
-    };
-
-    console.log('Updating minor project with data:', updateData);
-
     const { data, error } = await supabase
       .from('minor_projects')
-      .update(updateData)
+      .update({
+        status: 'submitted',
+        submission_date: new Date().toISOString(),
+        ...submissionData
+      })
       .eq('id', projectId)
       .select();
       
@@ -159,7 +143,6 @@ export async function submitMinorProject(projectId: string, submissionData: any)
       return { success: false, error };
     }
     
-    console.log('Successfully updated minor project:', data);
     return { success: true, data };
   } catch (error) {
     console.error('Error in submitMinorProject:', error);
@@ -169,18 +152,13 @@ export async function submitMinorProject(projectId: string, submissionData: any)
 
 export async function submitMajorProject(projectId: string, submissionData: any) {
   try {
-    const updateData = {
-      status: 'submitted' as const,
-      submission_date: new Date().toISOString(),
-      attachment_url: submissionData.attachment_url || null,
-      video_url: submissionData.video_url || null
-    };
-
-    console.log('Updating major project with data:', updateData);
-
     const { data, error } = await supabase
       .from('major_projects')
-      .update(updateData)
+      .update({
+        status: 'submitted',
+        submission_date: new Date().toISOString(),
+        ...submissionData
+      })
       .eq('id', projectId)
       .select();
       
@@ -189,7 +167,6 @@ export async function submitMajorProject(projectId: string, submissionData: any)
       return { success: false, error };
     }
     
-    console.log('Successfully updated major project:', data);
     return { success: true, data };
   } catch (error) {
     console.error('Error in submitMajorProject:', error);
@@ -263,7 +240,8 @@ export async function createMajorProjectIfNotExists(moduleId: string, userId: st
     // Get the project document to copy title/description if available
     const projectDoc = await getMajorProjectDocument(moduleId);
     
-    // If not, create a new project
+    // If not, create a new project - make sure fields match the database schema
+    // Important: Do NOT include 'title' field as it doesn't exist in the schema
     const { data, error } = await supabase
       .from('major_projects')
       .insert({
@@ -272,6 +250,9 @@ export async function createMajorProjectIfNotExists(moduleId: string, userId: st
         deadline: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(), // 30 days from now
         status: 'not_submitted',
         is_locked: false,
+        // Set description from project document if available
+        description: projectDoc?.description || null,
+        // Set instructions from project document if available
         instructions: projectDoc?.description || null
       })
       .select();
@@ -291,8 +272,8 @@ export async function createMajorProjectIfNotExists(moduleId: string, userId: st
 
 export async function uploadProjectFile(file: File, userId: string, projectType: 'major' | 'minor', projectId: string) {
   try {
-    // Use the correct submission bucket names
-    const bucketId = projectType === 'major' ? 'Major Project Submissions' : 'Minor Project Submissions';
+    // Ensure we use the correct bucket ID format that matches what exists in Supabase
+    const bucketId = projectType === 'major' ? 'major_project_submissions' : 'minor_project_submissions';
     
     // Create a unique file path to avoid conflicts
     const timestamp = new Date().getTime();
@@ -300,7 +281,7 @@ export async function uploadProjectFile(file: File, userId: string, projectType:
     const cleanFileName = file.name.replace(/[^a-zA-Z0-9.]/g, '_');
     const filePath = `${userId}/${projectId}/${timestamp}_${cleanFileName}`;
     
-    console.log(`Uploading ${projectType} project submission to bucket '${bucketId}':`, filePath);
+    console.log(`Uploading ${projectType} project file to bucket '${bucketId}':`, filePath);
     
     const { data, error } = await supabase.storage
       .from(bucketId)
@@ -310,21 +291,21 @@ export async function uploadProjectFile(file: File, userId: string, projectType:
       });
       
     if (error) {
-      console.error(`Error uploading ${projectType} project submission:`, error);
+      console.error(`Error uploading ${projectType} project file:`, error);
       return null;
     }
     
-    console.log(`Successfully uploaded submission file:`, data);
+    console.log(`Successfully uploaded file:`, data);
     
     // Get the public URL
     const { data: publicUrlData } = supabase.storage
       .from(bucketId)
       .getPublicUrl(filePath);
       
-    console.log(`Generated public URL for submission:`, publicUrlData.publicUrl);
+    console.log(`Generated public URL:`, publicUrlData.publicUrl);
     return publicUrlData.publicUrl;
   } catch (error) {
-    console.error(`Error in uploadProjectFile for ${projectType} project submission:`, error);
+    console.error(`Error in uploadProjectFile for ${projectType} project:`, error);
     return null;
   }
 }
