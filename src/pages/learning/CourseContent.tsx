@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -94,7 +95,7 @@ const CourseContent = () => {
       }
     };
     fetchCourseData();
-  }, [courseId, navigate]);
+  }, [courseId, navigate, toast]);
 
   // Fetch lesson when the lesson ID changes
   useEffect(() => {
@@ -132,7 +133,7 @@ const CourseContent = () => {
       }
     };
     fetchLesson();
-  }, [lessonId]);
+  }, [lessonId, toast]);
 
   const handleToggleCollapse = () => {
     setIsCollapsed(!isCollapsed);

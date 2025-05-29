@@ -136,7 +136,7 @@ export async function getModulesWithLessonsForCourse(courseId: string) {
           title: lesson.title,
           type: lesson.type,
           duration: lesson.duration,
-          isLocked: false, // Unlock all lessons for now
+          isLocked: lesson.is_locked || false, // Use actual locked status from database
           isCompleted: false
         });
       });
