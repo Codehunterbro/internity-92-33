@@ -1,3 +1,4 @@
+
 import { supabase } from '@/integrations/supabase/client';
 
 export interface Course {
@@ -160,75 +161,6 @@ export const getCourseById = async (courseId: string): Promise<Course | null> =>
     return course;
   } catch (error) {
     console.error('Error in getCourseById:', error);
-    return null;
-  }
-};
-
-export const getCourseWithModulesAndLessons = async (courseId: string) => {
-  try {
-    // First get the course
-    const course = await getCourseById(courseId);
-    if (!course) {
-      return null;
-    }
-
-    // Get modules for this course
-    const { data: modules, error: modulesError } = await supabase
-      .from('modules')
-      .select(`
-        id,
-        title,
-        description,
-        order_index,
-        week_1,
-        week_2,
-        week_3,
-        week_4
-      `)
-      .eq('course_id', courseId)
-      .order('order_index');
-
-    if (modulesError) {
-      console.error('Error fetching modules:', modulesError);
-      throw modulesError;
-    }
-
-    // For each module, get lessons
-    const modulesWithLessons = await Promise.all(
-      (modules || []).map(async (module) => {
-        const { data: lessons, error: lessonsError } = await supabase
-          .from('lessons')
-          .select(`
-            id,
-            title,
-            subtitle,
-            type,
-            duration,
-            is_locked,
-            week_id,
-            order_index
-          `)
-          .eq('module_id', module.id)
-          .order('order_index');
-
-        if (lessonsError) {
-          console.error(`Error fetching lessons for module ${module.id}:`, lessonsError);
-          return { ...module, lessons: [] };
-        }
-
-        return {
-          ...module,
-          lessons: lessons || []
-        };
-      })
-    );
-
-    return {
-      ...course,
-      modules: modulesWithLessons
-    };
-  } catch (error) {
-    console.error('Error in getCourseWithModulesAndLessons:', error);
     return null;
   }
 };

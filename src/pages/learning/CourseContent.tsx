@@ -1,251 +1,261 @@
 
-import { useState, useEffect } from 'react';
-import { useParams } from 'react-router-dom';
-import { useAuth } from '@/contexts/AuthContext';
-import { getCourseWithModulesAndLessons } from '@/services/courseService';
-import { getLessonContent } from '@/services/lessonContentService';
-import { updateLessonProgress } from '@/services/progressService';
-import CourseSidebar, { Module } from '@/components/learning/CourseSidebar';
+import { useEffect, useState } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import CourseSidebar, { Module as CourseSidebarModule } from '@/components/learning/CourseSidebar';
 import LessonContent from '@/components/learning/LessonContent';
+import QuizSection from '@/components/learning/QuizSection';
 import ProjectSubmissionView from '@/components/learning/ProjectSubmissionView';
-import { Loader2 } from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
+import { getLessonById } from '@/services/lessonService';
+import { getLessonContent } from '@/services/lessonContentService';
+import { getModulesWithLessonsForCourse } from '@/services/moduleService';
+import { Skeleton } from '@/components/ui/skeleton';
+import CustomWelcomeMessage from '@/components/learning/CustomWelcomeMessage';
+import { checkUserPurchasedCoursesCount } from '@/services/coursePurchaseService';
+import { getCourseById } from '@/services/courseService';
+import { Lock } from 'lucide-react';
+
+// Define interfaces for lesson types
+interface Lesson {
+  id: string;
+  title: string;
+  subtitle?: string;
+  type: 'video' | 'reading' | 'quiz' | 'project';
+  content?: string;
+  is_locked?: boolean;
+  duration?: string;
+  video_type?: string;
+  video_id?: string;
+  module_id: string;
+  week_id?: string;
+  order_index: number;
+}
 
 const CourseContent = () => {
-  const { courseId, lessonId, projectType, moduleId, weekId } = useParams<{
-    courseId: string;
-    lessonId?: string;
-    projectType?: 'minor' | 'major';
-    moduleId?: string;
-    weekId?: string;
-  }>();
-  const { user } = useAuth();
-  
-  const [course, setCourse] = useState<any>(null);
-  const [modules, setModules] = useState<Module[]>([]);
-  const [currentLesson, setCurrentLesson] = useState<any>(null);
-  const [lessonResources, setLessonResources] = useState<any[]>([]);
-  const [quizQuestions, setQuizQuestions] = useState<any[]>([]);
+  const {
+    courseId,
+    lessonId,
+    projectModuleId,
+    projectWeekId
+  } = useParams();
+  const navigate = useNavigate();
+  const { toast } = useToast();
+  const [currentLesson, setCurrentLesson] = useState<Lesson | null>(null);
+  const [lessonContent, setLessonContent] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [isPurchased, setIsPurchased] = useState(false);
+  const [isCollapsed, setIsCollapsed] = useState(false);
+  const [courseTitle, setCourseTitle] = useState('');
+  const [modules, setModules] = useState<CourseSidebarModule[]>([]);
 
+  // Determine if we're viewing a project based on URL params
+  const isProjectView = projectModuleId && (projectWeekId || projectModuleId);
+  const projectType = projectWeekId ? 'minor' : 'major';
+  
+  console.log("Route params:", { courseId, lessonId, projectModuleId, projectWeekId });
+  console.log("Is project view:", isProjectView, "Project type:", projectType);
+
+  // Check if course is purchased and get course title
   useEffect(() => {
-    if (courseId) {
-      fetchCourseData();
-    }
-  }, [courseId]);
+    const fetchCourseData = async () => {
+      if (!courseId) return;
+      try {
+        setIsLoading(true);
 
+        // Check purchase status
+        const count = await checkUserPurchasedCoursesCount();
+        setIsPurchased(count >= 1);
+
+        // Get course details for title
+        const course = await getCourseById(courseId);
+        if (course) {
+          setCourseTitle(course.title);
+          console.log("Course loaded:", course.title);
+        } else {
+          console.error("Course not found with ID:", courseId);
+          toast({
+            title: 'Error',
+            description: 'Course not found. Please try again.',
+            variant: 'destructive'
+          });
+          navigate('/dashboard/my-courses');
+        }
+
+        // Fetch modules with lessons
+        const modulesData = await getModulesWithLessonsForCourse(courseId);
+        console.log("Modules data fetched:", modulesData);
+        setModules(modulesData);
+      } catch (error) {
+        console.error('Error fetching course data:', error);
+        toast({
+          title: 'Error',
+          description: 'Failed to load course. Please try again.',
+          variant: 'destructive'
+        });
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    fetchCourseData();
+  }, [courseId, navigate, toast]);
+
+  // Fetch lesson when the lesson ID changes
   useEffect(() => {
-    if (lessonId && modules.length > 0) {
-      fetchLessonContent();
-    }
-  }, [lessonId, modules]);
-
-  const fetchCourseData = async () => {
-    setIsLoading(true);
-    setError(null);
-    
-    try {
-      console.log('Fetching course data for courseId:', courseId);
-      const courseData = await getCourseWithModulesAndLessons(courseId!);
-      
-      if (!courseData) {
-        setError('Course not found');
+    const fetchLesson = async () => {
+      if (!lessonId) {
+        setCurrentLesson(null);
+        setLessonContent(null);
         return;
       }
       
-      console.log('Course data received:', courseData);
-      setCourse(courseData);
-      
-      // Transform the modules data to match the Module interface with safety checks
-      const transformedModules: Module[] = [];
-      
-      if (courseData.modules && Array.isArray(courseData.modules)) {
-        courseData.modules.forEach((module: any) => {
-          try {
-            // Group lessons by week with safety checks
-            const lessonsByWeek: { [key: string]: any[] } = {};
-            
-            if (module.lessons && Array.isArray(module.lessons)) {
-              module.lessons.forEach((lesson: any) => {
-                if (lesson && lesson.id) {
-                  const weekId = lesson.week_id?.toString() || '1';
-                  if (!lessonsByWeek[weekId]) {
-                    lessonsByWeek[weekId] = [];
-                  }
-                  lessonsByWeek[weekId].push({
-                    id: lesson.id,
-                    title: lesson.title || 'Untitled Lesson',
-                    type: lesson.type || 'video',
-                    duration: lesson.duration || null,
-                    isCompleted: false,
-                    isLocked: Boolean(lesson.is_locked)
-                  });
-                }
-              });
-            }
-            
-            // Create weeks array with safety checks
-            const weeks = [];
-            for (let i = 1; i <= 4; i++) {
-              const weekId = i.toString();
-              const weekTitle = module[`week_${weekId}`];
-              
-              if (weekTitle) {
-                weeks.push({
-                  id: weekId,
-                  title: weekTitle,
-                  lessons: lessonsByWeek[weekId] || []
-                });
-              }
-            }
-            
-            if (module.id && module.title) {
-              transformedModules.push({
-                id: module.id,
-                title: module.title,
-                description: module.description || '',
-                week_1: module.week_1 || null,
-                week_2: module.week_2 || null,
-                week_3: module.week_3 || null,
-                week_4: module.week_4 || null,
-                weeks
-              });
-            }
-          } catch (moduleError) {
-            console.error('Error processing module:', module, moduleError);
-          }
-        });
-      }
-      
-      console.log('Transformed modules:', transformedModules);
-      setModules(transformedModules);
-    } catch (err) {
-      console.error('Error fetching course data:', err);
-      setError('Failed to load course data');
-    } finally {
-      setIsLoading(false);
-    }
-  };
+      try {
+        setIsLoading(true);
+        console.log('Fetching lesson with ID:', lessonId);
+        const lesson = await getLessonById(lessonId);
+        console.log('Fetched lesson data:', lesson);
+        
+        if (lesson) {
+          setCurrentLesson(lesson as Lesson);
 
-  const fetchLessonContent = async () => {
-    if (!lessonId) return;
-    
-    try {
-      console.log('Fetching lesson content for lessonId:', lessonId);
-      
-      // Get lesson details first with safety checks
-      let foundLesson = null;
-      
-      if (modules && Array.isArray(modules)) {
-        for (const module of modules) {
-          if (module.weeks && Array.isArray(module.weeks)) {
-            for (const week of module.weeks) {
-              if (week.lessons && Array.isArray(week.lessons)) {
-                const lesson = week.lessons.find(l => l && l.id === lessonId);
-                if (lesson) {
-                  foundLesson = lesson;
-                  break;
-                }
-              }
-            }
-          }
-          if (foundLesson) break;
+          // Fetch lesson content including resources
+          const content = await getLessonContent(lesson.id);
+          console.log('Fetched lesson content:', content);
+          setLessonContent(content);
+        } else {
+          console.error('Lesson not found with ID:', lessonId);
+          toast({
+            title: 'Error',
+            description: 'Lesson not found. Please try again.',
+            variant: 'destructive'
+          });
         }
+      } catch (error) {
+        console.error('Error fetching lesson:', error);
+        toast({
+          title: 'Error',
+          description: 'Failed to load lesson. Please try again.',
+          variant: 'destructive'
+        });
+      } finally {
+        setIsLoading(false);
       }
-      
-      if (foundLesson) {
-        setCurrentLesson(foundLesson);
-      }
+    };
+    fetchLesson();
+  }, [lessonId, toast]);
 
-      // Get lesson content (resources and quiz questions)
-      const lessonContent = await getLessonContent(lessonId);
-      setLessonResources(lessonContent?.resources || []);
-      setQuizQuestions(lessonContent?.quizQuestions || []);
-      
-      // Mark lesson as viewed/completed
-      if (user && courseId) {
-        await updateLessonProgress(user.id, courseId, lessonId, 'completed');
-      }
-    } catch (err) {
-      console.error('Error fetching lesson content:', err);
-      setError('Failed to load lesson content');
+  const handleToggleCollapse = () => {
+    setIsCollapsed(!isCollapsed);
+  };
+
+  const handleLessonClick = (moduleId: string, weekId: string, lessonId: string) => {
+    navigate(`/learn/course/${courseId}/lesson/${lessonId}`);
+  };
+
+  const handleProjectClick = (type: 'minor' | 'major', moduleId: string, weekId?: string) => {
+    console.log(`Project clicked: ${type}, module: ${moduleId}, week: ${weekId}`);
+    if (type === 'minor' && weekId) {
+      navigate(`/learn/course/${courseId}/project/minor/${moduleId}/${weekId}`);
+    } else if (type === 'major') {
+      navigate(`/learn/course/${courseId}/project/major/${moduleId}`);
     }
   };
 
-  const handleToggleSidebar = () => {
-    setIsSidebarCollapsed(!isSidebarCollapsed);
-  };
+  console.log("CourseContent rendering with courseId:", courseId, "and isPurchased:", isPurchased);
+  console.log("Current lesson:", currentLesson);
+  console.log("Lesson content:", lessonContent);
+  console.log("Project view:", isProjectView, projectType, projectModuleId, projectWeekId);
 
-  if (isLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <Loader2 className="h-10 w-10 animate-spin text-brand-purple mx-auto mb-4" />
-          <p className="text-lg text-gray-600">Loading course content...</p>
-        </div>
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <h2 className="text-2xl font-bold text-gray-900 mb-4">Error</h2>
-          <p className="text-gray-600">{error}</p>
-        </div>
-      </div>
-    );
-  }
-
-  // Render project submission view if we're on a project route
-  if (projectType && moduleId) {
-    return (
-      <div className="min-h-screen flex bg-gray-50">
-        <CourseSidebar
-          modules={modules}
-          isCollapsed={isSidebarCollapsed}
-          onToggleCollapse={handleToggleSidebar}
-          isLoading={isLoading}
-        />
-        <main className="flex-1 overflow-y-auto">
-          <ProjectSubmissionView
-            type={projectType}
-            moduleId={moduleId}
-            weekId={weekId}
-          />
-        </main>
-      </div>
-    );
-  }
+  // Check if current lesson is locked
+  const isContentLocked = currentLesson?.is_locked && !isPurchased;
 
   return (
-    <div className="min-h-screen flex bg-gray-50">
-      <CourseSidebar
-        modules={modules}
-        isCollapsed={isSidebarCollapsed}
-        onToggleCollapse={handleToggleSidebar}
-        isLoading={isLoading}
-      />
-      <main className="flex-1 overflow-y-auto">
-        {currentLesson ? (
-          <LessonContent 
-            lesson={currentLesson} 
-            resources={lessonResources}
-            quizQuestions={quizQuestions}
+    <div className="flex h-screen overflow-hidden bg-white">
+      {/* Sidebar */}
+      <div className={`${isCollapsed ? 'w-16' : 'w-72'} border-r border-gray-200 overflow-y-auto transition-all duration-300`}>
+        <CourseSidebar 
+          modules={modules} 
+          isCollapsed={isCollapsed} 
+          onToggleCollapse={handleToggleCollapse} 
+          onLessonClick={handleLessonClick} 
+          onProjectClick={handleProjectClick} 
+          isLoading={isLoading} 
+        />
+      </div>
+      
+      {/* Main Content */}
+      <div className="flex-1 overflow-y-auto">
+        {isLoading ? (
+          <div className="p-8 space-y-4">
+            <Skeleton className="h-8 w-1/3" />
+            <Skeleton className="h-4 w-1/2" />
+            <Skeleton className="h-64 w-full" />
+          </div>
+        ) : isProjectView ? (
+          // Show project submission view
+          <ProjectSubmissionView 
+            type={projectType as 'minor' | 'major'} 
+            moduleId={projectModuleId!} 
+            weekId={projectWeekId} 
           />
+        ) : !currentLesson && !lessonId ? (
+          <CustomWelcomeMessage 
+            isPurchased={isPurchased} 
+            courseTitle={courseTitle} 
+          />
+        ) : currentLesson ? (
+          <div className="p-6">
+            {isContentLocked ? (
+              <div className="flex flex-col items-center justify-center h-64 text-center">
+                <Lock className="h-16 w-16 text-gray-400 mb-4" />
+                <h3 className="text-xl font-semibold text-gray-700 mb-2">Content Locked</h3>
+                <p className="text-gray-500 mb-4">
+                  This lesson is locked. Please purchase the course to access this content.
+                </p>
+                <button 
+                  onClick={() => navigate('/dashboard/courses')} 
+                  className="bg-brand-purple text-white px-6 py-2 rounded-md hover:bg-brand-purple/90 transition-colors"
+                >
+                  View Course Details
+                </button>
+              </div>
+            ) : (
+              <Tabs defaultValue="content" className="mb-6">
+                <TabsContent value="content" className="pt-4">
+                  <LessonContent 
+                    lesson={{
+                      id: currentLesson.id,
+                      title: currentLesson.title,
+                      subtitle: currentLesson.subtitle,
+                      type: currentLesson.type as 'video' | 'reading' | 'quiz',
+                      content: currentLesson.content || '',
+                      video_type: currentLesson.video_type,
+                      video_id: currentLesson.video_id
+                    }} 
+                    resources={lessonContent?.resources || []} 
+                    quizQuestions={lessonContent?.quizQuestions || []} 
+                  />
+                </TabsContent>
+                
+                {currentLesson.type === 'quiz' && (
+                  <TabsContent value="quiz" className="pt-4">
+                    <QuizSection 
+                      lessonId={parseInt(currentLesson.id, 10)} 
+                      onComplete={() => {}} 
+                      completed={false} 
+                      questions={lessonContent?.quizQuestions || []} 
+                    />
+                  </TabsContent>
+                )}
+              </Tabs>
+            )}
+          </div>
         ) : (
-          <div className="p-8 text-center">
-            <h2 className="text-2xl font-bold text-gray-900 mb-4">
-              Welcome to {course?.title || 'Course'}
-            </h2>
-            <p className="text-gray-600">
-              Select a lesson from the sidebar to get started, or choose a project to work on.
-            </p>
+          <div className="flex flex-col items-center justify-center h-64">
+            <p className="text-gray-500">Lesson not found</p>
           </div>
         )}
-      </main>
+      </div>
     </div>
   );
 };

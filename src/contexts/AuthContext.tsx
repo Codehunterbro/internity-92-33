@@ -1,6 +1,6 @@
 
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { User, Session } from '@supabase/supabase-js';
 import { toast } from 'sonner';
@@ -23,14 +23,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
-  
-  // Use hooks conditionally to avoid router context issues
-  let navigate: ReturnType<typeof useNavigate> | null = null;
-  try {
-    navigate = useNavigate();
-  } catch (error) {
-    console.warn('useNavigate not available, navigation will be handled differently');
-  }
+  const navigate = useNavigate();
 
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
@@ -67,11 +60,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         toast.error("Login failed: " + error.message);
       } else {
         toast.success("Login successful");
-        if (navigate) {
-          navigate('/dashboard');
-        } else {
-          window.location.href = '/dashboard';
-        }
+        navigate('/dashboard');
       }
     } catch (error) {
       console.error('Error signing in:', error);
@@ -95,21 +84,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         // Check for specific error messages
         if (error.message.includes('already registered')) {
           toast.error("Account exists: An account with this email already exists. Try logging in instead.");
-          if (navigate) {
-            navigate('/login');
-          } else {
-            window.location.href = '/login';
-          }
+          navigate('/login');
           return;
         } else if (error.message.includes('confirmation email')) {
           // This means the account was created but there was an issue with the email
           console.log('Signup successful but email confirmation failed:', error.message);
           toast.success("Account created: Your account has been created successfully. You can now log in with your credentials.");
-          if (navigate) {
-            navigate('/login');
-          } else {
-            window.location.href = '/login';
-          }
+          navigate('/login');
           return;
         } else {
           toast.error("Signup failed: " + error.message);
@@ -120,32 +101,20 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         toast.success("Account created: Your account has been created successfully. You can now log in with your credentials.");
         
         // Redirect to login page
-        if (navigate) {
-          navigate('/login');
-        } else {
-          window.location.href = '/login';
-        }
+        navigate('/login');
       }
     } catch (error) {
       console.error('Error signing up:', error);
       toast.error("Signup failed: An unexpected error occurred, but your account might still have been created. Try logging in with your credentials.");
       // Still redirect to login to let them try
-      if (navigate) {
-        navigate('/login');
-      } else {
-        window.location.href = '/login';
-      }
+      navigate('/login');
     }
   };
 
   const signOut = async () => {
     try {
       await supabase.auth.signOut();
-      if (navigate) {
-        navigate('/login');
-      } else {
-        window.location.href = '/login';
-      }
+      navigate('/login');
       toast.success("Logged out");
     } catch (error) {
       console.error('Error signing out:', error);
@@ -248,11 +217,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         console.log('User signed out after password update');
         
         // Redirect to login page to have the user sign in with their new password
-        if (navigate) {
-          navigate('/login');
-        } else {
-          window.location.href = '/login';
-        }
+        navigate('/login');
       }
     } catch (error) {
       console.error('Error updating password:', error);
