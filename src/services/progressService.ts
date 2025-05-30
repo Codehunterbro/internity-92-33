@@ -1,4 +1,3 @@
-
 import { supabase } from "@/integrations/supabase/client";
 
 export async function getModulesByLessonId(courseId: string, userId: string) {
@@ -172,5 +171,65 @@ export async function updateCourseProgress(userId: string, courseId: string, sta
       ...data,
       progress: progressData
     };
+  }
+}
+
+export async function updateLessonProgress(userId: string, courseId: string, lessonId: string, status: string) {
+  try {
+    // Check if progress entry exists
+    const { data: existingProgress, error: checkError } = await supabase
+      .from('lesson_progress')
+      .select('id')
+      .eq('user_id', userId)
+      .eq('course_id', courseId)
+      .eq('lesson_id', lessonId)
+      .maybeSingle();
+
+    if (checkError) {
+      console.error('Error checking lesson progress:', checkError);
+      return null;
+    }
+
+    if (existingProgress) {
+      // Update existing progress
+      const { data, error } = await supabase
+        .from('lesson_progress')
+        .update({
+          status,
+          completed_at: status === 'completed' ? new Date().toISOString() : null,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', existingProgress.id)
+        .select();
+
+      if (error) {
+        console.error('Error updating lesson progress:', error);
+        return null;
+      }
+
+      return data;
+    } else {
+      // Create new progress entry
+      const { data, error } = await supabase
+        .from('lesson_progress')
+        .insert({
+          user_id: userId,
+          course_id: courseId,
+          lesson_id: lessonId,
+          status,
+          completed_at: status === 'completed' ? new Date().toISOString() : null
+        })
+        .select();
+
+      if (error) {
+        console.error('Error creating lesson progress:', error);
+        return null;
+      }
+
+      return data;
+    }
+  } catch (error) {
+    console.error('Error in updateLessonProgress:', error);
+    return null;
   }
 }

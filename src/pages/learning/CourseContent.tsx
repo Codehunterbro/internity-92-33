@@ -23,6 +23,8 @@ const CourseContent = () => {
   const [course, setCourse] = useState<any>(null);
   const [modules, setModules] = useState<Module[]>([]);
   const [currentLesson, setCurrentLesson] = useState<any>(null);
+  const [lessonResources, setLessonResources] = useState<any[]>([]);
+  const [quizQuestions, setQuizQuestions] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -64,12 +66,23 @@ const CourseContent = () => {
     if (!lessonId) return;
     
     try {
-      const lessonData = await getLessonContent(lessonId);
-      setCurrentLesson(lessonData);
+      // Get lesson details first
+      const foundLesson = modules
+        .flatMap(module => module.lessons || [])
+        .find(lesson => lesson.id === lessonId);
+      
+      if (foundLesson) {
+        setCurrentLesson(foundLesson);
+      }
+
+      // Get lesson content (resources and quiz questions)
+      const lessonContent = await getLessonContent(lessonId);
+      setLessonResources(lessonContent.resources || []);
+      setQuizQuestions(lessonContent.quizQuestions || []);
       
       // Mark lesson as viewed/completed
-      if (user) {
-        await updateLessonProgress(user.id, courseId!, lessonId, 'completed');
+      if (user && courseId) {
+        await updateLessonProgress(user.id, courseId, lessonId, 'completed');
       }
     } catch (err) {
       console.error('Error fetching lesson content:', err);
@@ -134,7 +147,11 @@ const CourseContent = () => {
       />
       <main className="flex-1 overflow-y-auto">
         {currentLesson ? (
-          <LessonContent lesson={currentLesson} />
+          <LessonContent 
+            lesson={currentLesson} 
+            resources={lessonResources}
+            quizQuestions={quizQuestions}
+          />
         ) : (
           <div className="p-8 text-center">
             <h2 className="text-2xl font-bold text-gray-900 mb-4">

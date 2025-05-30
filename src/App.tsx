@@ -1,4 +1,3 @@
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -12,7 +11,7 @@ import { PurchasedCoursesProvider } from "./contexts/PurchasedCoursesContext";
 import Index from "./pages/Index";
 import About from "./pages/About";
 import Contact from "./pages/Contact";
-import LandCourses from "./pages/LandCourses";
+import { LandCourses } from "./pages/LandCourses";
 
 // Auth pages
 import Login from "./pages/auth/Login";
