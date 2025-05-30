@@ -53,7 +53,57 @@ const CourseContent = () => {
       }
       
       setCourse(courseData);
-      setModules(courseData.modules || []);
+      
+      // Transform the modules data to match the Module interface
+      const transformedModules: Module[] = (courseData.modules || []).map((module: any) => {
+        // Group lessons by week
+        const lessonsByWeek: { [key: string]: any[] } = {};
+        
+        if (module.lessons) {
+          module.lessons.forEach((lesson: any) => {
+            const weekId = lesson.week_id || '1';
+            if (!lessonsByWeek[weekId]) {
+              lessonsByWeek[weekId] = [];
+            }
+            lessonsByWeek[weekId].push({
+              id: lesson.id,
+              title: lesson.title,
+              type: lesson.type,
+              duration: lesson.duration,
+              isCompleted: false,
+              isLocked: lesson.is_locked || false
+            });
+          });
+        }
+        
+        // Create weeks array
+        const weeks = [];
+        for (let i = 1; i <= 4; i++) {
+          const weekId = i.toString();
+          const weekTitle = module[`week_${weekId}`];
+          
+          if (weekTitle) {
+            weeks.push({
+              id: weekId,
+              title: weekTitle,
+              lessons: lessonsByWeek[weekId] || []
+            });
+          }
+        }
+        
+        return {
+          id: module.id,
+          title: module.title,
+          description: module.description || '',
+          week_1: module.week_1,
+          week_2: module.week_2,
+          week_3: module.week_3,
+          week_4: module.week_4,
+          weeks
+        };
+      });
+      
+      setModules(transformedModules);
     } catch (err) {
       console.error('Error fetching course data:', err);
       setError('Failed to load course data');
@@ -68,7 +118,8 @@ const CourseContent = () => {
     try {
       // Get lesson details first
       const foundLesson = modules
-        .flatMap(module => module.lessons || [])
+        .flatMap(module => module.weeks || [])
+        .flatMap(week => week.lessons || [])
         .find(lesson => lesson.id === lessonId);
       
       if (foundLesson) {
