@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from 'react';
 import { Link, useParams, useNavigate } from 'react-router-dom';
 import { ChevronDown, CheckCircle, Circle, Lock, PlayCircle, FileText, Book, Calendar, ArrowLeft, PanelLeft, PanelRight, File } from 'lucide-react';
@@ -112,6 +113,13 @@ const CourseSidebar = ({
   const handleProjectClick = (type: 'minor' | 'major', moduleId: string, weekId?: string) => {
     if (onProjectClick) {
       onProjectClick(type, moduleId, weekId);
+    }
+    
+    // Navigate to project submission view
+    if (type === 'minor' && weekId) {
+      navigate(`/learn/course/${courseId}/project/minor/${moduleId}/${weekId}`);
+    } else {
+      navigate(`/learn/course/${courseId}/project/major/${moduleId}`);
     }
   };
 
@@ -265,31 +273,37 @@ const CourseSidebar = ({
                               </div>
                             ))}
                             
-                            {/* Minor Project Submission Tile at the end of each week */}
+                            {/* Enhanced Minor Project Submission Tile */}
                             <div
-                              className="flex items-center py-2 px-3 rounded-md text-sm cursor-pointer bg-blue-50 hover:bg-blue-100 border border-blue-200 mt-2"
+                              className="flex items-center py-3 px-3 rounded-md text-sm cursor-pointer bg-blue-50 hover:bg-blue-100 border border-blue-200 mt-2 transition-colors"
                               onClick={() => handleProjectClick('minor', module.id, week.id)}
                             >
                               <div className="mr-3 flex-shrink-0">
                                 <File className="w-4 h-4 text-indigo-600" />
                               </div>
-                              <span className="font-medium text-indigo-700">MINOR PROJECT</span>
+                              <div className="flex-1">
+                                <span className="font-medium text-indigo-700 block">MINOR PROJECT</span>
+                                <span className="text-xs text-indigo-600">Click to view & submit</span>
+                              </div>
                             </div>
                           </div>
                         )}
                       </div>
                     ))}
                     
-                    {/* Major Project Submission Tile at the end of each module */}
+                    {/* Enhanced Major Project Submission Tile */}
                     <div className="pl-4 pr-4 pb-4">
                       <div
-                        className="flex items-center py-3 px-4 rounded-md text-sm cursor-pointer bg-purple-50 hover:bg-purple-100 border border-purple-200 mt-2"
+                        className="flex items-center py-3 px-4 rounded-md text-sm cursor-pointer bg-purple-50 hover:bg-purple-100 border border-purple-200 mt-2 transition-colors"
                         onClick={() => handleProjectClick('major', module.id)}
                       >
                         <div className="mr-3 flex-shrink-0">
                           <File className="w-5 h-5 text-purple-600" />
                         </div>
-                        <span className="font-medium text-purple-700">MAJOR PROJECT</span>
+                        <div className="flex-1">
+                          <span className="font-medium text-purple-700 block">MAJOR PROJECT</span>
+                          <span className="text-xs text-purple-600">Click to view & submit</span>
+                        </div>
                       </div>
                     </div>
                   </div>
