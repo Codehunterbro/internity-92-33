@@ -46,63 +46,79 @@ const CourseContent = () => {
     setError(null);
     
     try {
+      console.log('Fetching course data for courseId:', courseId);
       const courseData = await getCourseWithModulesAndLessons(courseId!);
+      
       if (!courseData) {
         setError('Course not found');
         return;
       }
       
+      console.log('Course data received:', courseData);
       setCourse(courseData);
       
-      // Transform the modules data to match the Module interface
-      const transformedModules: Module[] = (courseData.modules || []).map((module: any) => {
-        // Group lessons by week
-        const lessonsByWeek: { [key: string]: any[] } = {};
-        
-        if (module.lessons) {
-          module.lessons.forEach((lesson: any) => {
-            const weekId = lesson.week_id || '1';
-            if (!lessonsByWeek[weekId]) {
-              lessonsByWeek[weekId] = [];
-            }
-            lessonsByWeek[weekId].push({
-              id: lesson.id,
-              title: lesson.title,
-              type: lesson.type,
-              duration: lesson.duration,
-              isCompleted: false,
-              isLocked: lesson.is_locked || false
-            });
-          });
-        }
-        
-        // Create weeks array
-        const weeks = [];
-        for (let i = 1; i <= 4; i++) {
-          const weekId = i.toString();
-          const weekTitle = module[`week_${weekId}`];
-          
-          if (weekTitle) {
-            weeks.push({
-              id: weekId,
-              title: weekTitle,
-              lessons: lessonsByWeek[weekId] || []
-            });
-          }
-        }
-        
-        return {
-          id: module.id,
-          title: module.title,
-          description: module.description || '',
-          week_1: module.week_1,
-          week_2: module.week_2,
-          week_3: module.week_3,
-          week_4: module.week_4,
-          weeks
-        };
-      });
+      // Transform the modules data to match the Module interface with safety checks
+      const transformedModules: Module[] = [];
       
+      if (courseData.modules && Array.isArray(courseData.modules)) {
+        courseData.modules.forEach((module: any) => {
+          try {
+            // Group lessons by week with safety checks
+            const lessonsByWeek: { [key: string]: any[] } = {};
+            
+            if (module.lessons && Array.isArray(module.lessons)) {
+              module.lessons.forEach((lesson: any) => {
+                if (lesson && lesson.id) {
+                  const weekId = lesson.week_id?.toString() || '1';
+                  if (!lessonsByWeek[weekId]) {
+                    lessonsByWeek[weekId] = [];
+                  }
+                  lessonsByWeek[weekId].push({
+                    id: lesson.id,
+                    title: lesson.title || 'Untitled Lesson',
+                    type: lesson.type || 'video',
+                    duration: lesson.duration || null,
+                    isCompleted: false,
+                    isLocked: Boolean(lesson.is_locked)
+                  });
+                }
+              });
+            }
+            
+            // Create weeks array with safety checks
+            const weeks = [];
+            for (let i = 1; i <= 4; i++) {
+              const weekId = i.toString();
+              const weekTitle = module[`week_${weekId}`];
+              
+              if (weekTitle) {
+                weeks.push({
+                  id: weekId,
+                  title: weekTitle,
+                  lessons: lessonsByWeek[weekId] || []
+                });
+              }
+            }
+            
+            if (module.id && module.title) {
+              transformedModules.push({
+                id: module.id,
+                title: module.title,
+                description: module.description || '',
+                week_1: module.week_1 || null,
+                week_2: module.week_2 || null,
+                week_3: module.week_3 || null,
+                week_4: module.week_4 || null,
+                weeks
+              });
+            }
+          } catch (moduleError) {
+            console.error('Error processing module:', module, moduleError);
+          }
+        });
+      }
+      
+      console.log('Transformed modules:', transformedModules);
       setModules(transformedModules);
     } catch (err) {
       console.error('Error fetching course data:', err);
@@ -116,11 +132,27 @@ const CourseContent = () => {
     if (!lessonId) return;
     
     try {
-      // Get lesson details first
-      const foundLesson = modules
-        .flatMap(module => module.weeks || [])
-        .flatMap(week => week.lessons || [])
-        .find(lesson => lesson.id === lessonId);
+      console.log('Fetching lesson content for lessonId:', lessonId);
+      
+      // Get lesson details first with safety checks
+      let foundLesson = null;
+      
+      if (modules && Array.isArray(modules)) {
+        for (const module of modules) {
+          if (module.weeks && Array.isArray(module.weeks)) {
+            for (const week of module.weeks) {
+              if (week.lessons && Array.isArray(week.lessons)) {
+                const lesson = week.lessons.find(l => l && l.id === lessonId);
+                if (lesson) {
+                  foundLesson = lesson;
+                  break;
+                }
+              }
+            }
+          }
+          if (foundLesson) break;
+        }
+      }
       
       if (foundLesson) {
         setCurrentLesson(foundLesson);
@@ -128,8 +160,8 @@ const CourseContent = () => {
 
       // Get lesson content (resources and quiz questions)
       const lessonContent = await getLessonContent(lessonId);
-      setLessonResources(lessonContent.resources || []);
-      setQuizQuestions(lessonContent.quizQuestions || []);
+      setLessonResources(lessonContent?.resources || []);
+      setQuizQuestions(lessonContent?.quizQuestions || []);
       
       // Mark lesson as viewed/completed
       if (user && courseId) {
@@ -206,7 +238,7 @@ const CourseContent = () => {
         ) : (
           <div className="p-8 text-center">
             <h2 className="text-2xl font-bold text-gray-900 mb-4">
-              Welcome to {course?.title}
+              Welcome to {course?.title || 'Course'}
             </h2>
             <p className="text-gray-600">
               Select a lesson from the sidebar to get started, or choose a project to work on.
