@@ -39,6 +39,7 @@ export interface ProjectDocument {
   is_locked: boolean;
   attachment_url?: string;
   video_url?: string;
+  deadline?: string; // Added deadline property
 }
 
 // Utility function to extract YouTube video ID from various URL formats
