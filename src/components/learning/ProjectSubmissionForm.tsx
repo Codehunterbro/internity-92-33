@@ -8,7 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Lock, FileUp, Youtube, CheckCircle, Clock, AlertCircle, Edit } from 'lucide-react';
+import { Lock, FileUp, CheckCircle, Clock, AlertCircle, Edit, Calendar } from 'lucide-react';
 import { toast } from '@/components/ui/use-toast';
 import { formatDistanceToNow } from 'date-fns';
 import { 
@@ -47,7 +47,6 @@ const ProjectSubmissionForm: React.FC<ProjectSubmissionFormProps> = ({
   
   const form = useForm({
     defaultValues: {
-      videoUrl: existingSubmission?.video_url || '',
       title: existingSubmission?.title || projectDocument?.title || '',
       description: existingSubmission?.description || projectDocument?.description || ''
     }
@@ -60,7 +59,6 @@ const ProjectSubmissionForm: React.FC<ProjectSubmissionFormProps> = ({
       // Only update form values if we have project document and no existing submission
       if (!existingSubmission) {
         form.reset({
-          videoUrl: projectDocument.video_url || '',
           title: projectDocument.title || '',
           description: projectDocument.description || ''
         });
@@ -146,8 +144,6 @@ const ProjectSubmissionForm: React.FC<ProjectSubmissionFormProps> = ({
         if (type === 'minor' && weekId) {
           projectId = await createMinorProjectIfNotExists(moduleId, weekId, user.id, values.title);
         } else {
-          // For major projects, retrieve the title from the document for reference only
-          // We don't pass title to createMajorProjectIfNotExists since it doesn't exist in the schema
           projectId = await createMajorProjectIfNotExists(
             moduleId, 
             user.id,
@@ -177,7 +173,6 @@ const ProjectSubmissionForm: React.FC<ProjectSubmissionFormProps> = ({
       
       // Submit the project
       const submissionData = {
-        video_url: values.videoUrl,
         attachment_url: attachmentUrl
       };
       
@@ -223,6 +218,19 @@ const ProjectSubmissionForm: React.FC<ProjectSubmissionFormProps> = ({
   // Extract YouTube video ID from project document
   const instructionVideoId = projectDocument?.video_url ? extractYouTubeVideoId(projectDocument.video_url) : null;
   const statusInfo = getSubmissionStatusInfo();
+
+  // Format deadline date
+  const formatDeadline = (deadline: string) => {
+    if (!deadline) return 'No deadline set';
+    const deadlineDate = new Date(deadline);
+    return deadlineDate.toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+  };
 
   if (isLocked) {
     return (
@@ -291,12 +299,6 @@ const ProjectSubmissionForm: React.FC<ProjectSubmissionFormProps> = ({
                     </a>
                   </div>
                 )}
-                {existingSubmission.video_url && (
-                  <div className="flex items-center">
-                    <Youtube className="h-4 w-4 mr-2" />
-                    <span>YouTube Video: {existingSubmission.video_url}</span>
-                  </div>
-                )}
               </div>
               <Button 
                 variant="outline" 
@@ -321,6 +323,19 @@ const ProjectSubmissionForm: React.FC<ProjectSubmissionFormProps> = ({
             <CardDescription>
               {projectDocument?.description || 'Complete and submit your project to demonstrate your understanding.'}
             </CardDescription>
+            
+            {/* Project Deadline */}
+            {projectDocument?.deadline && (
+              <div className="flex items-center mt-3 p-3 bg-white rounded-md border border-red-200">
+                <Calendar className="h-5 w-5 text-red-600 mr-2" />
+                <div>
+                  <span className="text-sm font-medium text-gray-700">Deadline: </span>
+                  <span className="text-sm font-bold text-red-600">
+                    {formatDeadline(projectDocument.deadline)}
+                  </span>
+                </div>
+              </div>
+            )}
           </CardHeader>
           <CardContent className="pt-4">
             <Form {...form}>
@@ -361,23 +376,6 @@ const ProjectSubmissionForm: React.FC<ProjectSubmissionFormProps> = ({
 
                 <div className="space-y-4 mt-6">
                   <h3 className="text-lg font-medium">Your Submission</h3>
-                  
-                  <FormField
-                    control={form.control}
-                    name="videoUrl"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel className="flex items-center">
-                          <Youtube className="h-4 w-4 mr-2" />
-                          YouTube Video ID (optional)
-                        </FormLabel>
-                        <FormControl>
-                          <Input placeholder="e.g. dQw4w9WgXcQ" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
                   
                   <div>
                     <FormLabel className="flex items-center mb-2">
@@ -446,7 +444,6 @@ const ProjectSubmissionForm: React.FC<ProjectSubmissionFormProps> = ({
                         setSelectedFile(null);
                         // Reset form to original values
                         form.reset({
-                          videoUrl: existingSubmission?.video_url || '',
                           title: existingSubmission?.title || projectDocument?.title || '',
                           description: existingSubmission?.description || projectDocument?.description || ''
                         });
