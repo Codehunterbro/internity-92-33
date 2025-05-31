@@ -1,11 +1,13 @@
+
 import { useState, useEffect } from 'react';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { FileText, BookOpen, HelpCircle, Video } from 'lucide-react';
 import VideoPlayer from '@/components/learning/VideoPlayer';
 import QuizSection from '@/components/learning/QuizSection';
-import { updateLessonProgress, getLessonProgress, getQuizQuestionsByLessonId } from '@/services/lessonService';
+import { getQuizQuestionsByLessonId } from '@/services/lessonService';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
+
 interface Resource {
   id: string;
   name: string;
@@ -13,6 +15,7 @@ interface Resource {
   size: string;
   url: string;
 }
+
 interface LessonContentProps {
   lesson: {
     id: string;
@@ -26,6 +29,7 @@ interface LessonContentProps {
   resources: Resource[];
   quizQuestions: any[];
 }
+
 const LessonContent = ({
   lesson,
   resources,
@@ -33,22 +37,10 @@ const LessonContent = ({
 }: LessonContentProps) => {
   const [activeTab, setActiveTab] = useState('content');
   const [quizCompleted, setQuizCompleted] = useState(false);
-  const {
-    user
-  } = useAuth();
+  const { user } = useAuth();
   const [isLoadingQuiz, setIsLoadingQuiz] = useState(false);
   const [quizQuestions, setQuizQuestions] = useState(initialQuizQuestions || []);
-  useEffect(() => {
-    if (user && lesson.id) {
-      const fetchLessonProgress = async () => {
-        const progress = await getLessonProgress(user.id, lesson.id);
-        if (progress && progress.status === 'completed') {
-          setQuizCompleted(true);
-        }
-      };
-      fetchLessonProgress();
-    }
-  }, [lesson.id, user]);
+
   useEffect(() => {
     const fetchQuizQuestions = async () => {
       if (activeTab === 'quiz' && user && lesson.id && quizQuestions.length === 0) {
@@ -68,19 +60,15 @@ const LessonContent = ({
         }
       }
     };
+
     fetchQuizQuestions();
   }, [activeTab, lesson.id, user, quizQuestions.length]);
+
   const handleQuizComplete = async (score: number) => {
-    if (!user) return;
-    try {
-      await updateLessonProgress(user.id, lesson.id, '217ba514-c638-40ed-9ffc-adc383f77c8c', 'completed');
-      setQuizCompleted(true);
-      toast.success('Quiz completed successfully!');
-    } catch (error) {
-      console.error('Error updating lesson progress:', error);
-      toast.error('Failed to update lesson progress');
-    }
+    setQuizCompleted(true);
+    toast.success('Quiz completed successfully!');
   };
+
   const renderVideoContent = () => {
     // Check if lesson has a video_id (YouTube video)
     if (lesson.video_id && lesson.video_type === 'youtube') {
@@ -100,10 +88,18 @@ const LessonContent = ({
     }
 
     // Check if there are any video resources uploaded
-    const videoResources = resources.filter(r => r.type.toLowerCase().includes('video') || r.url.toLowerCase().includes('.mp4') || r.url.toLowerCase().includes('.webm') || r.url.toLowerCase().includes('.mov'));
+    const videoResources = resources.filter(r => 
+      r.type.toLowerCase().includes('video') || 
+      r.url.toLowerCase().includes('.mp4') || 
+      r.url.toLowerCase().includes('.webm') || 
+      r.url.toLowerCase().includes('.mov')
+    );
+    
     if (videoResources.length > 0) {
-      return <div className="space-y-4">
-          {videoResources.map(video => <div key={video.id} className="bg-white rounded-lg shadow-md overflow-hidden mb-6">
+      return (
+        <div className="space-y-4">
+          {videoResources.map(video => (
+            <div key={video.id} className="bg-white rounded-lg shadow-md overflow-hidden mb-6">
               <div className="aspect-video bg-black">
                 <video controls className="w-full h-full" preload="metadata">
                   <source src={video.url} type="video/mp4" />
@@ -115,20 +111,29 @@ const LessonContent = ({
                 <h3 className="text-xl font-semibold mb-2">{video.name}</h3>
                 <p className="text-gray-600">Video resource for this lesson</p>
               </div>
-            </div>)}
-        </div>;
+            </div>
+          ))}
+        </div>
+      );
+    }
+    
+    return null;
+  };
+
+  const renderLessonContent = () => {
+    if (lesson.content && lesson.content.trim()) {
+      return (
+        <div 
+          className="prose max-w-none" 
+          dangerouslySetInnerHTML={{ __html: lesson.content }} 
+        />
+      );
     }
     return null;
   };
-  const renderLessonContent = () => {
-    if (lesson.content && lesson.content.trim()) {
-      return <div className="prose max-w-none" dangerouslySetInnerHTML={{
-        __html: lesson.content
-      }} />;
-    }
-    return;
-  };
-  return <div className="p-6">
+
+  return (
+    <div className="p-6">
       <h1 className="text-2xl font-bold mb-2">{lesson.title}</h1>
       {lesson.subtitle && <p className="text-gray-600 mb-6">{lesson.subtitle}</p>}
       
@@ -157,38 +162,66 @@ const LessonContent = ({
         </TabsContent>
         
         <TabsContent value="resources" className="p-0 mt-0">
-          {resources.length > 0 ? <div className="space-y-4">
+          {resources.length > 0 ? (
+            <div className="space-y-4">
               <h2 className="text-xl font-semibold">Lesson Resources</h2>
               <div className="grid grid-cols-1 gap-4">
-                {resources.map(resource => <div key={resource.id} className="border rounded-md p-4 flex items-center">
-                    {resource.type.toLowerCase().includes('video') ? <Video className="h-10 w-10 text-brand-purple mr-4" /> : <FileText className="h-10 w-10 text-brand-purple mr-4" />}
+                {resources.map(resource => (
+                  <div key={resource.id} className="border rounded-md p-4 flex items-center">
+                    {resource.type.toLowerCase().includes('video') ? (
+                      <Video className="h-10 w-10 text-brand-purple mr-4" />
+                    ) : (
+                      <FileText className="h-10 w-10 text-brand-purple mr-4" />
+                    )}
                     <div className="flex-1">
                       <h3 className="font-medium text-lg">{resource.name}</h3>
                       <p className="text-sm text-gray-500">{resource.type} · {resource.size}</p>
                     </div>
-                    <a href={resource.url} target="_blank" rel="noopener noreferrer" className="bg-brand-purple hover:bg-brand-purple/90 text-white py-1 px-3 rounded text-sm">
+                    <a 
+                      href={resource.url} 
+                      target="_blank" 
+                      rel="noopener noreferrer" 
+                      className="bg-brand-purple hover:bg-brand-purple/90 text-white py-1 px-3 rounded text-sm"
+                    >
                       {resource.type.toLowerCase().includes('video') ? 'View' : 'Download'}
                     </a>
-                  </div>)}
+                  </div>
+                ))}
               </div>
-            </div> : <div className="text-center py-10">
+            </div>
+          ) : (
+            <div className="text-center py-10">
               <FileText className="h-12 w-12 mx-auto text-gray-400 mb-4" />
               <h3 className="text-lg font-medium text-gray-700">No resources available</h3>
               <p className="text-gray-500">This lesson doesn't have any downloadable resources.</p>
-            </div>}
+            </div>
+          )}
         </TabsContent>
         
         <TabsContent value="quiz" className="p-0 mt-0">
-          {isLoadingQuiz ? <div className="text-center py-10">
+          {isLoadingQuiz ? (
+            <div className="text-center py-10">
               <div className="h-12 w-12 animate-spin rounded-full border-4 border-solid border-brand-purple border-r-transparent mx-auto mb-4"></div>
               <h3 className="text-lg font-medium text-gray-700">Loading quiz...</h3>
-            </div> : quizQuestions.length > 0 ? <QuizSection questions={quizQuestions} lessonId={parseInt(lesson.id) || 0} onComplete={handleQuizComplete} completed={quizCompleted} /> : <div className="text-center py-10">
+            </div>
+          ) : quizQuestions.length > 0 ? (
+            <QuizSection 
+              questions={quizQuestions} 
+              lessonId={parseInt(lesson.id) || 0} 
+              onComplete={handleQuizComplete} 
+              completed={quizCompleted} 
+            />
+          ) : (
+            <div className="text-center py-10">
               <HelpCircle className="h-12 w-12 mx-auto text-gray-400 mb-4" />
               <h3 className="text-lg font-medium text-gray-700">No quiz available</h3>
               <p className="text-gray-500">This lesson doesn't have a quiz yet.</p>
-            </div>}
+            </div>
+          )}
         </TabsContent>
       </Tabs>
-    </div>;
+    </div>
+  );
 };
+
 export default LessonContent;
