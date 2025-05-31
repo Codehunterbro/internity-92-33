@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { FileText, BookOpen, HelpCircle, Video } from 'lucide-react';
@@ -207,7 +206,7 @@ const LessonContent = ({
           ) : quizQuestions.length > 0 ? (
             <QuizSection 
               questions={quizQuestions} 
-              lessonId={parseInt(lesson.id) || 0} 
+              lessonId={lesson.id} 
               onComplete={handleQuizComplete} 
               completed={quizCompleted} 
             />
