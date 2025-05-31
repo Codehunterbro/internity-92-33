@@ -1,8 +1,11 @@
 
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
-import { CheckCircle, AlertCircle } from 'lucide-react';
+import { CheckCircle, AlertCircle, Lock } from 'lucide-react';
 import { getQuizQuestionsByLessonId } from '@/services/lessonService';
+import { markAttendance, checkTodayAttendance } from '@/services/attendanceService';
+import { useAuth } from '@/contexts/AuthContext';
+import { toast } from 'sonner';
 import { Json } from '@/integrations/supabase/types';
 
 interface Question {
@@ -11,6 +14,7 @@ interface Question {
   options: string[] | Record<string, string>;
   correct_answer: number;
   explanation?: string;
+  is_quiz_locked?: boolean;
 }
 
 interface QuizSectionProps {
@@ -28,11 +32,22 @@ const QuizSection: React.FC<QuizSectionProps> = ({ lessonId, onComplete, complet
   const [quizQuestions, setQuizQuestions] = useState<Question[]>([]);
   const [quizFinished, setQuizFinished] = useState(completed);
   const [isLoading, setIsLoading] = useState(false);
+  const [isQuizLocked, setIsQuizLocked] = useState(false);
+  const [attendanceAlreadyMarked, setAttendanceAlreadyMarked] = useState(false);
+  
+  const { user } = useAuth();
 
   useEffect(() => {
     async function loadQuestions() {
       if (questions.length > 0) {
         console.log("Using provided questions:", questions);
+        
+        // Check if quiz is locked
+        if (questions.length > 0 && questions[0].is_quiz_locked) {
+          setIsQuizLocked(true);
+          return;
+        }
+        
         setQuizQuestions(questions);
         return;
       }
@@ -44,6 +59,13 @@ const QuizSection: React.FC<QuizSectionProps> = ({ lessonId, onComplete, complet
         
         if (fetchedQuestions && fetchedQuestions.length > 0) {
           console.log("Fetched quiz questions:", fetchedQuestions);
+          
+          // Check if quiz is locked
+          if (fetchedQuestions[0].is_quiz_locked) {
+            setIsQuizLocked(true);
+            return;
+          }
+          
           // Convert the JSON options to string array
           const formattedQuestions: Question[] = fetchedQuestions.map(q => {
             // Handle different option formats
@@ -78,37 +100,12 @@ const QuizSection: React.FC<QuizSectionProps> = ({ lessonId, onComplete, complet
           console.log("Formatted questions:", formattedQuestions);
           setQuizQuestions(formattedQuestions);
         } else {
-          // Fallback to default questions if none found in the database
-          console.log("No questions found, using default questions");
-          const defaultQuestions = [
-            {
-              id: '1',
-              question: "What does CSS stand for?",
-              options: ["Creative Style Sheets", "Cascading Style Sheets", "Computer Style Sheets", "Colorful Style Sheets"],
-              correct_answer: 1
-            },
-            {
-              id: '2',
-              question: "What does API stand for?",
-              options: [
-                "Application Programming Interface",
-                "Application Process Integration",
-                "Automated Programming Interface",
-                "Application Protocol Interface"
-              ],
-              correct_answer: 0
-            },
-            {
-              id: '3',
-              question: "Which of these is NOT a JavaScript framework?",
-              options: ["React", "Angular", "Django", "Vue"],
-              correct_answer: 2
-            }
-          ];
-          setQuizQuestions(defaultQuestions);
+          console.log("No questions found, quiz might be locked or unavailable");
+          setIsQuizLocked(true);
         }
       } catch (error) {
         console.error("Error loading quiz questions:", error);
+        setIsQuizLocked(true);
       } finally {
         setIsLoading(false);
       }
@@ -116,6 +113,18 @@ const QuizSection: React.FC<QuizSectionProps> = ({ lessonId, onComplete, complet
 
     loadQuestions();
   }, [lessonId, questions]);
+
+  // Check if attendance is already marked for today
+  useEffect(() => {
+    async function checkAttendance() {
+      if (user && lessonId) {
+        const alreadyMarked = await checkTodayAttendance(user.id, lessonId.toString());
+        setAttendanceAlreadyMarked(alreadyMarked);
+      }
+    }
+    
+    checkAttendance();
+  }, [user, lessonId]);
 
   const handleOptionSelect = (optionIndex: number) => {
     if (showAnswer) return; // Prevent changing after showing answer
@@ -133,8 +142,7 @@ const QuizSection: React.FC<QuizSectionProps> = ({ lessonId, onComplete, complet
 
   const handleNextQuestion = () => {
     if (currentQuestionIndex === quizQuestions.length - 1) {
-      setQuizFinished(true);
-      onComplete(score + (selectedOption === quizQuestions[currentQuestionIndex].correct_answer ? 1 : 0));
+      handleQuizComplete();
     } else {
       setCurrentQuestionIndex(currentQuestionIndex + 1);
       setSelectedOption(null);
@@ -142,12 +150,29 @@ const QuizSection: React.FC<QuizSectionProps> = ({ lessonId, onComplete, complet
     }
   };
 
-  const handleRestartQuiz = () => {
-    setCurrentQuestionIndex(0);
-    setSelectedOption(null);
-    setShowAnswer(false);
-    setScore(0);
-    setQuizFinished(false);
+  const handleQuizComplete = async () => {
+    const finalScore = score + (selectedOption === quizQuestions[currentQuestionIndex].correct_answer ? 1 : 0);
+    setQuizFinished(true);
+    
+    // Mark attendance when quiz is completed
+    if (user && !attendanceAlreadyMarked) {
+      try {
+        const result = await markAttendance(user.id, lessonId.toString(), '217ba514-c638-40ed-9ffc-adc383f77c8c');
+        if (result.success) {
+          if (result.alreadyMarked) {
+            toast.info('Attendance was already marked for today');
+          } else {
+            toast.success('Attendance marked for today!');
+            setAttendanceAlreadyMarked(true);
+          }
+        }
+      } catch (error) {
+        console.error('Error marking attendance:', error);
+        toast.error('Failed to mark attendance');
+      }
+    }
+    
+    onComplete(finalScore);
   };
 
   if (isLoading) {
@@ -163,6 +188,22 @@ const QuizSection: React.FC<QuizSectionProps> = ({ lessonId, onComplete, complet
           </div>
           <div className="h-10 bg-gray-200 rounded w-1/3 mx-auto"></div>
         </div>
+      </div>
+    );
+  }
+
+  if (isQuizLocked) {
+    return (
+      <div className="bg-white rounded-lg shadow-md p-6 text-center">
+        <div className="mb-6">
+          <div className="inline-flex items-center justify-center p-4 bg-gray-100 rounded-full">
+            <Lock className="h-12 w-12 text-gray-400" />
+          </div>
+        </div>
+        <h2 className="text-2xl font-bold mb-2">Quiz Locked</h2>
+        <p className="text-gray-600">
+          This quiz is currently locked and not available for completion.
+        </p>
       </div>
     );
   }
@@ -187,7 +228,7 @@ const QuizSection: React.FC<QuizSectionProps> = ({ lessonId, onComplete, complet
           </div>
         </div>
         <h2 className="text-2xl font-bold mb-2">Quiz Completed!</h2>
-        <p className="text-gray-600 mb-6">
+        <p className="text-gray-600 mb-4">
           You scored {finalScore} out of {quizQuestions.length} ({percentage}%)
         </p>
         
@@ -198,14 +239,15 @@ const QuizSection: React.FC<QuizSectionProps> = ({ lessonId, onComplete, complet
           ></div>
         </div>
         
-        <div className="flex justify-center gap-4">
-          <Button variant="outline" onClick={handleRestartQuiz}>
-            Restart Quiz
-          </Button>
-          <Button onClick={() => window.history.back()}>
-            Back to Lessons
-          </Button>
+        <div className="bg-blue-50 rounded-lg p-4 mb-6">
+          <p className="text-blue-700 font-medium">
+            🎉 Today's attendance has been marked!
+          </p>
         </div>
+        
+        <Button onClick={() => window.history.back()}>
+          Back to Lessons
+        </Button>
       </div>
     );
   }

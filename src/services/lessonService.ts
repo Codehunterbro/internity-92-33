@@ -150,7 +150,7 @@ export async function getQuizQuestionsByLessonId(lessonId: string) {
 
     console.log("Quiz questions data:", data);
     
-    // Check if quiz is locked
+    // Check if quiz is locked - return empty array if locked
     if (data && data.length > 0 && data[0].is_quiz_locked) {
       console.log("Quiz is locked for lesson:", lessonId);
       return [];
