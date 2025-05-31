@@ -74,6 +74,7 @@ function App() {
                   <Route path="/dashboard/my-courses" element={<ProtectedRoute><CourseRequiredRoute><MyCourses /></CourseRequiredRoute></ProtectedRoute>} />
                   <Route path="/dashboard/courses" element={<ProtectedRoute><Courses /></ProtectedRoute>} />
                   <Route path="/dashboard/courses/:courseId" element={<ProtectedRoute><CourseDetail /></ProtectedRoute>} />
+                  <Route path="/dashboard/projects" element={<ProtectedRoute><CourseRequiredRoute><Projects /></CourseRequiredRoute></ProtectedRoute>} />
                   <Route path="/dashboard/assignments" element={<ProtectedRoute><CourseRequiredRoute><Assignments /></CourseRequiredRoute></ProtectedRoute>} />
                   <Route path="/dashboard/achievements" element={<ProtectedRoute><CourseRequiredRoute><Achievements /></CourseRequiredRoute></ProtectedRoute>} />
                   
@@ -87,8 +88,8 @@ function App() {
                   <Route path="/learn/course/:courseId/project/minor/:projectModuleId/:projectWeekId" element={<ProtectedRoute><CourseContent /></ProtectedRoute>} />
                   <Route path="/learn/course/:courseId/project/major/:projectModuleId" element={<ProtectedRoute><CourseContent /></ProtectedRoute>} />
                   
-                  {/* Catch-all route - now redirects to projects instead of 404 */}
-                  <Route path="*" element={<Projects />} />
+                  {/* Catch-all route - redirects to projects */}
+                  <Route path="*" element={<Navigate to="/projects" replace />} />
                 </Routes>
                 <Toaster />
               </TooltipProvider>

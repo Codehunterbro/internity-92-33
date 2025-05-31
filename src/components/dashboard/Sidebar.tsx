@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { 
@@ -110,6 +111,12 @@ const Sidebar = () => {
       disabled: !hasRequiredCourses
     },
     { 
+      label: 'Assignments', 
+      icon: <ClipboardList size={20} />, 
+      to: '/dashboard/assignments',
+      disabled: !hasRequiredCourses
+    },
+    { 
       label: 'Achievements', 
       icon: <Award size={20} />, 
       to: '/dashboard/achievements',
@@ -141,7 +148,7 @@ const Sidebar = () => {
       <div className="flex-1 p-4 space-y-1">
         {isLoading ? (
           // Loading state
-          Array.from({ length: 5 }).map((_, index) => (
+          Array.from({ length: 6 }).map((_, index) => (
             <div key={`skeleton-${index}`} className="h-12 bg-gray-100 rounded-lg animate-pulse mb-2"></div>
           ))
         ) : (
