@@ -138,6 +138,7 @@ export async function getQuizQuestionsByLessonId(lessonId: string) {
         is_quiz_locked
       `)
       .eq('lesson_id', lessonId)
+      .eq('is_quiz_locked', false)
       .order('order_index');
 
     if (error) {
@@ -151,5 +152,32 @@ export async function getQuizQuestionsByLessonId(lessonId: string) {
   } catch (error) {
     console.error("Error in getQuizQuestionsByLessonId:", error);
     throw error;
+  }
+}
+
+export async function checkIfQuizIsLocked(lessonId: string) {
+  try {
+    console.log("Checking if quiz is locked for lesson ID:", lessonId);
+    
+    const { data, error } = await supabase
+      .from('quiz_questions')
+      .select('is_quiz_locked')
+      .eq('lesson_id', lessonId)
+      .limit(1);
+
+    if (error) {
+      console.error('Error checking quiz lock status:', error);
+      return true; // Default to locked if error
+    }
+
+    if (!data || data.length === 0) {
+      return false; // No quiz questions means no quiz
+    }
+
+    // If any question is locked, consider the whole quiz locked
+    return data.some(q => q.is_quiz_locked === true);
+  } catch (error) {
+    console.error("Error in checkIfQuizIsLocked:", error);
+    return true; // Default to locked if error
   }
 }

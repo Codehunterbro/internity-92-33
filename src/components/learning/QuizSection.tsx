@@ -1,7 +1,8 @@
+
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { CheckCircle, AlertCircle, Lock } from 'lucide-react';
-import { getQuizQuestionsByLessonId } from '@/services/lessonService';
+import { getQuizQuestionsByLessonId, checkIfQuizIsLocked } from '@/services/lessonService';
 import { markAttendance, checkTodayAttendance } from '@/services/attendanceService';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
@@ -12,7 +13,6 @@ interface Question {
   options: string[] | Record<string, string>;
   correct_answer: number;
   explanation?: string;
-  is_quiz_locked?: boolean;
 }
 
 interface QuizSectionProps {
@@ -80,14 +80,25 @@ const QuizSection: React.FC<QuizSectionProps> = ({ lessonId, onComplete, complet
           return;
         }
 
-        // Load quiz questions
+        // Check if quiz is locked before fetching questions
+        const quizLocked = await checkIfQuizIsLocked(lessonId);
+        console.log("Quiz lock status:", quizLocked);
+        
+        if (quizLocked) {
+          setIsQuizLocked(true);
+          setLockReason('This quiz is currently locked and not available for completion.');
+          setIsLoading(false);
+          return;
+        }
+
+        // Load quiz questions (only unlocked ones)
         let questionsToUse: Question[] = [];
         
         if (questions && questions.length > 0) {
           console.log("Using provided questions:", questions);
           questionsToUse = questions;
         } else {
-          console.log("Fetching questions from database for lesson:", lessonId);
+          console.log("Fetching unlocked questions from database for lesson:", lessonId);
           const fetchedQuestions = await getQuizQuestionsByLessonId(lessonId);
           
           if (!fetchedQuestions || fetchedQuestions.length === 0) {
@@ -102,24 +113,11 @@ const QuizSection: React.FC<QuizSectionProps> = ({ lessonId, onComplete, complet
             question: q.question,
             options: q.options as string[] | Record<string, string>,
             correct_answer: q.correct_answer,
-            explanation: q.explanation,
-            is_quiz_locked: q.is_quiz_locked
+            explanation: q.explanation
           }));
         }
 
-        console.log("Questions to use with lock status:", questionsToUse);
-
-        // Check if ANY question in the quiz is locked based on is_quiz_locked field
-        const hasLockedQuestions = questionsToUse.some(q => q.is_quiz_locked === true);
-        console.log("Has locked questions:", hasLockedQuestions);
-        
-        if (hasLockedQuestions) {
-          console.log("Quiz is locked - found locked questions");
-          setIsQuizLocked(true);
-          setLockReason('This quiz is currently locked and not available for completion.');
-          setIsLoading(false);
-          return;
-        }
+        console.log("Questions to use:", questionsToUse);
 
         // Validate questions have proper options
         const invalidQuestions = questionsToUse.filter(q => {
