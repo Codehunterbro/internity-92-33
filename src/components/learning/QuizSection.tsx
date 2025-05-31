@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { CheckCircle, AlertCircle, Lock } from 'lucide-react';
@@ -98,11 +97,11 @@ const QuizSection: React.FC<QuizSectionProps> = ({ lessonId, onComplete, complet
             return;
           }
 
-          // Process fetched questions
+          // Process fetched questions and properly type cast the options
           questionsToUse = fetchedQuestions.map(q => ({
             id: q.id,
             question: q.question,
-            options: q.options,
+            options: q.options as string[] | Record<string, string>, // Type cast the Json to our expected type
             correct_answer: q.correct_answer,
             explanation: q.explanation,
             is_quiz_locked: q.is_quiz_locked
