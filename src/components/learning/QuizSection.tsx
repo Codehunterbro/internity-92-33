@@ -37,13 +37,32 @@ const QuizSection: React.FC<QuizSectionProps> = ({ lessonId, onComplete, complet
   
   const { user } = useAuth();
 
+  // Check if attendance is already marked for today - this will determine if quiz is locked
+  useEffect(() => {
+    async function checkAttendance() {
+      if (user && lessonId) {
+        const alreadyMarked = await checkTodayAttendance(user.id, lessonId.toString());
+        setAttendanceAlreadyMarked(alreadyMarked);
+        
+        // If attendance is already marked, quiz should be locked for retaking
+        if (alreadyMarked) {
+          setQuizFinished(true);
+          setIsQuizLocked(true);
+        }
+      }
+    }
+    
+    checkAttendance();
+  }, [user, lessonId]);
+
   useEffect(() => {
     async function loadQuestions() {
       if (questions.length > 0) {
         console.log("Using provided questions:", questions);
         
-        // Check if quiz is locked
+        // Check if quiz is locked from database
         if (questions.length > 0 && questions[0].is_quiz_locked) {
+          console.log("Quiz is locked from database");
           setIsQuizLocked(true);
           return;
         }
@@ -60,15 +79,15 @@ const QuizSection: React.FC<QuizSectionProps> = ({ lessonId, onComplete, complet
         if (fetchedQuestions && fetchedQuestions.length > 0) {
           console.log("Fetched quiz questions:", fetchedQuestions);
           
-          // Check if quiz is locked
+          // Check if quiz is locked from database
           if (fetchedQuestions[0].is_quiz_locked) {
+            console.log("Quiz is locked from database");
             setIsQuizLocked(true);
             return;
           }
           
           // Convert the JSON options to string array
           const formattedQuestions: Question[] = fetchedQuestions.map(q => {
-            // Handle different option formats
             let optionsArray: string[] = [];
             
             if (Array.isArray(q.options)) {
@@ -114,18 +133,6 @@ const QuizSection: React.FC<QuizSectionProps> = ({ lessonId, onComplete, complet
     loadQuestions();
   }, [lessonId, questions]);
 
-  // Check if attendance is already marked for today
-  useEffect(() => {
-    async function checkAttendance() {
-      if (user && lessonId) {
-        const alreadyMarked = await checkTodayAttendance(user.id, lessonId.toString());
-        setAttendanceAlreadyMarked(alreadyMarked);
-      }
-    }
-    
-    checkAttendance();
-  }, [user, lessonId]);
-
   const handleOptionSelect = (optionIndex: number) => {
     if (showAnswer) return; // Prevent changing after showing answer
     setSelectedOption(optionIndex);
@@ -154,10 +161,13 @@ const QuizSection: React.FC<QuizSectionProps> = ({ lessonId, onComplete, complet
     const finalScore = score + (selectedOption === quizQuestions[currentQuestionIndex].correct_answer ? 1 : 0);
     setQuizFinished(true);
     
-    // Mark attendance when quiz is completed
+    // Mark attendance when quiz is completed (only if not already marked)
     if (user && !attendanceAlreadyMarked) {
       try {
+        console.log("Marking attendance for user:", user.id, "lesson:", lessonId);
         const result = await markAttendance(user.id, lessonId.toString(), '217ba514-c638-40ed-9ffc-adc383f77c8c');
+        console.log("Attendance result:", result);
+        
         if (result.success) {
           if (result.alreadyMarked) {
             toast.info('Attendance was already marked for today');
@@ -165,6 +175,9 @@ const QuizSection: React.FC<QuizSectionProps> = ({ lessonId, onComplete, complet
             toast.success('Attendance marked for today!');
             setAttendanceAlreadyMarked(true);
           }
+        } else {
+          console.error('Failed to mark attendance:', result.error);
+          toast.error('Failed to mark attendance');
         }
       } catch (error) {
         console.error('Error marking attendance:', error);
@@ -192,7 +205,8 @@ const QuizSection: React.FC<QuizSectionProps> = ({ lessonId, onComplete, complet
     );
   }
 
-  if (isQuizLocked) {
+  // Show locked state if quiz is locked OR if attendance is already marked
+  if (isQuizLocked || attendanceAlreadyMarked) {
     return (
       <div className="bg-white rounded-lg shadow-md p-6 text-center">
         <div className="mb-6">
@@ -202,8 +216,18 @@ const QuizSection: React.FC<QuizSectionProps> = ({ lessonId, onComplete, complet
         </div>
         <h2 className="text-2xl font-bold mb-2">Quiz Locked</h2>
         <p className="text-gray-600">
-          This quiz is currently locked and not available for completion.
+          {attendanceAlreadyMarked 
+            ? "You have already completed this quiz today. Attendance has been marked."
+            : "This quiz is currently locked and not available for completion."
+          }
         </p>
+        {attendanceAlreadyMarked && (
+          <div className="bg-green-50 rounded-lg p-4 mt-4">
+            <p className="text-green-700 font-medium">
+              ✅ Today's attendance has been marked!
+            </p>
+          </div>
+        )}
       </div>
     );
   }
