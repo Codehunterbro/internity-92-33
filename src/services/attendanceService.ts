@@ -3,6 +3,8 @@ import { supabase } from "@/integrations/supabase/client";
 
 export async function markAttendance(userId: string, lessonId: string, courseId: string) {
   try {
+    console.log("Marking attendance with params:", { userId, lessonId, courseId });
+    
     const { data, error } = await supabase
       .from('attendance')
       .insert({
@@ -23,6 +25,7 @@ export async function markAttendance(userId: string, lessonId: string, courseId:
       return { success: false, error };
     }
 
+    console.log('Attendance marked successfully:', data);
     return { success: true, data };
   } catch (error) {
     console.error('Error in markAttendance:', error);
@@ -58,6 +61,7 @@ export async function getUserAttendance(userId: string, courseId?: string) {
 export async function checkTodayAttendance(userId: string, lessonId: string) {
   try {
     const today = new Date().toISOString().split('T')[0];
+    console.log("Checking attendance for:", { userId, lessonId, today });
     
     const { data, error } = await supabase
       .from('attendance')
@@ -72,6 +76,7 @@ export async function checkTodayAttendance(userId: string, lessonId: string) {
       return false;
     }
 
+    console.log("Attendance check result:", data);
     return !!data;
   } catch (error) {
     console.error('Error in checkTodayAttendance:', error);
