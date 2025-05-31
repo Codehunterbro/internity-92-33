@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { 
@@ -106,7 +107,7 @@ const Sidebar = () => {
     { 
       label: 'Projects', 
       icon: <FileText size={20} />, 
-      to: '/dashboard/assignments',
+      to: '/dashboard/projects',
       disabled: !hasRequiredCourses
     },
     { 

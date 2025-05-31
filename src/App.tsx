@@ -14,7 +14,7 @@ import Courses from "./pages/dashboard/Courses";
 import {LandCourses} from './pages/LandCourses';
 import MyCourses from "./pages/dashboard/MyCourses";
 import CourseDetail from "./pages/dashboard/CourseDetail";
-import Assignments from "./pages/dashboard/Assignments";
+import Projects from "./pages/dashboard/Projects";
 import Achievements from "./pages/dashboard/Achievements";
 import Checkout from "./pages/checkout/Checkout";
 import LearningDashboard from "./pages/learning/LearningDashboard";
@@ -72,7 +72,7 @@ function App() {
                   <Route path="/dashboard/my-courses" element={<ProtectedRoute><CourseRequiredRoute><MyCourses /></CourseRequiredRoute></ProtectedRoute>} />
                   <Route path="/dashboard/courses" element={<ProtectedRoute><Courses /></ProtectedRoute>} />
                   <Route path="/dashboard/courses/:courseId" element={<ProtectedRoute><CourseDetail /></ProtectedRoute>} />
-                  <Route path="/dashboard/assignments" element={<ProtectedRoute><CourseRequiredRoute><Assignments /></CourseRequiredRoute></ProtectedRoute>} />
+                  <Route path="/dashboard/projects" element={<ProtectedRoute><CourseRequiredRoute><Projects /></CourseRequiredRoute></ProtectedRoute>} />
                   <Route path="/dashboard/achievements" element={<ProtectedRoute><CourseRequiredRoute><Achievements /></CourseRequiredRoute></ProtectedRoute>} />
                   
                   {/* Checkout route */}

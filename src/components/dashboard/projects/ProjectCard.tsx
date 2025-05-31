@@ -10,17 +10,22 @@ interface ProjectCardProps {
   title: string;
   description: string;
   type: 'minor' | 'major';
-  category: string;
+  moduleId: string;
+  weekId?: string;
+  courseId: string;
   deadline: string;
-  status: 'pending' | 'done' | 'submitted';
-  onCheck: () => void;
+  status: 'pending' | 'done' | 'submitted' | 'not_submitted';
+  onCheck: (type: 'minor' | 'major', moduleId: string, weekId?: string, courseId?: string) => void;
 }
 
 const ProjectCard: React.FC<ProjectCardProps> = ({
+  id,
   title,
   description,
   type,
-  category,
+  moduleId,
+  weekId,
+  courseId,
   deadline,
   status,
   onCheck
@@ -32,6 +37,7 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
       case 'submitted':
         return <Badge variant="secondary" className="bg-blue-100 text-blue-700">SUBMITTED</Badge>;
       case 'pending':
+      case 'not_submitted':
       default:
         return <Badge variant="secondary" className="bg-yellow-100 text-yellow-700">PENDING</Badge>;
     }
@@ -44,6 +50,7 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
       case 'submitted':
         return <Clock className="h-4 w-4 text-blue-600" />;
       case 'pending':
+      case 'not_submitted':
       default:
         return <AlertCircle className="h-4 w-4 text-yellow-600" />;
     }
@@ -53,10 +60,23 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
     return (
       <div className="flex items-center justify-center w-8 h-8 bg-gray-100 rounded border">
         <span className="text-xs font-medium text-gray-600">
-          {category.charAt(0).toUpperCase()}
+          {type === 'major' ? 'M' : 'm'}
         </span>
       </div>
     );
+  };
+
+  const formatDeadline = (deadline: string) => {
+    try {
+      const date = new Date(deadline);
+      return date.toLocaleDateString('en-US', { 
+        weekday: 'short', 
+        day: '2-digit', 
+        month: 'short' 
+      });
+    } catch {
+      return deadline;
+    }
   };
 
   return (
@@ -66,13 +86,13 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
           <div className="flex items-center space-x-3">
             {getCategoryIcon()}
             <Badge variant="outline" className="text-xs">
-              {category}
+              {type === 'major' ? 'Major Project' : 'Minor Project'}
             </Badge>
           </div>
           <div className="flex items-center space-x-2">
             <div className="flex items-center text-sm text-gray-500">
               <Calendar className="h-4 w-4 mr-1" />
-              {deadline}
+              {formatDeadline(deadline)}
             </div>
             {getStatusBadge()}
           </div>
@@ -87,14 +107,14 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
             <div className="flex items-center space-x-2">
               {getStatusIcon()}
               <span className="text-sm text-gray-500">
-                Deadline: {deadline}
+                Deadline: {formatDeadline(deadline)}
               </span>
             </div>
             <Button 
-              onClick={onCheck}
+              onClick={() => onCheck(type, moduleId, weekId, courseId)}
               className="bg-purple-500 hover:bg-purple-600 text-white px-6 py-2 rounded-md"
             >
-              check
+              Check
             </Button>
           </div>
         </div>
