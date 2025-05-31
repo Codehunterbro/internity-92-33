@@ -13,8 +13,10 @@ import { Skeleton } from '@/components/ui/skeleton';
 const Projects: React.FC = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
-  const [activeTab, setActiveTab] = useState<'all' | 'pending' | 'done'>('all');
+  const [activeTab, setActiveTab] = useState<'all' | 'pending' | 'submitted' | 'marked'>('all');
   const [filterValue, setFilterValue] = useState('Today');
+  const [weekFilter, setWeekFilter] = useState('all');
+  const [monthFilter, setMonthFilter] = useState('all');
   const [projects, setProjects] = useState<DashboardProject[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -52,12 +54,73 @@ const Projects: React.FC = () => {
     loadProjects();
   }, [navigate, toast]);
 
-  const filteredProjects = projects.filter(project => {
-    if (activeTab === 'all') return true;
-    if (activeTab === 'pending') return project.status === 'pending' || project.status === 'not_submitted';
-    if (activeTab === 'done') return project.status === 'done' || project.status === 'submitted';
-    return true;
-  });
+  // Helper function to get status priority for sorting
+  const getStatusPriority = (status: string): number => {
+    switch (status) {
+      case 'pending':
+      case 'not_submitted':
+        return 1;
+      case 'submitted':
+        return 2;
+      case 'done':
+        return 3;
+      default:
+        return 4;
+    }
+  };
+
+  // Helper function to filter projects by week
+  const filterByWeek = (project: DashboardProject): boolean => {
+    if (weekFilter === 'all') return true;
+    if (!project.weekId) return false;
+    
+    const weekNumber = project.weekId.toLowerCase().replace('week_', '').replace('week', '');
+    const filterWeekNumber = weekFilter.replace('week', '');
+    return weekNumber === filterWeekNumber;
+  };
+
+  // Helper function to filter projects by month
+  const filterByMonth = (project: DashboardProject): boolean => {
+    if (monthFilter === 'all') return true;
+    
+    try {
+      const projectDate = new Date(project.deadline);
+      const projectMonth = projectDate.toLocaleDateString('en-US', { month: 'long' }).toLowerCase();
+      return projectMonth === monthFilter;
+    } catch {
+      return true;
+    }
+  };
+
+  const filteredAndSortedProjects = projects
+    .filter(project => {
+      // Filter by status tab
+      if (activeTab === 'all') return true;
+      if (activeTab === 'pending') return project.status === 'pending' || project.status === 'not_submitted';
+      if (activeTab === 'submitted') return project.status === 'submitted';
+      if (activeTab === 'marked') return project.status === 'done';
+      return true;
+    })
+    .filter(filterByWeek)
+    .filter(filterByMonth)
+    .sort((a, b) => {
+      // First sort by status priority
+      const statusPriorityA = getStatusPriority(a.status);
+      const statusPriorityB = getStatusPriority(b.status);
+      
+      if (statusPriorityA !== statusPriorityB) {
+        return statusPriorityA - statusPriorityB;
+      }
+      
+      // If same status, sort by earliest deadline
+      try {
+        const dateA = new Date(a.deadline);
+        const dateB = new Date(b.deadline);
+        return dateA.getTime() - dateB.getTime();
+      } catch {
+        return 0;
+      }
+    });
 
   const handleProjectCheck = (type: 'minor' | 'major', moduleId: string, weekId?: string, courseId?: string) => {
     console.log('Navigating to project:', { type, moduleId, weekId, courseId });
@@ -92,6 +155,10 @@ const Projects: React.FC = () => {
           title="Projects"
           filterValue={filterValue}
           onFilterChange={setFilterValue}
+          weekFilter={weekFilter}
+          monthFilter={monthFilter}
+          onWeekFilterChange={setWeekFilter}
+          onMonthFilterChange={setMonthFilter}
         />
         
         <div className="mb-8">
@@ -109,7 +176,7 @@ const Projects: React.FC = () => {
           </div>
         ) : (
           <div className="space-y-4">
-            {filteredProjects.map((project) => (
+            {filteredAndSortedProjects.map((project) => (
               <ProjectCard
                 key={`${project.type}-${project.id}`}
                 id={project.id}
@@ -121,16 +188,17 @@ const Projects: React.FC = () => {
                 courseId={project.courseId}
                 deadline={project.deadline}
                 status={project.status}
+                score={project.score}
                 onCheck={handleProjectCheck}
               />
             ))}
             
-            {filteredProjects.length === 0 && (
+            {filteredAndSortedProjects.length === 0 && (
               <div className="text-center py-12">
                 <p className="text-gray-500 text-lg">
                   {projects.length === 0 
                     ? "No projects available. Purchase a course to access projects." 
-                    : "No projects found for the selected filter."
+                    : "No projects found for the selected filters."
                   }
                 </p>
               </div>

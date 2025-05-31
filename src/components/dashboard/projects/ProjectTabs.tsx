@@ -3,15 +3,16 @@ import React from 'react';
 import { Button } from '@/components/ui/button';
 
 interface ProjectTabsProps {
-  activeTab: 'all' | 'pending' | 'done';
-  onTabChange: (tab: 'all' | 'pending' | 'done') => void;
+  activeTab: 'all' | 'pending' | 'submitted' | 'marked';
+  onTabChange: (tab: 'all' | 'pending' | 'submitted' | 'marked') => void;
 }
 
 const ProjectTabs: React.FC<ProjectTabsProps> = ({ activeTab, onTabChange }) => {
   const tabs = [
     { id: 'all', label: 'All' },
     { id: 'pending', label: 'Pending' },
-    { id: 'done', label: 'Done' }
+    { id: 'submitted', label: 'Submitted' },
+    { id: 'marked', label: 'Marked' }
   ] as const;
 
   return (

@@ -15,6 +15,7 @@ interface ProjectCardProps {
   courseId: string;
   deadline: string;
   status: 'pending' | 'done' | 'submitted' | 'not_submitted';
+  score?: string;
   onCheck: (type: 'minor' | 'major', moduleId: string, weekId?: string, courseId?: string) => void;
 }
 
@@ -28,12 +29,13 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
   courseId,
   deadline,
   status,
+  score,
   onCheck
 }) => {
   const getStatusBadge = () => {
     switch (status) {
       case 'done':
-        return <Badge variant="secondary" className="bg-green-100 text-green-700">DONE</Badge>;
+        return <Badge variant="secondary" className="bg-green-100 text-green-700">MARKED</Badge>;
       case 'submitted':
         return <Badge variant="secondary" className="bg-blue-100 text-blue-700">SUBMITTED</Badge>;
       case 'pending':
@@ -102,6 +104,16 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
         <div className="space-y-3">
           <h3 className="font-semibold text-lg text-gray-900">{title}</h3>
           <p className="text-sm text-gray-600 leading-relaxed">{description}</p>
+          
+          {/* Display marks if available and status is marked */}
+          {score && status === 'done' && (
+            <div className="bg-green-50 border border-green-200 rounded-lg p-3">
+              <div className="flex items-center justify-between">
+                <span className="text-sm font-medium text-green-800">Score:</span>
+                <span className="text-lg font-bold text-green-900">{score}</span>
+              </div>
+            </div>
+          )}
           
           <div className="flex items-center justify-between pt-2">
             <div className="flex items-center space-x-2">
