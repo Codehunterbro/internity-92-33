@@ -16,6 +16,20 @@ export interface DashboardProject {
   feedback?: string;
 }
 
+// Helper function to map database status to dashboard status
+function mapStatusToDashboard(dbStatus: string | null): 'pending' | 'done' | 'submitted' | 'not_submitted' {
+  switch (dbStatus) {
+    case 'submitted':
+      return 'submitted';
+    case 'graded':
+      return 'done';
+    case 'not_submitted':
+      return 'not_submitted';
+    default:
+      return 'not_submitted';
+  }
+}
+
 export async function fetchUserProjects(userId: string): Promise<DashboardProject[]> {
   try {
     const projects: DashboardProject[] = [];
@@ -116,7 +130,7 @@ export async function fetchUserProjects(userId: string): Promise<DashboardProjec
             weekId: doc.week_id || undefined,
             courseId: module.course_id,
             deadline: doc.deadline || '',
-            status: submission?.status || 'not_submitted',
+            status: mapStatusToDashboard(submission?.status || null),
             submissionDate: submission?.submission_date || undefined,
             score: submission?.score || undefined,
             feedback: submission?.feedback || undefined
@@ -140,7 +154,7 @@ export async function fetchUserProjects(userId: string): Promise<DashboardProjec
             moduleId: doc.module_id,
             courseId: module.course_id,
             deadline: doc.deadline || '',
-            status: submission?.status || 'not_submitted',
+            status: mapStatusToDashboard(submission?.status || null),
             submissionDate: submission?.submission_date || undefined,
             score: submission?.score || undefined,
             feedback: submission?.feedback || undefined
