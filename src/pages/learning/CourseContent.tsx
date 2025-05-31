@@ -240,7 +240,7 @@ const CourseContent = () => {
                 {currentLesson.type === 'quiz' && (
                   <TabsContent value="quiz" className="pt-4">
                     <QuizSection 
-                      lessonId={parseInt(currentLesson.id, 10)} 
+                      lessonId={currentLesson.id} 
                       onComplete={() => {}} 
                       completed={false} 
                       questions={lessonContent?.quizQuestions || []} 

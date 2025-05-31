@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { CheckCircle, AlertCircle, Lock } from 'lucide-react';
@@ -17,7 +16,7 @@ interface Question {
 }
 
 interface QuizSectionProps {
-  lessonId: number;
+  lessonId: string;
   onComplete: (score: number) => void;
   completed: boolean;
   questions?: Question[];
@@ -69,7 +68,7 @@ const QuizSection: React.FC<QuizSectionProps> = ({ lessonId, onComplete, complet
         console.log("Initializing quiz for lesson:", lessonId, "user:", user.id);
         
         // Check if attendance is already marked for today
-        const attendanceMarked = await checkTodayAttendance(user.id, lessonId.toString());
+        const attendanceMarked = await checkTodayAttendance(user.id, lessonId);
         console.log("Attendance check result:", attendanceMarked);
         
         if (attendanceMarked) {
@@ -89,7 +88,7 @@ const QuizSection: React.FC<QuizSectionProps> = ({ lessonId, onComplete, complet
           questionsToUse = questions;
         } else {
           console.log("Fetching questions from database for lesson:", lessonId);
-          const fetchedQuestions = await getQuizQuestionsByLessonId(lessonId.toString());
+          const fetchedQuestions = await getQuizQuestionsByLessonId(lessonId);
           
           if (!fetchedQuestions || fetchedQuestions.length === 0) {
             setIsQuizLocked(true);
@@ -98,23 +97,24 @@ const QuizSection: React.FC<QuizSectionProps> = ({ lessonId, onComplete, complet
             return;
           }
 
-          // Process fetched questions and properly type cast the options
           questionsToUse = fetchedQuestions.map(q => ({
             id: q.id,
             question: q.question,
-            options: q.options as string[] | Record<string, string>, // Type cast the Json to our expected type
+            options: q.options as string[] | Record<string, string>,
             correct_answer: q.correct_answer,
             explanation: q.explanation,
             is_quiz_locked: q.is_quiz_locked
           }));
         }
 
-        console.log("Questions to use:", questionsToUse);
+        console.log("Questions to use with lock status:", questionsToUse);
 
-        // Check if quiz is locked based on question data
-        const firstQuestion = questionsToUse[0];
-        if (firstQuestion?.is_quiz_locked === true) {
-          console.log("Quiz is locked based on is_quiz_locked flag");
+        // Check if ANY question in the quiz is locked based on is_quiz_locked field
+        const hasLockedQuestions = questionsToUse.some(q => q.is_quiz_locked === true);
+        console.log("Has locked questions:", hasLockedQuestions);
+        
+        if (hasLockedQuestions) {
+          console.log("Quiz is locked - found locked questions");
           setIsQuizLocked(true);
           setLockReason('This quiz is currently locked and not available for completion.');
           setIsLoading(false);
@@ -183,14 +183,14 @@ const QuizSection: React.FC<QuizSectionProps> = ({ lessonId, onComplete, complet
     console.log("Quiz completed with score:", finalScore);
     setQuizFinished(true);
     
-    // Mark attendance
+    // Mark attendance when quiz is completed
     if (user && !attendanceAlreadyMarked) {
       try {
         console.log("Marking attendance for user:", user.id, "lesson:", lessonId);
         
         // Use a hardcoded course ID for now - this should ideally come from props or context
         const courseId = 'c98ef198-e152-4d3b-bb8c-cd4c6694a79c';
-        const result = await markAttendance(user.id, lessonId.toString(), courseId);
+        const result = await markAttendance(user.id, lessonId, courseId);
         
         console.log("Attendance marking result:", result);
         
