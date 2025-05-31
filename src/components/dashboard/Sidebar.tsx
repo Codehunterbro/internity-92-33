@@ -106,7 +106,7 @@ const Sidebar = () => {
     { 
       label: 'Projects', 
       icon: <FileText size={20} />, 
-      to: '/dashboard/projects',
+      to: '/dashboard/assignments',
       disabled: !hasRequiredCourses
     },
     { 

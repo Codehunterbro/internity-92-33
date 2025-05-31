@@ -147,9 +147,6 @@ const Dashboard = () => {
               </div>
             </CardContent>
           </Card>
-
-          {/* Mock Tests - Updated design */}
-          
         </div>
 
         {/* My Achievements - Updated to match Achievement page */}

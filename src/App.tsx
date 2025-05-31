@@ -1,3 +1,4 @@
+
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
@@ -21,7 +22,6 @@ import CourseContent from "./pages/learning/CourseContent";
 import PrivacyPolicy from "./pages/legal/PrivacyPolicy";
 import RefundPolicy from "./pages/legal/RefundPolicy";
 import TermsAndConditions from "./pages/legal/TermsAndConditions";
-import Projects from "./pages/Projects";
 import About from "./pages/About";
 import Contact from "./pages/Contact";
 import { AuthProvider } from "@/contexts/AuthContext";
@@ -50,7 +50,6 @@ function App() {
                   <Route path="/about" element={<About />} />
                   <Route path="/contact" element={<Contact />} />
                   <Route path="/courses" element={<LandCourses />} />
-                  <Route path="/projects" element={<Projects />} />
                   <Route path="/forgot-password" element={<ForgotPassword />} />
                   
                   {/* Reset password routes */}
@@ -73,7 +72,7 @@ function App() {
                   <Route path="/dashboard/my-courses" element={<ProtectedRoute><CourseRequiredRoute><MyCourses /></CourseRequiredRoute></ProtectedRoute>} />
                   <Route path="/dashboard/courses" element={<ProtectedRoute><Courses /></ProtectedRoute>} />
                   <Route path="/dashboard/courses/:courseId" element={<ProtectedRoute><CourseDetail /></ProtectedRoute>} />
-                  <Route path="/dashboard/projects" element={<ProtectedRoute><CourseRequiredRoute><Projects /></CourseRequiredRoute></ProtectedRoute>} />
+                  <Route path="/dashboard/assignments" element={<ProtectedRoute><CourseRequiredRoute><Assignments /></CourseRequiredRoute></ProtectedRoute>} />
                   <Route path="/dashboard/achievements" element={<ProtectedRoute><CourseRequiredRoute><Achievements /></CourseRequiredRoute></ProtectedRoute>} />
                   
                   {/* Checkout route */}
@@ -86,8 +85,8 @@ function App() {
                   <Route path="/learn/course/:courseId/project/minor/:projectModuleId/:projectWeekId" element={<ProtectedRoute><CourseContent /></ProtectedRoute>} />
                   <Route path="/learn/course/:courseId/project/major/:projectModuleId" element={<ProtectedRoute><CourseContent /></ProtectedRoute>} />
                   
-                  {/* Catch-all route - redirects to projects */}
-                  <Route path="*" element={<Navigate to="/projects" replace />} />
+                  {/* Catch-all route - redirects to dashboard */}
+                  <Route path="*" element={<Navigate to="/dashboard" replace />} />
                 </Routes>
                 <Toaster />
               </TooltipProvider>
