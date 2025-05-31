@@ -22,7 +22,7 @@ import CourseContent from "./pages/learning/CourseContent";
 import PrivacyPolicy from "./pages/legal/PrivacyPolicy";
 import RefundPolicy from "./pages/legal/RefundPolicy";
 import TermsAndConditions from "./pages/legal/TermsAndConditions";
-import NotFound from "./pages/NotFound";
+import Projects from "./pages/Projects";
 import About from "./pages/About";
 import Contact from "./pages/Contact";
 import { AuthProvider } from "@/contexts/AuthContext";
@@ -51,6 +51,7 @@ function App() {
                   <Route path="/about" element={<About />} />
                   <Route path="/contact" element={<Contact />} />
                   <Route path="/courses" element={<LandCourses />} />
+                  <Route path="/projects" element={<Projects />} />
                   <Route path="/forgot-password" element={<ForgotPassword />} />
                   
                   {/* Reset password routes */}
@@ -86,8 +87,8 @@ function App() {
                   <Route path="/learn/course/:courseId/project/minor/:projectModuleId/:projectWeekId" element={<ProtectedRoute><CourseContent /></ProtectedRoute>} />
                   <Route path="/learn/course/:courseId/project/major/:projectModuleId" element={<ProtectedRoute><CourseContent /></ProtectedRoute>} />
                   
-                  {/* Catch-all route */}
-                  <Route path="*" element={<NotFound />} />
+                  {/* Catch-all route - now redirects to projects instead of 404 */}
+                  <Route path="*" element={<Projects />} />
                 </Routes>
                 <Toaster />
               </TooltipProvider>
