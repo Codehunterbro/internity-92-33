@@ -6,7 +6,6 @@ import { getQuizQuestionsByLessonId } from '@/services/lessonService';
 import { markAttendance, checkTodayAttendance } from '@/services/attendanceService';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
-import { Json } from '@/integrations/supabase/types';
 
 interface Question {
   id: string;
@@ -31,122 +30,127 @@ const QuizSection: React.FC<QuizSectionProps> = ({ lessonId, onComplete, complet
   const [showAnswer, setShowAnswer] = useState(false);
   const [quizQuestions, setQuizQuestions] = useState<Question[]>([]);
   const [quizFinished, setQuizFinished] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const [isQuizLocked, setIsQuizLocked] = useState(false);
   const [attendanceAlreadyMarked, setAttendanceAlreadyMarked] = useState(false);
+  const [lockReason, setLockReason] = useState<string>('');
   
   const { user } = useAuth();
 
-  // Initialize quiz state based on completion and attendance
+  // Helper function to get options array from question
+  const getOptions = (question: Question): string[] => {
+    if (Array.isArray(question.options)) {
+      return question.options.map(String);
+    } 
+    if (typeof question.options === 'object' && question.options !== null) {
+      return Object.values(question.options).map(String);
+    }
+    return [];
+  };
+
+  // Initialize quiz state
   useEffect(() => {
-    async function initializeQuizState() {
-      if (!user || !lessonId) return;
-      
-      setIsLoading(true);
-      
+    const initializeQuiz = async () => {
+      if (!user) {
+        setIsQuizLocked(true);
+        setLockReason('Please log in to access the quiz.');
+        setIsLoading(false);
+        return;
+      }
+
+      if (!lessonId) {
+        setIsQuizLocked(true);
+        setLockReason('Invalid lesson ID.');
+        setIsLoading(false);
+        return;
+      }
+
       try {
-        // Check if attendance is already marked
-        console.log("Checking attendance for lesson:", lessonId.toString());
-        const alreadyMarked = await checkTodayAttendance(user.id, lessonId.toString());
-        console.log("Attendance already marked:", alreadyMarked);
+        console.log("Initializing quiz for lesson:", lessonId, "user:", user.id);
         
-        setAttendanceAlreadyMarked(alreadyMarked);
+        // Check if attendance is already marked for today
+        const attendanceMarked = await checkTodayAttendance(user.id, lessonId.toString());
+        console.log("Attendance check result:", attendanceMarked);
         
-        // If attendance is marked, lock the quiz
-        if (alreadyMarked) {
-          console.log("Quiz locked due to attendance already marked");
+        if (attendanceMarked) {
+          setAttendanceAlreadyMarked(true);
           setIsQuizLocked(true);
+          setLockReason('You have already completed this quiz today and attendance has been marked.');
           setQuizFinished(true);
+          setIsLoading(false);
           return;
         }
-        
+
         // Load quiz questions
-        await loadQuizQuestions();
+        let questionsToUse: Question[] = [];
+        
+        if (questions && questions.length > 0) {
+          console.log("Using provided questions:", questions);
+          questionsToUse = questions;
+        } else {
+          console.log("Fetching questions from database for lesson:", lessonId);
+          const fetchedQuestions = await getQuizQuestionsByLessonId(lessonId.toString());
+          
+          if (!fetchedQuestions || fetchedQuestions.length === 0) {
+            setIsQuizLocked(true);
+            setLockReason('No quiz questions are available for this lesson.');
+            setIsLoading(false);
+            return;
+          }
+
+          // Process fetched questions
+          questionsToUse = fetchedQuestions.map(q => ({
+            id: q.id,
+            question: q.question,
+            options: q.options,
+            correct_answer: q.correct_answer,
+            explanation: q.explanation,
+            is_quiz_locked: q.is_quiz_locked
+          }));
+        }
+
+        console.log("Questions to use:", questionsToUse);
+
+        // Check if quiz is locked based on question data
+        const firstQuestion = questionsToUse[0];
+        if (firstQuestion?.is_quiz_locked === true) {
+          console.log("Quiz is locked based on is_quiz_locked flag");
+          setIsQuizLocked(true);
+          setLockReason('This quiz is currently locked and not available for completion.');
+          setIsLoading(false);
+          return;
+        }
+
+        // Validate questions have proper options
+        const invalidQuestions = questionsToUse.filter(q => {
+          const options = getOptions(q);
+          return options.length === 0;
+        });
+
+        if (invalidQuestions.length > 0) {
+          console.log("Found questions with invalid options:", invalidQuestions);
+          setIsQuizLocked(true);
+          setLockReason('Quiz questions are not properly configured.');
+          setIsLoading(false);
+          return;
+        }
+
+        // Quiz is available
+        console.log("Quiz is available with", questionsToUse.length, "questions");
+        setQuizQuestions(questionsToUse);
+        setIsQuizLocked(false);
         
       } catch (error) {
-        console.error("Error initializing quiz state:", error);
+        console.error("Error initializing quiz:", error);
         setIsQuizLocked(true);
+        setLockReason('Failed to load quiz. Please try again later.');
       } finally {
         setIsLoading(false);
       }
-    }
-    
-    initializeQuizState();
-  }, [user, lessonId]);
+    };
 
-  const loadQuizQuestions = async () => {
-    try {
-      // Use provided questions if available
-      if (questions.length > 0) {
-        console.log("Using provided questions:", questions);
-        
-        // Check if quiz is locked from provided questions
-        if (questions[0]?.is_quiz_locked) {
-          console.log("Quiz is locked from provided questions");
-          setIsQuizLocked(true);
-          return;
-        }
-        
-        setQuizQuestions(questions);
-        return;
-      }
-
-      // Fetch questions from database
-      console.log("Fetching quiz questions for lesson ID:", lessonId);
-      const fetchedQuestions = await getQuizQuestionsByLessonId(lessonId.toString());
-      
-      if (!fetchedQuestions || fetchedQuestions.length === 0) {
-        console.log("No questions found or quiz is locked");
-        setIsQuizLocked(true);
-        return;
-      }
-      
-      // Check if quiz is locked from database
-      if (fetchedQuestions[0]?.is_quiz_locked) {
-        console.log("Quiz is locked from database");
-        setIsQuizLocked(true);
-        return;
-      }
-      
-      // Format questions
-      const formattedQuestions: Question[] = fetchedQuestions.map(q => {
-        let optionsArray: string[] = [];
-        
-        if (Array.isArray(q.options)) {
-          optionsArray = q.options.map(String);
-        } else if (typeof q.options === 'object' && q.options !== null) {
-          optionsArray = Object.values(q.options).map(String);
-        } else if (typeof q.options === 'string') {
-          try {
-            const parsedOptions = JSON.parse(q.options);
-            if (Array.isArray(parsedOptions)) {
-              optionsArray = parsedOptions.map(String);
-            } else if (typeof parsedOptions === 'object' && parsedOptions !== null) {
-              optionsArray = Object.values(parsedOptions).map(String);
-            }
-          } catch (e) {
-            console.error('Failed to parse options:', e);
-            optionsArray = [];
-          }
-        }
-        
-        return {
-          id: q.id,
-          question: q.question,
-          options: optionsArray,
-          correct_answer: q.correct_answer,
-          explanation: q.explanation
-        };
-      });
-      
-      console.log("Formatted questions:", formattedQuestions);
-      setQuizQuestions(formattedQuestions);
-      
-    } catch (error) {
-      console.error("Error loading quiz questions:", error);
-      setIsQuizLocked(true);
-    }
-  };
+    initializeQuiz();
+  }, [user, lessonId, questions]);
 
   const handleOptionSelect = (optionIndex: number) => {
     if (showAnswer) return;
@@ -173,30 +177,37 @@ const QuizSection: React.FC<QuizSectionProps> = ({ lessonId, onComplete, complet
   };
 
   const handleQuizComplete = async () => {
-    const finalScore = score + (selectedOption === quizQuestions[currentQuestionIndex].correct_answer ? 1 : 0);
+    const isCorrect = selectedOption === quizQuestions[currentQuestionIndex].correct_answer;
+    const finalScore = score + (isCorrect ? 1 : 0);
+    
+    console.log("Quiz completed with score:", finalScore);
     setQuizFinished(true);
     
-    // Mark attendance when quiz is completed
+    // Mark attendance
     if (user && !attendanceAlreadyMarked) {
       try {
-        console.log("Marking attendance for user:", user.id, "lesson:", lessonId.toString());
-        const result = await markAttendance(user.id, lessonId.toString(), '217ba514-c638-40ed-9ffc-adc383f77c8c');
-        console.log("Attendance result:", result);
+        console.log("Marking attendance for user:", user.id, "lesson:", lessonId);
+        
+        // Use a hardcoded course ID for now - this should ideally come from props or context
+        const courseId = 'c98ef198-e152-4d3b-bb8c-cd4c6694a79c';
+        const result = await markAttendance(user.id, lessonId.toString(), courseId);
+        
+        console.log("Attendance marking result:", result);
         
         if (result.success) {
           if (result.alreadyMarked) {
             toast.info('Attendance was already marked for today');
           } else {
-            toast.success('Attendance marked for today!');
+            toast.success('Quiz completed! Attendance marked successfully.');
             setAttendanceAlreadyMarked(true);
           }
         } else {
           console.error('Failed to mark attendance:', result.error);
-          toast.error('Failed to mark attendance');
+          toast.error('Quiz completed but failed to mark attendance. Please contact support.');
         }
       } catch (error) {
         console.error('Error marking attendance:', error);
-        toast.error('Failed to mark attendance');
+        toast.error('Quiz completed but failed to mark attendance. Please contact support.');
       }
     }
     
@@ -222,7 +233,7 @@ const QuizSection: React.FC<QuizSectionProps> = ({ lessonId, onComplete, complet
   }
 
   // Locked state
-  if (isQuizLocked || attendanceAlreadyMarked) {
+  if (isQuizLocked) {
     return (
       <div className="bg-white rounded-lg shadow-md p-6 text-center">
         <div className="mb-6">
@@ -231,35 +242,30 @@ const QuizSection: React.FC<QuizSectionProps> = ({ lessonId, onComplete, complet
           </div>
         </div>
         <h2 className="text-2xl font-bold mb-2">Quiz Locked</h2>
-        <p className="text-gray-600 mb-4">
-          {attendanceAlreadyMarked 
-            ? "You have already completed this quiz today. Attendance has been marked."
-            : "This quiz is currently locked and not available for completion."
-          }
-        </p>
+        <p className="text-gray-600 mb-4">{lockReason}</p>
+        
         {attendanceAlreadyMarked && (
-          <div className="bg-green-50 rounded-lg p-4">
+          <div className="bg-green-50 rounded-lg p-4 mb-4">
             <p className="text-green-700 font-medium">
               ✅ Today's attendance has been marked!
             </p>
           </div>
         )}
-      </div>
-    );
-  }
-
-  // No questions available
-  if (quizQuestions.length === 0) {
-    return (
-      <div className="bg-white rounded-lg shadow-md p-6 text-center">
-        <p className="text-gray-600">No quiz questions available for this lesson.</p>
+        
+        <Button 
+          onClick={() => window.history.back()}
+          variant="outline"
+        >
+          Back to Lessons
+        </Button>
       </div>
     );
   }
 
   // Quiz completed state
   if (quizFinished) {
-    const finalScore = score + (selectedOption === quizQuestions[currentQuestionIndex].correct_answer ? 1 : 0);
+    const isCorrect = selectedOption === quizQuestions[currentQuestionIndex].correct_answer;
+    const finalScore = score + (isCorrect ? 1 : 0);
     const percentage = Math.round((finalScore / quizQuestions.length) * 100);
     
     return (
@@ -283,7 +289,7 @@ const QuizSection: React.FC<QuizSectionProps> = ({ lessonId, onComplete, complet
         
         <div className="bg-blue-50 rounded-lg p-4 mb-6">
           <p className="text-blue-700 font-medium">
-            🎉 Today's attendance has been marked!
+            🎉 Quiz completed successfully! Attendance has been marked for today.
           </p>
         </div>
         
@@ -294,19 +300,31 @@ const QuizSection: React.FC<QuizSectionProps> = ({ lessonId, onComplete, complet
     );
   }
 
+  // No questions available
+  if (quizQuestions.length === 0) {
+    return (
+      <div className="bg-white rounded-lg shadow-md p-6 text-center">
+        <div className="mb-6">
+          <div className="inline-flex items-center justify-center p-4 bg-gray-100 rounded-full">
+            <AlertCircle className="h-12 w-12 text-gray-400" />
+          </div>
+        </div>
+        <h2 className="text-2xl font-bold mb-2">No Quiz Available</h2>
+        <p className="text-gray-600 mb-4">
+          No quiz questions are available for this lesson at the moment.
+        </p>
+        <Button 
+          onClick={() => window.history.back()}
+          variant="outline"
+        >
+          Back to Lessons
+        </Button>
+      </div>
+    );
+  }
+
   // Quiz in progress
   const currentQuestion = quizQuestions[currentQuestionIndex];
-  
-  const getOptions = (question: Question): string[] => {
-    if (Array.isArray(question.options)) {
-      return question.options.map(String);
-    } 
-    if (typeof question.options === 'object' && question.options !== null) {
-      return Object.values(question.options).map(String);
-    }
-    return [];
-  };
-  
   const options = getOptions(currentQuestion);
 
   return (

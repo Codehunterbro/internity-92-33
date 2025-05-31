@@ -1,3 +1,4 @@
+
 import { supabase } from "@/integrations/supabase/client";
 
 export async function getLessonsByModuleId(moduleId: string) {
@@ -24,7 +25,6 @@ export async function getLessonsByModuleId(moduleId: string) {
     return [];
   }
 
-  // Return lessons with their actual locked status from database
   return data || [];
 }
 
@@ -71,7 +71,6 @@ export async function getAllLessons(courseId: string) {
       return [];
     }
     
-    // Return lessons with their actual locked status from database
     return lessons || [];
   } catch (error) {
     console.error('Error in getAllLessons:', error);
@@ -96,8 +95,6 @@ export const getLessonById = async (lessonId: string) => {
     }
     
     console.log('Lesson fetched from database:', data);
-    
-    // Return the lesson with its actual locked status from database
     return data;
   } catch (error) {
     console.error('Error in getLessonById:', error);
@@ -148,118 +145,12 @@ export async function getQuizQuestionsByLessonId(lessonId: string) {
       throw error;
     }
 
-    console.log("Quiz questions data:", data);
+    console.log("Quiz questions data from database:", data);
     
-    // Check if quiz is locked - return empty array if locked
-    if (data && data.length > 0 && data[0].is_quiz_locked) {
-      console.log("Quiz is locked for lesson:", lessonId);
-      return [];
-    }
-    
-    // Process the quiz questions to ensure options are properly formatted
-    const processedData = data?.map(question => {
-      let options = [];
-      
-      // Handle different formats of options
-      if (question.options) {
-        if (Array.isArray(question.options)) {
-          options = question.options;
-        } else if (typeof question.options === 'object') {
-          options = Object.values(question.options);
-        } else if (typeof question.options === 'string') {
-          try {
-            const parsedOptions = JSON.parse(question.options);
-            if (Array.isArray(parsedOptions)) {
-              options = parsedOptions;
-            } else if (typeof parsedOptions === 'object') {
-              options = Object.values(parsedOptions);
-            }
-          } catch (e) {
-            console.error('Failed to parse options as JSON:', e);
-          }
-        }
-      }
-      
-      return {
-        ...question,
-        options
-      };
-    }) || [];
-    
-    console.log("Processed quiz questions:", processedData);
-    return processedData;
+    // Return the raw data - let the component handle the quiz lock logic
+    return data || [];
   } catch (error) {
     console.error("Error in getQuizQuestionsByLessonId:", error);
     throw error;
   }
-}
-
-export async function updateLessonProgress(userId: string, lessonId: string, courseId: string, status: string) {
-  // Check if progress entry exists
-  const { data: existingProgress, error: checkError } = await supabase
-    .from('lesson_progress')
-    .select('id')
-    .eq('user_id', userId)
-    .eq('lesson_id', lessonId)
-    .maybeSingle();
-
-  if (checkError) {
-    console.error('Error checking lesson progress:', checkError);
-    return null;
-  }
-
-  if (existingProgress) {
-    // Update existing progress
-    const { data, error } = await supabase
-      .from('lesson_progress')
-      .update({
-        status: status,
-        completed_at: status === 'completed' ? new Date().toISOString() : null,
-        updated_at: new Date().toISOString()
-      })
-      .eq('id', existingProgress.id)
-      .select();
-
-    if (error) {
-      console.error('Error updating lesson progress:', error);
-      return null;
-    }
-
-    return data;
-  } else {
-    // Create new progress entry
-    const { data, error } = await supabase
-      .from('lesson_progress')
-      .insert({
-        user_id: userId,
-        lesson_id: lessonId,
-        course_id: courseId,
-        status: status,
-        completed_at: status === 'completed' ? new Date().toISOString() : null
-      })
-      .select();
-
-    if (error) {
-      console.error('Error creating lesson progress:', error);
-      return null;
-    }
-
-    return data;
-  }
-}
-
-export async function getLessonProgress(userId: string, lessonId: string) {
-  const { data, error } = await supabase
-    .from('lesson_progress')
-    .select('*')
-    .eq('user_id', userId)
-    .eq('lesson_id', lessonId)
-    .maybeSingle();
-
-  if (error) {
-    console.error('Error fetching lesson progress:', error);
-    return null;
-  }
-
-  return data;
 }

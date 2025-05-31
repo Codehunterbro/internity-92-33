@@ -5,22 +5,41 @@ export async function markAttendance(userId: string, lessonId: string, courseId:
   try {
     console.log("Marking attendance with params:", { userId, lessonId, courseId });
     
+    // Get today's date in YYYY-MM-DD format
+    const today = new Date().toISOString().split('T')[0];
+    
+    // Check if attendance already exists for today
+    const { data: existingAttendance, error: checkError } = await supabase
+      .from('attendance')
+      .select('id')
+      .eq('user_id', userId)
+      .eq('lesson_id', lessonId)
+      .eq('date', today)
+      .maybeSingle();
+
+    if (checkError) {
+      console.error('Error checking existing attendance:', checkError);
+      return { success: false, error: checkError };
+    }
+
+    if (existingAttendance) {
+      console.log('Attendance already marked for today');
+      return { success: true, alreadyMarked: true };
+    }
+
+    // Insert new attendance record
     const { data, error } = await supabase
       .from('attendance')
       .insert({
         user_id: userId,
         lesson_id: lessonId,
         course_id: courseId,
-        status: 'present'
+        status: 'present',
+        date: today
       })
       .select();
 
     if (error) {
-      // If it's a unique constraint violation, it means attendance already marked for today
-      if (error.code === '23505') {
-        console.log('Attendance already marked for today');
-        return { success: true, alreadyMarked: true };
-      }
       console.error('Error marking attendance:', error);
       return { success: false, error };
     }
@@ -65,7 +84,7 @@ export async function checkTodayAttendance(userId: string, lessonId: string) {
     
     const { data, error } = await supabase
       .from('attendance')
-      .select('*')
+      .select('id')
       .eq('user_id', userId)
       .eq('lesson_id', lessonId)
       .eq('date', today)
@@ -76,8 +95,9 @@ export async function checkTodayAttendance(userId: string, lessonId: string) {
       return false;
     }
 
-    console.log("Attendance check result:", data);
-    return !!data;
+    const attendanceExists = !!data;
+    console.log("Attendance check result:", attendanceExists);
+    return attendanceExists;
   } catch (error) {
     console.error('Error in checkTodayAttendance:', error);
     return false;
