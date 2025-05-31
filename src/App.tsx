@@ -1,4 +1,3 @@
-
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
@@ -75,7 +74,6 @@ function App() {
                   <Route path="/dashboard/courses" element={<ProtectedRoute><Courses /></ProtectedRoute>} />
                   <Route path="/dashboard/courses/:courseId" element={<ProtectedRoute><CourseDetail /></ProtectedRoute>} />
                   <Route path="/dashboard/projects" element={<ProtectedRoute><CourseRequiredRoute><Projects /></CourseRequiredRoute></ProtectedRoute>} />
-                  <Route path="/dashboard/assignments" element={<ProtectedRoute><CourseRequiredRoute><Assignments /></CourseRequiredRoute></ProtectedRoute>} />
                   <Route path="/dashboard/achievements" element={<ProtectedRoute><CourseRequiredRoute><Achievements /></CourseRequiredRoute></ProtectedRoute>} />
                   
                   {/* Checkout route */}

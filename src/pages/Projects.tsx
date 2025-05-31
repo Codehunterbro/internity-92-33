@@ -1,5 +1,6 @@
 
 import React, { useState } from 'react';
+import DashboardLayout from '@/components/dashboard/DashboardLayout';
 import ProjectHeader from '@/components/projects/ProjectHeader';
 import ProjectTabs from '@/components/projects/ProjectTabs';
 import ProjectCard from '@/components/projects/ProjectCard';
@@ -71,8 +72,8 @@ const Projects: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="max-w-6xl mx-auto p-6">
+    <DashboardLayout>
+      <div className="p-6">
         <ProjectHeader 
           title="Projects"
           filterValue={filterValue}
@@ -102,7 +103,7 @@ const Projects: React.FC = () => {
           </div>
         )}
       </div>
-    </div>
+    </DashboardLayout>
   );
 };
 
