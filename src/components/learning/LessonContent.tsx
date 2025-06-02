@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { FileText, BookOpen, HelpCircle, Video } from 'lucide-react';
@@ -71,19 +72,22 @@ const LessonContent = ({
   const renderVideoContent = () => {
     // Check if lesson has a video_id (YouTube video)
     if (lesson.video_id && lesson.video_type === 'youtube') {
-      return <VideoPlayer lessonData={{
-        title: lesson.title,
-        subtitle: lesson.subtitle || '',
-        videoType: 'youtube' as 'youtube',
-        videoId: lesson.video_id,
-        videoTitle: lesson.title,
-        videoDescription: lesson.subtitle || '',
-        resources: resources.map(r => ({
-          name: r.name,
-          type: r.type,
-          size: r.size
-        }))
-      }} />;
+      return <VideoPlayer 
+        lessonData={{
+          title: lesson.title,
+          subtitle: lesson.subtitle || '',
+          videoType: 'youtube' as 'youtube',
+          videoId: lesson.video_id,
+          videoTitle: lesson.title,
+          videoDescription: lesson.subtitle || '',
+          resources: resources.map(r => ({
+            name: r.name,
+            type: r.type,
+            size: r.size
+          }))
+        }} 
+        lessonId={lesson.id}
+      />;
     }
 
     // Check if there are any video resources uploaded

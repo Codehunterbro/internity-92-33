@@ -1,6 +1,10 @@
 import React, { useEffect, useRef, useState, CSSProperties } from 'react';
 import YouTube, { YouTubeProps, YouTubeEvent } from 'react-youtube';
 import { FileText, Download, Volume2, Volume1, VolumeX, Maximize, Minimize, Play, Pause } from 'lucide-react';
+import { useAuth } from '@/contexts/AuthContext';
+import { useParams } from 'react-router-dom';
+import { updateLessonProgress } from '@/services/lessonProgressService';
+import { toast } from 'sonner';
 
 export interface LessonVideoContent {
   title: string;
@@ -18,9 +22,13 @@ export interface LessonVideoContent {
 
 interface VideoPlayerProps {
   lessonData: LessonVideoContent | null;
+  lessonId?: string;
 }
 
-const VideoPlayer: React.FC<VideoPlayerProps> = ({ lessonData }) => {
+const VideoPlayer: React.FC<VideoPlayerProps> = ({ lessonData, lessonId }) => {
+  const { user } = useAuth();
+  const { courseId } = useParams<{ courseId: string }>();
+  
   const playerRef = useRef<any>(null);
   const playerContainerRef = useRef<HTMLDivElement>(null);
   const progressIntervalRef = useRef<number | null>(null);
@@ -39,6 +47,8 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ lessonData }) => {
   const [showTooltip, setShowTooltip] = useState(false);
   const [tooltipPos, setTooltipPos] = useState(0);
   const [tooltipTime, setTooltipTime] = useState('0:00');
+  const [watchedPercentage, setWatchedPercentage] = useState(0);
+  const [hasMarkedComplete, setHasMarkedComplete] = useState(false);
 
   console.log('VideoPlayer - lessonData:', lessonData);
   console.log('VideoPlayer - videoId:', lessonData?.videoId);
@@ -105,6 +115,26 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ lessonData }) => {
     }
   };
 
+  const markLessonAsCompleted = async () => {
+    if (!user || !lessonId || !courseId || hasMarkedComplete) return;
+    
+    try {
+      console.log('Marking lesson as completed:', { lessonId, courseId, userId: user.id });
+      
+      const result = await updateLessonProgress(user.id, lessonId, courseId, 'completed');
+      
+      if (result.success) {
+        setHasMarkedComplete(true);
+        toast.success('Lesson completed! Progress saved.');
+        console.log('Lesson marked as completed successfully');
+      } else {
+        console.error('Failed to mark lesson as completed:', result.error);
+      }
+    } catch (error) {
+      console.error('Error marking lesson as completed:', error);
+    }
+  };
+
   const updateProgressBar = () => {
     if (progressIntervalRef.current) {
       window.clearInterval(progressIntervalRef.current);
@@ -114,9 +144,20 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ lessonData }) => {
         const currentTime = playerRef.current.getCurrentTime();
         const duration = playerRef.current.getDuration();
         setCurrentTime(currentTime);
+        
         if (duration > 0) {
           const progress = currentTime / duration * 100;
           setProgress(progress);
+          
+          // Calculate watched percentage
+          const watchedPercent = Math.round(progress);
+          setWatchedPercentage(watchedPercent);
+          
+          // Mark as completed when 50% is reached
+          if (watchedPercent >= 50 && !hasMarkedComplete && user && lessonId && courseId) {
+            console.log(`Video watched ${watchedPercent}% - marking as completed`);
+            markLessonAsCompleted();
+          }
         }
       }
     }, 100);
@@ -361,6 +402,11 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ lessonData }) => {
                 
                 <div className="time-display font-mono text-white text-sm">
                   {formatTime(currentTime)} / {formatTime(duration)}
+                </div>
+                
+                {/* Progress indicator */}
+                <div className="text-white text-sm">
+                  {watchedPercentage}% watched {hasMarkedComplete && '✓ Completed'}
                 </div>
                 
                 <div className="flex-1" />

@@ -124,12 +124,12 @@ const CourseSidebar = ({
       case 'reading':
         return <FileText className="w-4 h-4 text-blue-500" />;
       case 'quiz':
-        return <Calendar className="w-4 h-4 text-orange-500" />;
+        return <PlayCircle className="w-4 h-4 text-orange-500" />;
       case 'minor_project':
       case 'major_project':
         return <File className="w-4 h-4 text-indigo-500" />;
       default:
-        return <Circle className="w-4 h-4 text-gray-500" />;
+        return <PlayCircle className="w-4 h-4 text-gray-500" />;
     }
   };
 
