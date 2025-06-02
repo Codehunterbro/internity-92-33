@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react';
 import { Link, useParams, useNavigate } from 'react-router-dom';
 import { ChevronDown, CheckCircle, Circle, Lock, PlayCircle, FileText, Book, Calendar, ArrowLeft, PanelLeft, PanelRight, File } from 'lucide-react';
+import { useAuth } from '@/contexts/AuthContext';
+import { supabase } from '@/integrations/supabase/client';
 
 // Type definitions
 export interface Module {
@@ -53,13 +55,60 @@ const CourseSidebar = ({
 }: CourseSidebarProps) => {
   const { courseId, lessonId } = useParams<{ courseId: string; lessonId: string }>();
   const navigate = useNavigate();
+  const { user } = useAuth();
   
   const [expandedModules, setExpandedModules] = useState<string[]>(
-    // By default, expand all modules
     modules.map(module => module.id)
   );
   
   const [expandedWeeks, setExpandedWeeks] = useState<string[]>([]);
+  const [lessonCompletionStatus, setLessonCompletionStatus] = useState<Record<string, boolean>>({});
+
+  // Fetch lesson completion status
+  const fetchLessonCompletionStatus = async () => {
+    if (!user || !courseId) return;
+
+    try {
+      const { data: progressData, error } = await supabase
+        .from('lesson_progress')
+        .select('lesson_id, status')
+        .eq('user_id', user.id)
+        .eq('course_id', courseId)
+        .eq('status', 'completed');
+
+      if (error) {
+        console.error('Error fetching lesson progress:', error);
+        return;
+      }
+
+      const completionMap: Record<string, boolean> = {};
+      progressData?.forEach(progress => {
+        completionMap[progress.lesson_id] = true;
+      });
+
+      setLessonCompletionStatus(completionMap);
+    } catch (error) {
+      console.error('Error in fetchLessonCompletionStatus:', error);
+    }
+  };
+
+  useEffect(() => {
+    fetchLessonCompletionStatus();
+  }, [user, courseId]);
+
+  // Listen for lesson completion events
+  useEffect(() => {
+    const handleLessonCompleted = () => {
+      console.log('Refreshing lesson completion status in sidebar...');
+      fetchLessonCompletionStatus();
+    };
+
+    window.addEventListener('lessonCompleted', handleLessonCompleted);
+    
+    return () => {
+      window.removeEventListener('lessonCompleted', handleLessonCompleted);
+    };
+  }, [user, courseId]);
 
   const handleBackClick = (event: React.MouseEvent) => {
     event.preventDefault();
@@ -115,10 +164,13 @@ const CourseSidebar = ({
     }
   };
 
-  const getLessonIcon = (type: string, isCompleted: boolean) => {
+  const getLessonIcon = (lesson: Lesson) => {
+    // Check completion status from our fetched data
+    const isCompleted = lessonCompletionStatus[lesson.id] || lesson.isCompleted;
+    
     if (isCompleted) return <CheckCircle className="w-4 h-4 text-green-500" />;
     
-    switch (type) {
+    switch (lesson.type) {
       case 'video':
         return <PlayCircle className="w-4 h-4 text-purple-500" />;
       case 'reading':
@@ -255,7 +307,7 @@ const CourseSidebar = ({
                                   {lesson.isLocked ? (
                                     <Lock className="w-4 h-4 text-gray-400" />
                                   ) : (
-                                    getLessonIcon(lesson.type, lesson.isCompleted)
+                                    getLessonIcon(lesson)
                                   )}
                                 </div>
                                 <span className="truncate">Day {index + 1}: {lesson.title}</span>

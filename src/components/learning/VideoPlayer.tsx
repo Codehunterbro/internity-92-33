@@ -49,6 +49,7 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ lessonData, lessonId }) => {
   const [tooltipTime, setTooltipTime] = useState('0:00');
   const [watchedPercentage, setWatchedPercentage] = useState(0);
   const [hasMarkedComplete, setHasMarkedComplete] = useState(false);
+  const [hasMarkedInProgress, setHasMarkedInProgress] = useState(false);
 
   console.log('VideoPlayer - lessonData:', lessonData);
   console.log('VideoPlayer - videoId:', lessonData?.videoId);
@@ -101,7 +102,8 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ lessonData, lessonId }) => {
   const onPlayerReady = (event: YouTubeEvent) => {
     console.log('YouTube player ready');
     playerRef.current = event.target;
-    setDuration(event.target.getDuration());
+    const videoDuration = event.target.getDuration();
+    setDuration(videoDuration);
     setYoutubeReady(true);
     updateProgressBar();
   };
@@ -110,8 +112,31 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ lessonData, lessonId }) => {
     console.log('YouTube player state changed:', event.data);
     if (event.data === 1) {
       setIsPlaying(true);
+      updateProgressBar();
     } else if (event.data === 2 || event.data === 0) {
       setIsPlaying(false);
+      if (progressIntervalRef.current) {
+        window.clearInterval(progressIntervalRef.current);
+      }
+    }
+  };
+
+  const markLessonAsInProgress = async () => {
+    if (!user || !lessonId || !courseId || hasMarkedInProgress) return;
+    
+    try {
+      console.log('Marking lesson as in progress:', { lessonId, courseId, userId: user.id });
+      
+      const result = await updateLessonProgress(user.id, lessonId, courseId, 'in_progress');
+      
+      if (result.success) {
+        setHasMarkedInProgress(true);
+        console.log('Lesson marked as in progress successfully');
+      } else {
+        console.error('Failed to mark lesson as in progress:', result.error);
+      }
+    } catch (error) {
+      console.error('Error marking lesson as in progress:', error);
     }
   };
 
@@ -127,6 +152,11 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ lessonData, lessonId }) => {
         setHasMarkedComplete(true);
         toast.success('Lesson completed! Progress saved.');
         console.log('Lesson marked as completed successfully');
+        
+        // Trigger a refresh of purchased courses data
+        window.dispatchEvent(new CustomEvent('lessonCompleted', { 
+          detail: { lessonId, courseId } 
+        }));
       } else {
         console.error('Failed to mark lesson as completed:', result.error);
       }
@@ -141,17 +171,26 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ lessonData, lessonId }) => {
     }
     progressIntervalRef.current = window.setInterval(() => {
       if (playerRef.current && !isProgressDragging && youtubeReady) {
-        const currentTime = playerRef.current.getCurrentTime();
-        const duration = playerRef.current.getDuration();
-        setCurrentTime(currentTime);
+        const currentVideoTime = playerRef.current.getCurrentTime();
+        const videoDuration = playerRef.current.getDuration();
         
-        if (duration > 0) {
-          const progress = currentTime / duration * 100;
-          setProgress(progress);
+        setCurrentTime(currentVideoTime);
+        
+        if (videoDuration > 0) {
+          const progressPercent = (currentVideoTime / videoDuration) * 100;
+          setProgress(progressPercent);
           
-          // Calculate watched percentage
-          const watchedPercent = Math.round(progress);
+          // Calculate and update watched percentage
+          const watchedPercent = Math.floor(progressPercent);
           setWatchedPercentage(watchedPercent);
+          
+          console.log(`Video progress: ${watchedPercent}% (${currentVideoTime}/${videoDuration})`);
+          
+          // Mark as in progress when video starts (5% watched)
+          if (watchedPercent >= 5 && !hasMarkedInProgress && user && lessonId && courseId) {
+            console.log(`Video watched ${watchedPercent}% - marking as in progress`);
+            markLessonAsInProgress();
+          }
           
           // Mark as completed when 50% is reached
           if (watchedPercent >= 50 && !hasMarkedComplete && user && lessonId && courseId) {
@@ -160,7 +199,7 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ lessonData, lessonId }) => {
           }
         }
       }
-    }, 100);
+    }, 1000); // Update every second for more accurate tracking
   };
 
   const startHideControlsTimer = () => {
@@ -404,9 +443,11 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ lessonData, lessonId }) => {
                   {formatTime(currentTime)} / {formatTime(duration)}
                 </div>
                 
-                {/* Progress indicator */}
-                <div className="text-white text-sm">
-                  {watchedPercentage}% watched {hasMarkedComplete && '✓ Completed'}
+                {/* Real-time progress indicator */}
+                <div className="text-white text-sm font-medium">
+                  {watchedPercentage}% watched
+                  {hasMarkedComplete && <span className="text-green-400 ml-2">✓ Completed</span>}
+                  {hasMarkedInProgress && !hasMarkedComplete && <span className="text-yellow-400 ml-2">● In Progress</span>}
                 </div>
                 
                 <div className="flex-1" />
