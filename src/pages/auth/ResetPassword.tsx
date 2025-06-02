@@ -1,6 +1,6 @@
 
 import { useState, useEffect } from 'react';
-import { useNavigate, useLocation, useSearchParams } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { z } from 'zod';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -32,124 +32,93 @@ const ResetPassword = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [hasToken, setHasToken] = useState(false);
+  const [hasValidToken, setHasValidToken] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const navigate = useNavigate();
   const location = useLocation();
-  const [searchParams] = useSearchParams();
   
-  // Improved token extraction using URL parameters, hash fragments, and direct URL parsing
   useEffect(() => {
-    // First, ensure we're signed out when reaching this page
-    // This prevents auto-redirection to dashboard
-    const ensureSignedOut = async () => {
-      await supabase.auth.signOut();
-      console.log('Signed out on reset password page load');
-    };
-    
-    ensureSignedOut();
-    
-    const extractAndProcessToken = async () => {
+    const processPasswordReset = async () => {
       try {
         console.log('Current URL:', window.location.href);
-        console.log('Location pathname:', location.pathname);
-        console.log('Location search:', location.search);
         console.log('Location hash:', location.hash);
-        
-        // Extract tokens from various possible formats
+        console.log('Location search:', location.search);
+
+        // First, ensure we're signed out
+        await supabase.auth.signOut();
+
+        // Extract token from URL - handle both hash and query parameters
         let accessToken = null;
-        let refreshToken = '';
         let type = null;
-        
+
         // Check URL search parameters first
-        const urlToken = searchParams.get('access_token');
-        if (urlToken) {
-          accessToken = urlToken;
-          type = searchParams.get('type');
-          refreshToken = searchParams.get('refresh_token') || '';
-          console.log('Found token in URL params');
-        }
-        
-        // If no token in search params, check the hash
+        const urlParams = new URLSearchParams(location.search);
+        accessToken = urlParams.get('access_token');
+        type = urlParams.get('type');
+
+        // If not in search params, check hash
         if (!accessToken && location.hash) {
-          // Handle both /reset-password#access_token=... and #/reset-password?access_token=... formats
-          let hashContent = location.hash.replace(/^#\/?/, '');
+          // Remove the leading # and handle both formats:
+          // #access_token=...&type=recovery
+          // #/reset-password?access_token=...&type=recovery
+          let hashContent = location.hash.substring(1);
           
-          // If the hash contains a path with search params
+          // If hash contains a path, extract query part
           if (hashContent.includes('?')) {
-            const [path, query] = hashContent.split('?');
-            const hashParams = new URLSearchParams(query);
+            const queryPart = hashContent.split('?')[1];
+            const hashParams = new URLSearchParams(queryPart);
             accessToken = hashParams.get('access_token');
             type = hashParams.get('type');
-            refreshToken = hashParams.get('refresh_token') || '';
-            console.log('Found token in hash path query:', Boolean(accessToken));
-          } 
-          // Direct hash parameter format
-          else if (hashContent.includes('access_token=')) {
-            // Parse key-value pairs from hash fragment
-            const hashParts = hashContent.split('&');
-            for (const part of hashParts) {
-              if (part.startsWith('access_token=')) {
-                accessToken = part.split('=')[1];
-              } else if (part.startsWith('type=')) {
-                type = part.split('=')[1];
-              } else if (part.startsWith('refresh_token=')) {
-                refreshToken = part.split('=')[1];
-              }
-            }
-            console.log('Found token in hash fragments:', Boolean(accessToken));
+          } else {
+            // Direct hash format: access_token=...&type=recovery
+            const hashParams = new URLSearchParams(hashContent);
+            accessToken = hashParams.get('access_token');
+            type = hashParams.get('type');
           }
         }
 
-        // If we found a token, try to set the session
-        if (accessToken) {
-          console.log('Token found. Type:', type);
-          
-          // Check if this is a recovery token
-          if (type === 'recovery' || location.pathname.includes('reset-password')) {
-            setHasToken(true);
-            
-            try {
-              const { error } = await supabase.auth.setSession({
-                access_token: accessToken,
-                refresh_token: refreshToken,
-              });
-              
-              if (error) {
-                console.error('Error setting recovery session:', error);
-                toast.error("Invalid or expired recovery link. Please request a new password reset link.");
-                navigate('/forgot-password');
-              } else {
-                toast.success("Password reset link verified. Please set your new password.");
-              }
-            } catch (sessionError) {
+        console.log('Extracted token:', Boolean(accessToken));
+        console.log('Token type:', type);
+
+        if (accessToken && type === 'recovery') {
+          try {
+            // Set the session with the recovery token
+            const { error: sessionError } = await supabase.auth.setSession({
+              access_token: accessToken,
+              refresh_token: '', // Recovery tokens don't need refresh token
+            });
+
+            if (sessionError) {
               console.error('Session error:', sessionError);
-              toast.error("Failed to process recovery token. Please request a new password reset link.");
+              toast.error('Invalid or expired recovery link. Please request a new password reset.');
               navigate('/forgot-password');
+              return;
             }
-          } else {
-            // Not a recovery token - don't allow password reset
-            console.log('Token found but not a recovery token');
-            toast.error("Invalid recovery link. Please request a password reset link.");
+
+            console.log('Recovery session set successfully');
+            setHasValidToken(true);
+            toast.success('Password reset link verified. Please enter your new password.');
+          } catch (error) {
+            console.error('Error setting recovery session:', error);
+            toast.error('Failed to process recovery link. Please request a new password reset.');
             navigate('/forgot-password');
           }
-        } else if (location.pathname.includes('reset-password')) {
-          // We're on the reset password page but no token found
-          console.log('No valid token found on reset password page');
-          toast.error("No recovery token found. Please request a password reset link.");
-          
-          if (!location.pathname.includes('forgot-password')) {
-            navigate('/forgot-password');
-          }
+        } else {
+          console.log('No valid recovery token found');
+          toast.error('Invalid recovery link. Please request a new password reset.');
+          navigate('/forgot-password');
         }
       } catch (error) {
-        console.error('Error processing recovery token:', error);
-        toast.error("An error occurred while processing your recovery link.");
+        console.error('Error processing password reset:', error);
+        toast.error('An error occurred while processing your recovery link.');
         navigate('/forgot-password');
+      } finally {
+        setIsLoading(false);
       }
     };
-    
-    extractAndProcessToken();
-  }, [location, navigate, searchParams]);
+
+    processPasswordReset();
+  }, [location, navigate]);
   
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
@@ -168,7 +137,7 @@ const ResetPassword = () => {
   };
 
   const onSubmit = async (values: FormValues) => {
-    if (!hasToken) {
+    if (!hasValidToken) {
       toast.error("Invalid recovery session. Please request a new password reset link.");
       navigate('/forgot-password');
       return;
@@ -177,18 +146,30 @@ const ResetPassword = () => {
     setIsSubmitting(true);
     try {
       await updatePassword(values.password);
-      toast.success("Your password has been reset successfully. Please login with your new password.");
-      
-      // This will be handled in the updatePassword method:
-      // 1. Update the password
-      // 2. Sign out the user
-      // 3. Navigate to login
+      // updatePassword handles the success message and navigation
     } catch (error) {
       console.error('Error updating password:', error);
       toast.error("Failed to update password. Please try again.");
+    } finally {
       setIsSubmitting(false);
     }
   };
+
+  if (isLoading) {
+    return (
+      <AuthLayout
+        heading="Processing..."
+        subheading="Verifying your password reset link"
+        linkText="Back to login"
+        linkHref="/login"
+        linkDescription="Having trouble?"
+      >
+        <div className="flex justify-center py-8">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-brand-purple"></div>
+        </div>
+      </AuthLayout>
+    );
+  }
 
   return (
     <AuthLayout
@@ -258,7 +239,7 @@ const ResetPassword = () => {
             <Button 
               type="submit" 
               className="w-full bg-brand-purple hover:bg-brand-purple-hover"
-              disabled={isSubmitting || !hasToken}
+              disabled={isSubmitting || !hasValidToken}
             >
               {isSubmitting ? "Updating..." : "Update Password"}
             </Button>
