@@ -38,74 +38,83 @@ const ResetPassword = () => {
   const location = useLocation();
   
   useEffect(() => {
-    const processPasswordReset = async () => {
+    const handlePasswordRecovery = async () => {
       try {
+        console.log('Starting password recovery process...');
         console.log('Current URL:', window.location.href);
         console.log('Location hash:', location.hash);
         console.log('Location search:', location.search);
 
-        // First, ensure we're signed out
-        await supabase.auth.signOut();
-
-        // Extract token from URL - handle both hash and query parameters
-        let accessToken = null;
-        let type = null;
+        // Extract token and type from URL
+        let accessToken: string | null = null;
+        let type: string | null = null;
+        let refreshToken: string | null = null;
 
         // Check URL search parameters first
         const urlParams = new URLSearchParams(location.search);
         accessToken = urlParams.get('access_token');
         type = urlParams.get('type');
+        refreshToken = urlParams.get('refresh_token');
 
         // If not in search params, check hash
         if (!accessToken && location.hash) {
-          // Remove the leading # and handle both formats:
-          // #access_token=...&type=recovery
-          // #/reset-password?access_token=...&type=recovery
           let hashContent = location.hash.substring(1);
           
-          // If hash contains a path, extract query part
+          // Handle different hash formats
           if (hashContent.includes('?')) {
             const queryPart = hashContent.split('?')[1];
             const hashParams = new URLSearchParams(queryPart);
             accessToken = hashParams.get('access_token');
             type = hashParams.get('type');
+            refreshToken = hashParams.get('refresh_token');
           } else {
-            // Direct hash format: access_token=...&type=recovery
             const hashParams = new URLSearchParams(hashContent);
             accessToken = hashParams.get('access_token');
             type = hashParams.get('type');
+            refreshToken = hashParams.get('refresh_token');
           }
         }
 
-        console.log('Extracted token:', Boolean(accessToken));
-        console.log('Token type:', type);
+        console.log('Extracted access token:', Boolean(accessToken));
+        console.log('Extracted type:', type);
+        console.log('Extracted refresh token:', Boolean(refreshToken));
 
-        if (accessToken && type === 'recovery') {
-          try {
-            // Set the session with the recovery token
-            const { error: sessionError } = await supabase.auth.setSession({
-              access_token: accessToken,
-              refresh_token: '', // Recovery tokens don't need refresh token
-            });
+        if (!accessToken || type !== 'recovery') {
+          console.log('No valid recovery token found');
+          toast.error('Invalid recovery link. Please request a new password reset.');
+          navigate('/forgot-password');
+          return;
+        }
 
-            if (sessionError) {
-              console.error('Session error:', sessionError);
-              toast.error('Invalid or expired recovery link. Please request a new password reset.');
-              navigate('/forgot-password');
-              return;
-            }
+        try {
+          // First, ensure we're signed out
+          await supabase.auth.signOut();
+          
+          // Set the session with the recovery tokens
+          const { data, error: sessionError } = await supabase.auth.setSession({
+            access_token: accessToken,
+            refresh_token: refreshToken || '', // Use empty string if no refresh token
+          });
 
+          if (sessionError) {
+            console.error('Session error:', sessionError);
+            toast.error('Invalid or expired recovery link. Please request a new password reset.');
+            navigate('/forgot-password');
+            return;
+          }
+
+          if (data.session) {
             console.log('Recovery session set successfully');
             setHasValidToken(true);
             toast.success('Password reset link verified. Please enter your new password.');
-          } catch (error) {
-            console.error('Error setting recovery session:', error);
-            toast.error('Failed to process recovery link. Please request a new password reset.');
+          } else {
+            console.log('No session created');
+            toast.error('Failed to verify recovery link. Please request a new password reset.');
             navigate('/forgot-password');
           }
-        } else {
-          console.log('No valid recovery token found');
-          toast.error('Invalid recovery link. Please request a new password reset.');
+        } catch (error) {
+          console.error('Error setting recovery session:', error);
+          toast.error('Failed to process recovery link. Please request a new password reset.');
           navigate('/forgot-password');
         }
       } catch (error) {
@@ -117,7 +126,7 @@ const ResetPassword = () => {
       }
     };
 
-    processPasswordReset();
+    handlePasswordRecovery();
   }, [location, navigate]);
   
   const form = useForm<FormValues>({
@@ -146,7 +155,6 @@ const ResetPassword = () => {
     setIsSubmitting(true);
     try {
       await updatePassword(values.password);
-      // updatePassword handles the success message and navigation
     } catch (error) {
       console.error('Error updating password:', error);
       toast.error("Failed to update password. Please try again.");
