@@ -754,24 +754,33 @@ export type Database = {
       }
       student_achievements: {
         Row: {
-          completion_date: string | null
+          attachment_url: string | null
+          description: string | null
+          file_size: string | null
+          file_type: string | null
           id: string
-          study_timeframe: string | null
           title: string
+          uploaded_by: string | null
           user_id: string
         }
         Insert: {
-          completion_date?: string | null
+          attachment_url?: string | null
+          description?: string | null
+          file_size?: string | null
+          file_type?: string | null
           id?: string
-          study_timeframe?: string | null
           title: string
+          uploaded_by?: string | null
           user_id: string
         }
         Update: {
-          completion_date?: string | null
+          attachment_url?: string | null
+          description?: string | null
+          file_size?: string | null
+          file_type?: string | null
           id?: string
-          study_timeframe?: string | null
           title?: string
+          uploaded_by?: string | null
           user_id?: string
         }
         Relationships: []
@@ -897,6 +906,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      check_admin_role: {
+        Args: { user_id: string }
+        Returns: boolean
+      }
       check_column_exists: {
         Args: { table_name: string; column_name: string }
         Returns: boolean
