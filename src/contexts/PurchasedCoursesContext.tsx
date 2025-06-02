@@ -19,6 +19,7 @@ interface PurchasedCoursesContextType {
   isLoading: boolean;
   error: string | null;
   refetchCourses: () => Promise<void>;
+  addPurchasedCourses: (courses: Omit<PurchasedCourse, 'purchased_at'>[]) => Promise<void>;
 }
 
 const PurchasedCoursesContext = createContext<PurchasedCoursesContextType | undefined>(undefined);
@@ -134,6 +135,41 @@ export const PurchasedCoursesProvider: React.FC<{ children: React.ReactNode }> =
     }
   };
 
+  const addPurchasedCourses = async (courses: Omit<PurchasedCourse, 'purchased_at'>[]) => {
+    if (!user) return;
+
+    try {
+      console.log('Adding purchased courses:', courses);
+      
+      // Add courses to the purchased_courses table
+      const coursesToInsert = courses.map(course => ({
+        user_id: user.id,
+        course_id: course.course_id,
+        title: course.title,
+        image: course.image,
+        duration: course.duration,
+        purchased_at: new Date().toISOString()
+      }));
+
+      const { error } = await supabase
+        .from('purchased_courses')
+        .insert(coursesToInsert);
+
+      if (error) {
+        console.error('Error adding purchased courses:', error);
+        throw error;
+      }
+
+      console.log('Successfully added purchased courses');
+      
+      // Refresh the courses list
+      await fetchPurchasedCourses();
+    } catch (error) {
+      console.error('Error in addPurchasedCourses:', error);
+      throw error;
+    }
+  };
+
   const refetchCourses = async () => {
     await fetchPurchasedCourses();
   };
@@ -160,7 +196,8 @@ export const PurchasedCoursesProvider: React.FC<{ children: React.ReactNode }> =
     purchasedCourses,
     isLoading,
     error,
-    refetchCourses
+    refetchCourses,
+    addPurchasedCourses
   };
 
   return (
