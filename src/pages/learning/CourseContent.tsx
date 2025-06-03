@@ -1,8 +1,8 @@
-
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import CourseSidebar, { Module as CourseSidebarModule } from '@/components/learning/CourseSidebar';
+import ResponsiveCourseMenu from '@/components/learning/ResponsiveCourseMenu';
 import LessonContent from '@/components/learning/LessonContent';
 import QuizSection from '@/components/learning/QuizSection';
 import ProjectSubmissionView from '@/components/learning/ProjectSubmissionView';
@@ -171,8 +171,19 @@ const CourseContent = () => {
 
   return (
     <div className="flex h-screen overflow-hidden bg-white">
-      {/* Sidebar */}
-      <div className={`${isCollapsed ? 'w-16' : 'w-72'} border-r border-gray-200 overflow-y-auto transition-all duration-300`}>
+      {/* Responsive Course Menu - only shows on small screens */}
+      <div className="lg:hidden">
+        <ResponsiveCourseMenu 
+          modules={modules}
+          lessonId={lessonId}
+          onLessonClick={handleLessonClick}
+          onProjectClick={handleProjectClick}
+          lessonCompletionStatus={{}}
+        />
+      </div>
+
+      {/* Desktop Sidebar - hidden on small screens */}
+      <div className={`hidden lg:block ${isCollapsed ? 'w-16' : 'w-72'} border-r border-gray-200 overflow-y-auto transition-all duration-300`}>
         <CourseSidebar 
           modules={modules} 
           isCollapsed={isCollapsed} 
