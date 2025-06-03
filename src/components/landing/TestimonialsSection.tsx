@@ -97,41 +97,36 @@ const testimonials = [
 ];
 
 // Split testimonials for the two rows
-const rtlTestimonials = testimonials.slice(0, 5); // First 5 testimonials for right-to-left row
-const ltrTestimonials = testimonials.slice(5, 10); // Last 5 testimonials for left-to-right row
+const rtlTestimonials = testimonials.slice(0, 5);
+const ltrTestimonials = testimonials.slice(5, 10);
 
 const TestimonialsSection = () => {
   const rtlTrackRef = useRef<HTMLDivElement>(null);
   const ltrTrackRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    // For right-to-left scrolling track
     let rtlPosition = 0;
     let rtlMaxScroll = 0;
     let rtlAnimationId: number;
     let rtlPaused = false;
 
-    // For left-to-right scrolling track
     let ltrPosition = 0;
     let ltrMaxScroll = 0;
     let ltrAnimationId: number;
     let ltrPaused = false;
 
     if (rtlTrackRef.current && ltrTrackRef.current) {
-      // Initialize right-to-left scrolling
       const rtlTrack = rtlTrackRef.current;
       rtlMaxScroll = rtlTrack.scrollWidth / 2;
 
-      // Initialize left-to-right scrolling
       const ltrTrack = ltrTrackRef.current;
-      // For left-to-right scrolling, start from a negative position
       ltrPosition = -ltrTrack.scrollWidth / 2;
-      ltrMaxScroll = 0; // We'll reset when we reach 0
+      ltrMaxScroll = 0;
     }
 
     function scrollRightToLeft() {
       if (rtlTrackRef.current && !rtlPaused) {
-        rtlPosition += 0.5; // Adjust scroll speed here
+        rtlPosition += 0.5;
         
         if (rtlPosition >= rtlMaxScroll) {
           rtlPosition = 0;
@@ -144,9 +139,8 @@ const TestimonialsSection = () => {
 
     function scrollLeftToRight() {
       if (ltrTrackRef.current && !ltrPaused) {
-        ltrPosition += 0.5; // Adjust scroll speed here
+        ltrPosition += 0.5;
         
-        // Reset when we reach 0 (original position)
         if (ltrPosition >= 0) {
           ltrPosition = -ltrTrackRef.current.scrollWidth / 2;
         }
@@ -156,29 +150,16 @@ const TestimonialsSection = () => {
       ltrAnimationId = requestAnimationFrame(scrollLeftToRight);
     }
 
-    // Start both scrolling animations
     scrollRightToLeft();
     scrollLeftToRight();
 
-    // Set up event listeners for hover pausing
     const rtlContainer = document.getElementById('rtl-container');
     const ltrContainer = document.getElementById('ltr-container');
     
-    const handleRtlMouseEnter = () => {
-      rtlPaused = true;
-    };
-    
-    const handleRtlMouseLeave = () => {
-      rtlPaused = false;
-    };
-    
-    const handleLtrMouseEnter = () => {
-      ltrPaused = true;
-    };
-    
-    const handleLtrMouseLeave = () => {
-      ltrPaused = false;
-    };
+    const handleRtlMouseEnter = () => { rtlPaused = true; };
+    const handleRtlMouseLeave = () => { rtlPaused = false; };
+    const handleLtrMouseEnter = () => { ltrPaused = true; };
+    const handleLtrMouseLeave = () => { ltrPaused = false; };
     
     if (rtlContainer) {
       rtlContainer.addEventListener('mouseenter', handleRtlMouseEnter);
@@ -210,75 +191,75 @@ const TestimonialsSection = () => {
     return [...Array(5)].map((_, i) => (
       <Star 
         key={i} 
-        className={`w-4 h-4 ${i < rating ? 'text-yellow-400' : 'text-gray-300'}`} 
+        className={`w-3 md:w-4 h-3 md:h-4 ${i < rating ? 'text-yellow-400' : 'text-gray-300'}`} 
         fill={i < rating ? 'currentColor' : 'none'}
       />
     ));
   };
 
   return (
-    <section className="py-20 bg-gray-50 overflow-hidden">
+    <section className="py-12 md:py-20 bg-gray-50 overflow-hidden">
       <div className="container mx-auto px-4">
-        <div className="text-center max-w-3xl mx-auto mb-16">
-          <h6 className="text-sm font-semibold uppercase tracking-wider text-brand-purple mb-3">Testimonials</h6>
-          <h2 className="text-3xl md:text-4xl font-bold mb-6">Success Stories from Our Students</h2>
-          <p className="text-muted-foreground text-lg">
+        <div className="text-center max-w-3xl mx-auto mb-8 md:mb-16">
+          <h6 className="text-xs md:text-sm font-semibold uppercase tracking-wider text-brand-purple mb-2 md:mb-3">Testimonials</h6>
+          <h2 className="text-2xl md:text-4xl font-bold mb-4 md:mb-6">Success Stories from Our Students</h2>
+          <p className="text-muted-foreground text-sm md:text-lg">
             Hear from our graduates who have transformed their careers through our comprehensive program.
           </p>
         </div>
 
         {/* Right-to-Left Scrolling Testimonials */}
-        <div id="rtl-container" className="relative overflow-hidden mb-10">
+        <div id="rtl-container" className="relative overflow-hidden mb-6 md:mb-10">
           <div id="rtl-track" ref={rtlTrackRef} className="flex">
             {/* First set of testimonials */}
             {rtlTestimonials.map((testimonial) => (
               <div 
                 key={testimonial.id} 
-                className="flex-shrink-0 w-72 md:w-96 p-6 mx-4 bg-white rounded-xl shadow-md border border-gray-100"
+                className="flex-shrink-0 w-64 md:w-72 lg:w-96 p-4 md:p-6 mx-2 md:mx-4 bg-white rounded-xl shadow-md border border-gray-100"
               >
-                <div className="flex mb-4 items-center">
-                  <div className="w-12 h-12 bg-brand-purple/10 rounded-full flex items-center justify-center text-brand-purple font-bold">
+                <div className="flex mb-3 md:mb-4 items-center">
+                  <div className="w-8 md:w-12 h-8 md:h-12 bg-brand-purple/10 rounded-full flex items-center justify-center text-brand-purple font-bold text-xs md:text-sm">
                     {testimonial.name.split(' ').map(n => n[0]).join('')}
                   </div>
-                  <div className="ml-4">
-                    <p className="font-semibold">{testimonial.name}</p>
-                    <p className="text-sm text-muted-foreground">{testimonial.role}</p>
+                  <div className="ml-3 md:ml-4">
+                    <p className="font-semibold text-sm md:text-base">{testimonial.name}</p>
+                    <p className="text-xs md:text-sm text-muted-foreground">{testimonial.role}</p>
                   </div>
                 </div>
-                <div className="flex mb-3">
+                <div className="flex mb-2 md:mb-3">
                   {renderStars(testimonial.rating)}
                 </div>
-                <div className="inline-block px-3 py-1 rounded-full bg-brand-purple/10 text-brand-purple text-xs font-medium mb-3">
+                <div className="inline-block px-2 md:px-3 py-1 rounded-full bg-brand-purple/10 text-brand-purple text-xs font-medium mb-2 md:mb-3">
                   {testimonial.subject}
                 </div>
-                <Quote className="w-8 h-8 text-brand-purple opacity-20 mb-1" />
-                <p className="text-muted-foreground">{testimonial.content}</p>
+                <Quote className="w-6 md:w-8 h-6 md:h-8 text-brand-purple opacity-20 mb-1" />
+                <p className="text-muted-foreground text-xs md:text-sm leading-relaxed">{testimonial.content}</p>
               </div>
             ))}
             
-            {/* Duplicate the same testimonials for infinite scroll */}
+            {/* Duplicate for infinite scroll */}
             {rtlTestimonials.map((testimonial) => (
               <div 
                 key={`dup-${testimonial.id}`} 
-                className="flex-shrink-0 w-72 md:w-96 p-6 mx-4 bg-white rounded-xl shadow-md border border-gray-100"
+                className="flex-shrink-0 w-64 md:w-72 lg:w-96 p-4 md:p-6 mx-2 md:mx-4 bg-white rounded-xl shadow-md border border-gray-100"
               >
-                <div className="flex mb-4 items-center">
-                  <div className="w-12 h-12 bg-brand-purple/10 rounded-full flex items-center justify-center text-brand-purple font-bold">
+                <div className="flex mb-3 md:mb-4 items-center">
+                  <div className="w-8 md:w-12 h-8 md:h-12 bg-brand-purple/10 rounded-full flex items-center justify-center text-brand-purple font-bold text-xs md:text-sm">
                     {testimonial.name.split(' ').map(n => n[0]).join('')}
                   </div>
-                  <div className="ml-4">
-                    <p className="font-semibold">{testimonial.name}</p>
-                    <p className="text-sm text-muted-foreground">{testimonial.role}</p>
+                  <div className="ml-3 md:ml-4">
+                    <p className="font-semibold text-sm md:text-base">{testimonial.name}</p>
+                    <p className="text-xs md:text-sm text-muted-foreground">{testimonial.role}</p>
                   </div>
                 </div>
-                <div className="flex mb-3">
+                <div className="flex mb-2 md:mb-3">
                   {renderStars(testimonial.rating)}
                 </div>
-                <div className="inline-block px-3 py-1 rounded-full bg-brand-purple/10 text-brand-purple text-xs font-medium mb-3">
+                <div className="inline-block px-2 md:px-3 py-1 rounded-full bg-brand-purple/10 text-brand-purple text-xs font-medium mb-2 md:mb-3">
                   {testimonial.subject}
                 </div>
-                <Quote className="w-8 h-8 text-brand-purple opacity-20 mb-1" />
-                <p className="text-muted-foreground">{testimonial.content}</p>
+                <Quote className="w-6 md:w-8 h-6 md:h-8 text-brand-purple opacity-20 mb-1" />
+                <p className="text-muted-foreground text-xs md:text-sm leading-relaxed">{testimonial.content}</p>
               </div>
             ))}
           </div>
@@ -291,51 +272,51 @@ const TestimonialsSection = () => {
             {ltrTestimonials.map((testimonial) => (
               <div 
                 key={testimonial.id} 
-                className="flex-shrink-0 w-72 md:w-96 p-6 mx-4 bg-white rounded-xl shadow-md border border-gray-100"
+                className="flex-shrink-0 w-64 md:w-72 lg:w-96 p-4 md:p-6 mx-2 md:mx-4 bg-white rounded-xl shadow-md border border-gray-100"
               >
-                <div className="flex mb-4 items-center">
-                  <div className="w-12 h-12 bg-brand-purple/10 rounded-full flex items-center justify-center text-brand-purple font-bold">
+                <div className="flex mb-3 md:mb-4 items-center">
+                  <div className="w-8 md:w-12 h-8 md:h-12 bg-brand-purple/10 rounded-full flex items-center justify-center text-brand-purple font-bold text-xs md:text-sm">
                     {testimonial.name.split(' ').map(n => n[0]).join('')}
                   </div>
-                  <div className="ml-4">
-                    <p className="font-semibold">{testimonial.name}</p>
-                    <p className="text-sm text-muted-foreground">{testimonial.role}</p>
+                  <div className="ml-3 md:ml-4">
+                    <p className="font-semibold text-sm md:text-base">{testimonial.name}</p>
+                    <p className="text-xs md:text-sm text-muted-foreground">{testimonial.role}</p>
                   </div>
                 </div>
-                <div className="flex mb-3">
+                <div className="flex mb-2 md:mb-3">
                   {renderStars(testimonial.rating)}
                 </div>
-                <div className="inline-block px-3 py-1 rounded-full bg-brand-purple/10 text-brand-purple text-xs font-medium mb-3">
+                <div className="inline-block px-2 md:px-3 py-1 rounded-full bg-brand-purple/10 text-brand-purple text-xs font-medium mb-2 md:mb-3">
                   {testimonial.subject}
                 </div>
-                <Quote className="w-8 h-8 text-brand-purple opacity-20 mb-1" />
-                <p className="text-muted-foreground">{testimonial.content}</p>
+                <Quote className="w-6 md:w-8 h-6 md:h-8 text-brand-purple opacity-20 mb-1" />
+                <p className="text-muted-foreground text-xs md:text-sm leading-relaxed">{testimonial.content}</p>
               </div>
             ))}
             
-            {/* Duplicate the same testimonials for infinite scroll */}
+            {/* Duplicate for infinite scroll */}
             {ltrTestimonials.map((testimonial) => (
               <div 
                 key={`dup-${testimonial.id}`} 
-                className="flex-shrink-0 w-72 md:w-96 p-6 mx-4 bg-white rounded-xl shadow-md border border-gray-100"
+                className="flex-shrink-0 w-64 md:w-72 lg:w-96 p-4 md:p-6 mx-2 md:mx-4 bg-white rounded-xl shadow-md border border-gray-100"
               >
-                <div className="flex mb-4 items-center">
-                  <div className="w-12 h-12 bg-brand-purple/10 rounded-full flex items-center justify-center text-brand-purple font-bold">
+                <div className="flex mb-3 md:mb-4 items-center">
+                  <div className="w-8 md:w-12 h-8 md:h-12 bg-brand-purple/10 rounded-full flex items-center justify-center text-brand-purple font-bold text-xs md:text-sm">
                     {testimonial.name.split(' ').map(n => n[0]).join('')}
                   </div>
-                  <div className="ml-4">
-                    <p className="font-semibold">{testimonial.name}</p>
-                    <p className="text-sm text-muted-foreground">{testimonial.role}</p>
+                  <div className="ml-3 md:ml-4">
+                    <p className="font-semibold text-sm md:text-base">{testimonial.name}</p>
+                    <p className="text-xs md:text-sm text-muted-foreground">{testimonial.role}</p>
                   </div>
                 </div>
-                <div className="flex mb-3">
+                <div className="flex mb-2 md:mb-3">
                   {renderStars(testimonial.rating)}
                 </div>
-                <div className="inline-block px-3 py-1 rounded-full bg-brand-purple/10 text-brand-purple text-xs font-medium mb-3">
+                <div className="inline-block px-2 md:px-3 py-1 rounded-full bg-brand-purple/10 text-brand-purple text-xs font-medium mb-2 md:mb-3">
                   {testimonial.subject}
                 </div>
-                <Quote className="w-8 h-8 text-brand-purple opacity-20 mb-1" />
-                <p className="text-muted-foreground">{testimonial.content}</p>
+                <Quote className="w-6 md:w-8 h-6 md:h-8 text-brand-purple opacity-20 mb-1" />
+                <p className="text-muted-foreground text-xs md:text-sm leading-relaxed">{testimonial.content}</p>
               </div>
             ))}
           </div>

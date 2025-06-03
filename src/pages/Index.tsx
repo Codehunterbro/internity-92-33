@@ -6,6 +6,7 @@ import CoursesSection from '@/components/landing/CoursesSection';
 import TestimonialsSection from '@/components/landing/TestimonialsSection';
 import ProgramStructureSection from '@/components/landing/ProgramStructureSection';
 import PathwaysSection from '@/components/landing/PathwaysSection';
+import CTASection from '@/components/landing/CTASection';
 import Footer from '@/components/common/Footer';
 
 const Index = () => {
@@ -19,6 +20,7 @@ const Index = () => {
         <ProgramStructureSection />
         <PathwaysSection />
         <TestimonialsSection />
+        <CTASection />
       </main>
       <Footer />
     </div>

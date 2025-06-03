@@ -1,12 +1,15 @@
+
 import { useEffect, useRef } from "react";
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { MotionPathPlugin } from "gsap/MotionPathPlugin";
 import { useIsMobile } from "@/hooks/use-mobile";
+
 const ProgramStructureSection = () => {
   const svgRef = useRef<SVGSVGElement>(null);
   const rocketRef = useRef<HTMLDivElement>(null);
   const isMobile = useIsMobile();
+
   useEffect(() => {
     // Register GSAP plugins
     gsap.registerPlugin(ScrollTrigger, MotionPathPlugin);
@@ -17,44 +20,35 @@ const ProgramStructureSection = () => {
     // Create stars dynamically
     const starsContainer = document.querySelector('.stars');
     if (starsContainer) {
-      // Reduce stars for mobile to improve performance
-      const starsCount = isMobile ? 100 : 200;
+      const starsCount = isMobile ? 50 : 200;
       for (let i = 0; i < starsCount; i++) {
         const star = document.createElement('div');
         star.classList.add('star');
-
-        // Random size between 1px and 3px
         const size = Math.random() * 2 + 1;
         star.style.width = size + 'px';
         star.style.height = size + 'px';
-
-        // Random position
         star.style.left = Math.random() * 100 + '%';
         star.style.top = Math.random() * 100 + '%';
-
-        // Random animation delay
         star.style.animationDelay = Math.random() * 4 + 's';
         starsContainer.appendChild(star);
       }
     }
 
-    // Create comets - reduced to 2 comets with slower animation and increased delays
+    // Create comets
     const sectionContainer = document.querySelector('.program-structure-section');
-    if (sectionContainer) {
-      // Reduced to just 2 comets with longer delay between them
+    if (sectionContainer && !isMobile) {
       for (let i = 0; i < 2; i++) {
         const comet = document.createElement('div');
         comet.classList.add('comet');
-        // Increase delay between comets even more
-        comet.style.animationDelay = `${i * 20}s`; // Increased from 15s to 20s
-        comet.style.top = `${20 + i * 40}%`; // Keep good spacing between comets
+        comet.style.animationDelay = `${i * 20}s`;
+        comet.style.top = `${20 + i * 40}%`;
         sectionContainer.appendChild(comet);
       }
     }
 
-    // Set rocket initial position - adjusted for better responsiveness
+    // Set rocket initial position
     if (rocketRef.current) {
-      const rocketSize = isMobile ? 120 : 150;
+      const rocketSize = isMobile ? 80 : 150;
       gsap.set(rocketRef.current, {
         x: 70 - rocketSize / 2,
         y: 100 - rocketSize / 2,
@@ -69,7 +63,7 @@ const ProgramStructureSection = () => {
       defaults: {
         duration: 0.05,
         autoAlpha: 1,
-        scale: 2.0,
+        scale: isMobile ? 1.5 : 2.0,
         transformOrigin: 'center',
         ease: "elastic(1.5, 1)"
       }
@@ -92,7 +86,6 @@ const ProgramStructureSection = () => {
             strokeDashoffset: 3500 * (1 - progress)
           });
 
-          // Gradually change background color as user scrolls
           const sectionElement = document.querySelector('.program-structure-section');
           if (sectionElement) {
             if (progress >= 0.95) {
@@ -109,7 +102,7 @@ const ProgramStructureSection = () => {
       }
     });
 
-    // Rocket movement timeline - updated for better responsiveness
+    // Rocket movement timeline
     const rocketTL = gsap.timeline();
     gsap.to(rocketRef.current, {
       filter: "drop-shadow(0 0 25px rgba(0, 174, 255, 1))",
@@ -118,6 +111,7 @@ const ProgramStructureSection = () => {
       yoyo: true,
       ease: "sine.inOut"
     });
+    
     rocketTL.to(rocketRef.current, {
       motionPath: {
         path: ".theLine",
@@ -140,59 +134,44 @@ const ProgramStructureSection = () => {
       }
     });
 
-    // Add animations to main timeline
     main.add(rocketTL, 0);
     main.add(pulses, 0);
 
-    // Animate planets
-    gsap.to(".planet-1", {
-      rotation: 360,
-      duration: 80,
-      repeat: -1,
-      ease: "linear"
-    });
-    gsap.to(".planet-2", {
-      rotation: 360,
-      duration: 120,
-      repeat: -1,
-      ease: "linear"
-    });
-    gsap.to(".planet-3", {
-      rotation: 360,
-      duration: 60,
-      repeat: -1,
-      ease: "linear"
-    });
-    gsap.to(".planet-4", {
-      rotation: 360,
-      duration: 100,
-      repeat: -1,
-      ease: "linear"
-    });
-    gsap.to(".planet-5", {
-      rotation: 360,
-      duration: 90,
-      repeat: -1,
-      ease: "linear"
-    });
+    // Animate planets only on desktop
+    if (!isMobile) {
+      gsap.to(".planet-1", { rotation: 360, duration: 80, repeat: -1, ease: "linear" });
+      gsap.to(".planet-2", { rotation: 360, duration: 120, repeat: -1, ease: "linear" });
+      gsap.to(".planet-3", { rotation: 360, duration: 60, repeat: -1, ease: "linear" });
+      gsap.to(".planet-4", { rotation: 360, duration: 100, repeat: -1, ease: "linear" });
+      gsap.to(".planet-5", { rotation: 360, duration: 90, repeat: -1, ease: "linear" });
+    }
 
-    // Cleanup function
     return () => {
       ScrollTrigger.getAll().forEach(t => t.kill());
       gsap.killTweensOf("*");
     };
   }, [isMobile]);
-  return <section className="program-structure-section relative overflow-hidden" style={{
-    background: "#000010",
-    minHeight: "200vh",
-    paddingTop: "4rem",
-    paddingBottom: "10rem"
-  }} data-bg="default">
+
+  return (
+    <section 
+      className="program-structure-section relative overflow-hidden" 
+      style={{
+        background: "#000010",
+        minHeight: isMobile ? "150vh" : "200vh",
+        paddingTop: "2rem",
+        paddingBottom: isMobile ? "2rem" : "10rem"
+      }} 
+      data-bg="default"
+    >
       <div className="container mx-auto px-4">
-        <div className="text-center max-w-3xl mx-auto mb-16">
-          <h6 className="text-sm font-semibold uppercase tracking-wider text-brand-purple mb-3 text-white">Program Structure</h6>
-          <h2 className="text-3xl md:text-4xl font-bold mb-6 text-white">Our 6-Month Journey to Success</h2>
-          <p className="text-muted-foreground text-lg text-white/70">
+        <div className="text-center max-w-3xl mx-auto mb-8 md:mb-16">
+          <h6 className="text-xs md:text-sm font-semibold uppercase tracking-wider text-brand-purple mb-2 md:mb-3 text-white">
+            Program Structure
+          </h6>
+          <h2 className="text-2xl md:text-4xl font-bold mb-4 md:mb-6 text-white">
+            Our 6-Month Journey to Success
+          </h2>
+          <p className="text-sm md:text-lg text-white/70 px-4">
             Follow your journey from beginner to professional with our comprehensive 6-month program.
           </p>
         </div>
@@ -201,165 +180,75 @@ const ProgramStructureSection = () => {
       {/* Stars background */}
       <div className="stars fixed top-0 left-0 w-full h-full z-0 pointer-events-none"></div>
       
-      {/* Planets */}
-      <div className="planet planet-1 absolute w-20 h-20 rounded-full top-[15%] right-[10%] z-0" style={{
-      background: "radial-gradient(circle at 30% 30%, #ff9966, #ff5e62)",
-      boxShadow: "0 0 30px rgba(255, 94, 98, 0.6)"
-    }}></div>
-      
-      <div className="planet planet-2 absolute w-28 h-28 rounded-full bottom-[15%] left-[5%] z-0" style={{
-      background: "radial-gradient(circle at 40% 40%, #5433ff, #20bdff)",
-      boxShadow: "0 0 40px rgba(32, 189, 255, 0.5)"
-    }}></div>
-      
-      <div className="planet planet-3 absolute w-16 h-16 rounded-full top-[40%] left-[8%] z-0" style={{
-      background: "radial-gradient(circle at 30% 30%, #a17fe0, #5d26c1)",
-      boxShadow: "0 0 25px rgba(161, 127, 224, 0.6)"
-    }}></div>
-      
-      <div className="planet planet-4 absolute w-24 h-24 rounded-full top-[60%] right-[8%] z-0" style={{
-      background: "radial-gradient(circle at 70% 30%, #76b852, #8DC26F)",
-      boxShadow: "0 0 35px rgba(118, 184, 82, 0.5)"
-    }}></div>
-      
-      <div className="planet planet-5 absolute w-20 h-20 rounded-full top-[80%] right-[15%] z-0" style={{
-      background: "radial-gradient(circle at 40% 40%, #ffb347, #ffcc33)",
-      boxShadow: "0 0 30px rgba(255, 179, 71, 0.6)"
-    }}>
-        <div className="absolute h-2.5 bg-[rgba(255,204,51,0.3)] left-[-20px] right-[-20px] rounded-full top-[30px] rotate-[-15deg]"></div>
-        <div className="absolute h-1 bg-[rgba(255,204,51,0.2)] left-[-20px] right-[-20px] rounded-full top-[35px] rotate-[-15deg]"></div>
-      </div>
+      {/* Planets - hidden on mobile */}
+      {!isMobile && (
+        <>
+          <div className="planet planet-1 absolute w-16 md:w-20 h-16 md:h-20 rounded-full top-[15%] right-[10%] z-0" style={{
+            background: "radial-gradient(circle at 30% 30%, #ff9966, #ff5e62)",
+            boxShadow: "0 0 30px rgba(255, 94, 98, 0.6)"
+          }}></div>
+          
+          <div className="planet planet-2 absolute w-20 md:w-28 h-20 md:h-28 rounded-full bottom-[15%] left-[5%] z-0" style={{
+            background: "radial-gradient(circle at 40% 40%, #5433ff, #20bdff)",
+            boxShadow: "0 0 40px rgba(32, 189, 255, 0.5)"
+          }}></div>
+          
+          <div className="planet planet-3 absolute w-12 md:w-16 h-12 md:h-16 rounded-full top-[40%] left-[8%] z-0" style={{
+            background: "radial-gradient(circle at 30% 30%, #a17fe0, #5d26c1)",
+            boxShadow: "0 0 25px rgba(161, 127, 224, 0.6)"
+          }}></div>
+          
+          <div className="planet planet-4 absolute w-18 md:w-24 h-18 md:h-24 rounded-full top-[60%] right-[8%] z-0" style={{
+            background: "radial-gradient(circle at 70% 30%, #76b852, #8DC26F)",
+            boxShadow: "0 0 35px rgba(118, 184, 82, 0.5)"
+          }}></div>
+          
+          <div className="planet planet-5 absolute w-16 md:w-20 h-16 md:h-20 rounded-full top-[80%] right-[15%] z-0" style={{
+            background: "radial-gradient(circle at 40% 40%, #ffb347, #ffcc33)",
+            boxShadow: "0 0 30px rgba(255, 179, 71, 0.6)"
+          }}>
+            <div className="absolute h-1.5 md:h-2.5 bg-[rgba(255,204,51,0.3)] left-[-15px] md:left-[-20px] right-[-15px] md:right-[-20px] rounded-full top-[20px] md:top-[30px] rotate-[-15deg]"></div>
+            <div className="absolute h-0.5 md:h-1 bg-[rgba(255,204,51,0.2)] left-[-15px] md:left-[-20px] right-[-15px] md:right-[-20px] rounded-full top-[23px] md:top-[35px] rotate-[-15deg]"></div>
+          </div>
+        </>
+      )}
 
-      {/* Plant decorations */}
-      <div className="absolute w-24 h-auto top-[10%] left-[10px] z-5 plant-left-1 hidden md:block">
+      <svg 
+        id="svg-stage" 
+        ref={svgRef} 
+        xmlns="http://www.w3.org/2000/svg" 
+        viewBox="0 0 1000 1950" 
+        className={`${isMobile ? 'w-full' : 'max-w-full md:max-w-4xl lg:max-w-5xl'} mx-auto block px-2 md:px-5 box-border relative z-10 mt-4 md:mt-8 mb-2 md:mb-4`}
+        style={isMobile ? { transform: 'scale(1.1)', transformOrigin: 'center top' } : {}}
+      >
         
-      </div>
-      <div className="absolute w-24 h-auto top-[70%] left-[10px] z-5 plant-left-2 hidden md:block">
+        {/* Month labels - Smaller text for mobile */}
+        <text className="month-label month1" x="40" y="190" fill="#00BFFF" fontSize={isMobile ? "10px" : "14px"} fontWeight="bold" visibility="hidden">MONTH 1</text>
+        <text className="month-label month2" x="40" y="360" fill="#00BFFF" fontSize={isMobile ? "10px" : "14px"} fontWeight="bold" visibility="hidden">MONTH 1</text>
+        <text className="month-label month3" x="40" y="530" fill="#00BFFF" fontSize={isMobile ? "10px" : "14px"} fontWeight="bold" visibility="hidden">MONTH 2</text>
+        <text className="month-label month4" x="40" y="700" fill="#00BFFF" fontSize={isMobile ? "10px" : "14px"} fontWeight="bold" visibility="hidden">MONTH 2</text>
+        <text className="month-label month5" x="40" y="870" fill="#00BFFF" fontSize={isMobile ? "10px" : "14px"} fontWeight="bold" visibility="hidden">MONTH 3</text>
+        <text className="month-label month6" x="40" y="1040" fill="#00BFFF" fontSize={isMobile ? "10px" : "14px"} fontWeight="bold" visibility="hidden">MONTH 3</text>
+        <text className="month-label month7" x="40" y="1210" fill="#00BFFF" fontSize={isMobile ? "10px" : "14px"} fontWeight="bold" visibility="hidden">MONTH 4</text>
+        <text className="month-label month8" x="40" y="1380" fill="#00BFFF" fontSize={isMobile ? "10px" : "14px"} fontWeight="bold" visibility="hidden">MONTH 4</text>
+        <text className="month-label month9" x="40" y="1550" fill="#00BFFF" fontSize={isMobile ? "10px" : "14px"} fontWeight="bold" visibility="hidden">MONTH 5</text>
+        <text className="month-label month10" x="40" y="1670" fill="#00BFFF" fontSize={isMobile ? "10px" : "14px"} fontWeight="bold" visibility="hidden">MONTH 5</text>
+        <text className="month-label month11" x="40" y="1790" fill="#00BFFF" fontSize={isMobile ? "10px" : "14px"} fontWeight="bold" visibility="hidden">MONTH 6</text>
+        <text className="month-label month12" x="40" y="1890" fill="#00BFFF" fontSize={isMobile ? "10px" : "14px"} fontWeight="bold" visibility="hidden">MONTH 6</text>
         
-      </div>
-      <div className="absolute w-24 h-auto top-[20%] right-[10px] z-5 plant-right-1 hidden md:block">
-        
-      </div>
-      <div className="absolute w-24 h-auto top-[80%] right-[10px] z-5 plant-right-2 hidden md:block">
-        
-      </div>
-
-      <svg id="svg-stage" ref={svgRef} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1950" className="max-w-full md:max-w-4xl lg:max-w-5xl  mx-auto block px-5 box-border relative z-10 mt-8 mb-4">
-        
-        {/* Month labels and descriptions - Adjusted positioning to prevent cutting off */}
-        <text className="month-label month1" x="40" y="190" fill="#00BFFF" fontSize="14px" fontWeight="bold" visibility="hidden" style={{
-        filter: "drop-shadow(0 0 4px rgba(0, 174, 255, 0.8))"
-      }}>MONTH 1</text>
-        <text className="text01" x="70" y="215" fill="white" fontSize="12px" visibility="hidden" style={{
-        textShadow: "0 0 5px rgba(0, 174, 255, 0.8)"
-      }}></text>
-        <text className="month-label month2" x="40" y="360" fill="#00BFFF" fontSize="14px" fontWeight="bold" visibility="hidden" style={{
-        filter: "drop-shadow(0 0 4px rgba(0, 174, 255, 0.8))"
-      }}>MONTH 1</text>
-        <text className="text02" x="70" y="385" fill="white" fontSize="12px" visibility="hidden" style={{
-        textShadow: "0 0 5px rgba(0, 174, 255, 0.8)"
-      }}></text>
-        <text className="month-label month3" x="40" y="530" fill="#00BFFF" fontSize="14px" fontWeight="bold" visibility="hidden" style={{
-        filter: "drop-shadow(0 0 4px rgba(0, 174, 255, 0.8))"
-      }}>MONTH 2</text>
-        <text className="text03" x="70" y="555" fill="white" fontSize="12px" visibility="hidden" style={{
-        textShadow: "0 0 5px rgba(0, 174, 255, 0.8)"
-      }}>
-
-</text>
-        <text className="month-label month4" x="40" y="700" fill="#00BFFF" fontSize="14px" fontWeight="bold" visibility="hidden" style={{
-        filter: "drop-shadow(0 0 4px rgba(0, 174, 255, 0.8))"
-      }}>MONTH 2</text>
-        <text className="text04" x="70" y="725" fill="white" fontSize="12px" visibility="hidden" style={{
-        textShadow: "0 0 5px rgba(0, 174, 255, 0.8)"
-      }}> </text>
-        <text className="month-label month5" x="40" y="870" fill="#00BFFF" fontSize="14px" fontWeight="bold" visibility="hidden" style={{
-        filter: "drop-shadow(0 0 4px rgba(0, 174, 255, 0.8))"
-      }}>MONTH 3</text>
-        <text className="text05" x="70" y="895" fill="white" fontSize="12px" visibility="hidden" style={{
-        textShadow: "0 0 5px rgba(0, 174, 255, 0.8)"
-      }}></text>
-        <text className="month-label month6" x="40" y="1040" fill="#00BFFF" fontSize="14px" fontWeight="bold" visibility="hidden" style={{
-        filter: "drop-shadow(0 0 4px rgba(0, 174, 255, 0.8))"
-      }}>MONTH 3</text>
-        <text className="text06" x="70" y="1065" fill="white" fontSize="12px" visibility="hidden" style={{
-        textShadow: "0 0 5px rgba(0, 174, 255, 0.8)"
-      }}></text>
-        <text className="month-label month7" x="40" y="1210" fill="#00BFFF" fontSize="14px" fontWeight="bold" visibility="hidden" style={{
-        filter: "drop-shadow(0 0 4px rgba(0, 174, 255, 0.8))"
-      }}>MONTH 4</text>
-        <text className="text07" x="70" y="1235" fill="white" fontSize="12px" visibility="hidden" style={{
-        textShadow: "0 0 5px rgba(0, 174, 255, 0.8)"
-      }}></text>
-        <text className="month-label month8" x="40" y="1380" fill="#00BFFF" fontSize="14px" fontWeight="bold" visibility="hidden" style={{
-        filter: "drop-shadow(0 0 4px rgba(0, 174, 255, 0.8))"
-      }}>MONTH 4</text>
-        <text className="text08" x="70" y="1405" fill="white" fontSize="12px" visibility="hidden" style={{
-        textShadow: "0 0 5px rgba(0, 174, 255, 0.8)"
-      }}></text>
-        <text className="month-label month9" x="40" y="1550" fill="#00BFFF" fontSize="14px" fontWeight="bold" visibility="hidden" style={{
-        filter: "drop-shadow(0 0 4px rgba(0, 174, 255, 0.8))"
-      }}>MONTH 5</text>
-        <text className="text09" x="70" y="1575" fill="white" fontSize="12px" visibility="hidden" style={{
-        textShadow: "0 0 5px rgba(0, 174, 255, 0.8)"
-      }}>
-</text>
-        <text className="month-label month10" x="40" y="1670" fill="#00BFFF" fontSize="14px" fontWeight="bold" visibility="hidden" style={{
-        filter: "drop-shadow(0 0 4px rgba(0, 174, 255, 0.8))"
-      }}>MONTH 5</text>
-        <text className="text10" x="70" y="1695" fill="white" fontSize="12px" visibility="hidden" style={{
-        textShadow: "0 0 5px rgba(0, 174, 255, 0.8)"
-      }}></text>
-        <text className="month-label month11" x="40" y="1790" fill="#00BFFF" fontSize="14px" fontWeight="bold" visibility="hidden" style={{
-        filter: "drop-shadow(0 0 4px rgba(0, 174, 255, 0.8))"
-      }}>MONTH 6</text>
-        <text className="text11" x="70" y="1815" fill="white" fontSize="12px" visibility="hidden" style={{
-        textShadow: "0 0 5px rgba(0, 174, 255, 0.8)"
-      }}></text>
-        <text className="month-label month12" x="40" y="1890" fill="#00BFFF" fontSize="14px" fontWeight="bold" visibility="hidden" style={{
-        filter: "drop-shadow(0 0 4px rgba(0, 174, 255, 0.8))"
-      }}>MONTH 6</text>
-        <text className="text12" x="70" y="1915" fill="white" fontSize="12px" visibility="hidden" style={{
-        textShadow: "0 0 5px rgba(0, 174, 255, 0.8)"
-      }}></text>
-        
-        {/* Milestone descriptions - adjusted for better display on mobile */}
-        <text className="milestone-text m-text1" x="300" y="190" fill="white" fontSize="10px" visibility="hidden" style={{
-        filter: "drop-shadow(0 0 5px rgba(0, 174, 255, 0.8))"
-      }}>Begin Course 1</text>
-        <text className="milestone-text m-text2" x="360" y="360" fill="white" fontSize="10px" visibility="hidden" style={{
-        filter: "drop-shadow(0 0 5px rgba(0, 174, 255, 0.8))"
-      }}>Grow Through Course 1</text>
-        <text className="milestone-text m-text3" x="360" y="530" fill="white" fontSize="10px" visibility="hidden" style={{
-        filter: "drop-shadow(0 0 5px rgba(0, 174, 255, 0.8))"
-      }}>Certification 1 Achieved</text>
-        <text className="milestone-text m-text4" x="360" y="700" fill="white" fontSize="10px" visibility="hidden" style={{
-        filter: "drop-shadow(0 0 5px rgba(0, 174, 255, 0.8))"
-      }}>Start Internship 1</text>
-        <text className="milestone-text m-text5" x="400" y="870" fill="white" fontSize="10px" visibility="hidden" style={{
-        filter: "drop-shadow(0 0 5px rgba(0, 174, 255, 0.8))"
-      }}>Progress Internship 1</text>
-        <text className="milestone-text m-text6" x="380" y="1040" fill="white" fontSize="10px" visibility="hidden" style={{
-        filter: "drop-shadow(0 0 5px rgba(0, 174, 255, 0.8))"
-      }}>Complete Internship 1</text>
-        <text className="milestone-text m-text7" x="400" y="1210" fill="white" fontSize="10px" visibility="hidden" style={{
-        filter: "drop-shadow(0 0 5px rgba(0, 174, 255, 0.8))"
-      }}>Begin Course 2</text>
-        <text className="milestone-text m-text8" x="400" y="1380" fill="white" fontSize="10px" visibility="hidden" style={{
-        filter: "drop-shadow(0 0 5px rgba(0, 174, 255, 0.8))"
-      }}>Grow Through Course 2</text>
-        <text className="milestone-text m-text9" x="350" y="1550" fill="white" fontSize="10px" visibility="hidden" style={{
-        filter: "drop-shadow(0 0 5px rgba(0, 174, 255, 0.8))"
-      }}>Certification 2 Achieved</text>
-        <text className="milestone-text m-text10" x="390" y="1670" fill="white" fontSize="10px" visibility="hidden" style={{
-        filter: "drop-shadow(0 0 5px rgba(0, 174, 255, 0.8))"
-      }}>Start Internship 2</text>
-        <text className="milestone-text m-text11" x="400" y="1790" fill="white" fontSize="10px" visibility="hidden" style={{
-        filter: "drop-shadow(0 0 5px rgba(0, 174, 255, 0.8))"
-      }}>Progress Internship 2</text>
-        <text className="milestone-text m-text12" x="500" y="1890" fill="white" fontSize="10px" visibility="hidden" style={{
-        filter: "drop-shadow(0 0 5px rgba(0, 174, 255, 0.8))"
-      }}>Complete Internship 2 & Program Completion</text>
+        {/* Milestone descriptions - Better positioning for mobile */}
+        <text className="milestone-text m-text1" x={isMobile ? "200" : "300"} y="190" fill="white" fontSize={isMobile ? "8px" : "10px"} visibility="hidden">Begin Course 1</text>
+        <text className="milestone-text m-text2" x={isMobile ? "260" : "360"} y="360" fill="white" fontSize={isMobile ? "8px" : "10px"} visibility="hidden">Grow Through Course 1</text>
+        <text className="milestone-text m-text3" x={isMobile ? "260" : "360"} y="530" fill="white" fontSize={isMobile ? "8px" : "10px"} visibility="hidden">Certification 1 Achieved</text>
+        <text className="milestone-text m-text4" x={isMobile ? "260" : "360"} y="700" fill="white" fontSize={isMobile ? "8px" : "10px"} visibility="hidden">Start Internship 1</text>
+        <text className="milestone-text m-text5" x={isMobile ? "300" : "400"} y="870" fill="white" fontSize={isMobile ? "8px" : "10px"} visibility="hidden">Progress Internship 1</text>
+        <text className="milestone-text m-text6" x={isMobile ? "280" : "380"} y="1040" fill="white" fontSize={isMobile ? "8px" : "10px"} visibility="hidden">Complete Internship 1</text>
+        <text className="milestone-text m-text7" x={isMobile ? "300" : "400"} y="1210" fill="white" fontSize={isMobile ? "8px" : "10px"} visibility="hidden">Begin Course 2</text>
+        <text className="milestone-text m-text8" x={isMobile ? "300" : "400"} y="1380" fill="white" fontSize={isMobile ? "8px" : "10px"} visibility="hidden">Grow Through Course 2</text>
+        <text className="milestone-text m-text9" x={isMobile ? "250" : "350"} y="1550" fill="white" fontSize={isMobile ? "8px" : "10px"} visibility="hidden">Certification 2 Achieved</text>
+        <text className="milestone-text m-text10" x={isMobile ? "290" : "390"} y="1670" fill="white" fontSize={isMobile ? "8px" : "10px"} visibility="hidden">Start Internship 2</text>
+        <text className="milestone-text m-text11" x={isMobile ? "300" : "400"} y="1790" fill="white" fontSize={isMobile ? "8px" : "10px"} visibility="hidden">Progress Internship 2</text>
+        <text className="milestone-text m-text12" x={isMobile ? "400" : "500"} y="1890" fill="white" fontSize={isMobile ? "7px" : "10px"} visibility="hidden">Complete Internship 2 & Program Completion</text>
         
         {/* The curved path */}
         <path className="theLine" d="M 150,100
@@ -373,57 +262,37 @@ const ProgramStructureSection = () => {
            C 220 1460 230 1510 240 1560
            C 250 1620 280 1650 290 1680
            C 300 1740 280 1770 260 1800
-           C 270 1850 330 1880 380 1900" fill="none" stroke="rgba(0, 195, 255, 0.8)" strokeWidth="4px" strokeDasharray="3500" strokeDashoffset="3500" strokeLinecap="round" style={{
-        filter: "drop-shadow(0 0 8px rgba(0, 174, 255, 0.8))"
-      }}></path>
+           C 270 1850 330 1880 380 1900" 
+           fill="none" 
+           stroke="rgba(0, 195, 255, 0.8)" 
+           strokeWidth={isMobile ? "3px" : "4px"} 
+           strokeDasharray="3500" 
+           strokeDashoffset="3500" 
+           strokeLinecap="round" 
+           style={{
+             filter: "drop-shadow(0 0 8px rgba(0, 174, 255, 0.8))"
+           }}
+        ></path>
         
-        {/* Milestone circles */}
-        {/* Milestone circles - Adjusted cx positions to match the new curve */}
-        <circle className="ball ball01" r="15" cx="200" cy="200" fill="white" visibility="hidden" style={{
-        filter: "drop-shadow(0 0 8px rgba(255, 255, 255, 0.8))"
-      }}></circle>
-        <circle className="ball ball02" r="15" cx="230" cy="370" fill="white" visibility="hidden" style={{
-        filter: "drop-shadow(0 0 8px rgba(255, 255, 255, 0.8))"
-      }}></circle>
-        <circle className="ball ball03" r="15" cx="260" cy="540" fill="white" visibility="hidden" style={{
-        filter: "drop-shadow(0 0 8px rgba(255, 255, 255, 0.8))"
-      }}></circle>
-        <circle className="ball ball04" r="15" cx="250" cy="710" fill="white" visibility="hidden" style={{
-        filter: "drop-shadow(0 0 8px rgba(255, 255, 255, 0.8))"
-      }}></circle>
-        <circle className="ball ball05" r="15" cx="300" cy="880" fill="white" visibility="hidden" style={{
-        filter: "drop-shadow(0 0 8px rgba(255, 255, 255, 0.8))"
-      }}></circle>
-        <circle className="ball ball06" r="15" cx="280" cy="1050" fill="white" visibility="hidden" style={{
-        filter: "drop-shadow(0 0 8px rgba(255, 255, 255, 0.8))"
-      }}></circle>
-        <circle className="ball ball07" r="15" cx="260" cy="1220" fill="white" visibility="hidden" style={{
-        filter: "drop-shadow(0 0 8px rgba(255, 255, 255, 0.8))"
-      }}></circle>
-        <circle className="ball ball08" r="15" cx="230" cy="1390" fill="white" visibility="hidden" style={{
-        filter: "drop-shadow(0 0 8px rgba(255, 255, 255, 0.8))"
-      }}></circle>
-        <circle className="ball ball09" r="15" cx="240" cy="1560" fill="white" visibility="hidden" style={{
-        filter: "drop-shadow(0 0 8px rgba(255, 255, 255, 0.8))"
-      }}></circle>
-        <circle className="ball ball10" r="15" cx="290" cy="1680" fill="white" visibility="hidden" style={{
-        filter: "drop-shadow(0 0 8px rgba(255, 255, 255, 0.8))"
-      }}></circle>
-        <circle className="ball ball11" r="15" cx="260" cy="1800" fill="white" visibility="hidden" style={{
-        filter: "drop-shadow(0 0 8px rgba(255, 255, 255, 0.8))"
-      }}></circle>
-        <circle className="ball ball12" r="15" cx="380" cy="1900" fill="white" visibility="hidden" style={{
-        filter: "drop-shadow(0 0 8px rgba(255, 255, 255, 0.8))"
-      }}></circle>
+        {/* Milestone circles - Smaller on mobile */}
+        <circle className="ball ball01" r={isMobile ? "10" : "15"} cx="200" cy="200" fill="white" visibility="hidden"></circle>
+        <circle className="ball ball02" r={isMobile ? "10" : "15"} cx="230" cy="370" fill="white" visibility="hidden"></circle>
+        <circle className="ball ball03" r={isMobile ? "10" : "15"} cx="260" cy="540" fill="white" visibility="hidden"></circle>
+        <circle className="ball ball04" r={isMobile ? "10" : "15"} cx="250" cy="710" fill="white" visibility="hidden"></circle>
+        <circle className="ball ball05" r={isMobile ? "10" : "15"} cx="300" cy="880" fill="white" visibility="hidden"></circle>
+        <circle className="ball ball06" r={isMobile ? "10" : "15"} cx="280" cy="1050" fill="white" visibility="hidden"></circle>
+        <circle className="ball ball07" r={isMobile ? "10" : "15"} cx="260" cy="1220" fill="white" visibility="hidden"></circle>
+        <circle className="ball ball08" r={isMobile ? "10" : "15"} cx="230" cy="1390" fill="white" visibility="hidden"></circle>
+        <circle className="ball ball09" r={isMobile ? "10" : "15"} cx="240" cy="1560" fill="white" visibility="hidden"></circle>
+        <circle className="ball ball10" r={isMobile ? "10" : "15"} cx="290" cy="1680" fill="white" visibility="hidden"></circle>
+        <circle className="ball ball11" r={isMobile ? "10" : "15"} cx="260" cy="1800" fill="white" visibility="hidden"></circle>
+        <circle className="ball ball12" r={isMobile ? "10" : "15"} cx="380" cy="1900" fill="white" visibility="hidden"></circle>
       </svg>
 
-      <div className="rocket-container absolute" ref={rocketRef} style={{
-      filter: "drop-shadow(0 0 25px rgba(0, 174, 255, 0.8))"
-    }}>
+      <div className="rocket-container absolute" ref={rocketRef}>
         <img className="rocket w-full h-full object-contain origin-center" src="/internity-assets/rocket.gif" alt="rocket" />
       </div>
 
-      {/* CSS for the additional effects */}e
       <style>
         {`
         .program-structure-section {
@@ -493,61 +362,10 @@ const ProgramStructureSection = () => {
           0%, 100% { transform: translateY(0); }
           50% { transform: translateY(-20px); }
         }
-        
-        /* Responsive styling for mobile screens */
-        @media (max-width: 768px) {
-          .program-structure-section {
-            min-height: 130vh !important;
-            padding-bottom: 1rem !important;
-          }
-          
-          #svg-stage {
-            width: 100% !important;
-            max-width: 100% !important;
-            transform: scale(0.95);
-            transform-origin: center top;
-          }
-          
-         .milestone-text { 
-            font-size: 15px !important;
-            transform: translateX(-80px);
-          }
-          
-          .month-label, .text01, .text02, .text03, .text04, .text05, .text06,
-          .text07, .text08, .text09, .text10, .text11, .text12 {
-            font-size: 12px !important;
-          }
-          
-          .ball {
-            r: 10;
-          }
-          
-          .planet-1, .planet-2, .planet-3, .planet-4, .planet-5 {
-            transform: scale(0.7);
-          }
-          
-          .rocket-container {
-            transform: scale(0.8);
-          }
-        }
-        
-        /* Tablet specific adjustments */
-        @media (min-width: 769px) and (max-width: 1024px) {
-          .program-structure-section {
-            min-height: 190vh !important;
-            padding-bottom: 2rem !important;
-          }
-          
-          #svg-stage {
-            max-width: 90% !important;
-          }
-          
-          .milestone-text {
-            transform: translateX(-60px);
-          }
-        }
         `}
       </style>
-    </section>;
+    </section>
+  );
 };
+
 export default ProgramStructureSection;
