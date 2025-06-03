@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { CalendarDays, Clock, PlayCircle, User, Users, Loader2, BookOpen, Award, Target } from 'lucide-react';
@@ -69,7 +70,7 @@ const LearningDashboard = () => {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Responsive Course Menu for small screens */}
+      {/* Responsive Course Menu - only shows on small screens */}
       <ResponsiveCourseMenu 
         modules={mockModules}
         lessonCompletionStatus={{}}
@@ -79,7 +80,7 @@ const LearningDashboard = () => {
       <header className="bg-white shadow-sm border-b">
         <div className="flex items-center justify-between px-4 py-3">
           <div className="flex items-center space-x-3">
-            <h1 className="text-lg md:text-xl font-semibold text-gray-900 ml-0 lg:ml-0">Learning Dashboard</h1>
+            <h1 className="text-lg md:text-xl font-semibold text-gray-900">Learning Dashboard</h1>
           </div>
           <div className="flex items-center space-x-2">
             <Button variant="outline" size="sm" className="hidden sm:flex text-xs sm:text-sm">

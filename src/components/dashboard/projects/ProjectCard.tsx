@@ -48,18 +48,14 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
   const getStatusIcon = () => {
     switch (status) {
       case 'done':
-        return <CheckCircle className="h-3 md:h-4 w-3 md:w-4 text-green-600" />;
+        return <CheckCircle className="h-4 w-4 text-green-600 flex-shrink-0" />;
       case 'submitted':
-        return <Clock className="h-3 md:h-4 w-3 md:w-4 text-blue-600" />;
+        return <Clock className="h-4 w-4 text-blue-600 flex-shrink-0" />;
       case 'pending':
       case 'not_submitted':
       default:
-        return <AlertCircle className="h-3 md:h-4 w-3 md:w-4 text-yellow-600" />;
+        return <AlertCircle className="h-4 w-4 text-yellow-600 flex-shrink-0" />;
     }
-  };
-
-  const getCategoryIcon = () => {
-    return <FileText className="h-3 md:h-4 w-3 md:w-4 text-gray-500" />;
   };
 
   const formatDeadline = (deadline: string) => {
@@ -77,52 +73,59 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
 
   return (
     <Card className="w-full hover:shadow-md transition-shadow">
-      <CardHeader className="pb-2 md:pb-3">
-        <div className="flex flex-col sm:flex-row items-start justify-between gap-2">
-          <div className="flex items-center space-x-2 md:space-x-3">
-            {getCategoryIcon()}
-            <Badge variant="outline" className="text-xs">
-              {type === 'major' ? 'Major Project' : 'Minor Project'}
-            </Badge>
-          </div>
-          <div className="flex flex-col sm:flex-row items-start sm:items-center space-y-1 sm:space-y-0 sm:space-x-2">
-            <div className="flex items-center text-xs md:text-sm text-gray-500">
-              <Calendar className="h-3 md:h-4 w-3 md:w-4 mr-1" />
-              {formatDeadline(deadline)}
+      <CardHeader className="pb-3">
+        <div className="flex flex-col space-y-3">
+          {/* Top row with icon, badge and status */}
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-2">
+              <FileText className="h-4 w-4 text-gray-500 flex-shrink-0" />
+              <Badge variant="outline" className="text-xs whitespace-nowrap">
+                {type === 'major' ? 'Major Project' : 'Minor Project'}
+              </Badge>
             </div>
             {getStatusBadge()}
           </div>
+          
+          {/* Date row */}
+          <div className="flex items-center text-xs text-gray-500">
+            <Calendar className="h-3 w-3 mr-1 flex-shrink-0" />
+            <span>{formatDeadline(deadline)}</span>
+          </div>
         </div>
       </CardHeader>
-      <CardContent className="pt-0">
-        <div className="space-y-2 md:space-y-3">
-          <h3 className="font-semibold text-base md:text-lg text-gray-900 break-words">{title}</h3>
-          <p className="text-xs md:text-sm text-gray-600 leading-relaxed break-words">{description}</p>
-          
-          {/* Display marks if available and status is marked */}
-          {score && status === 'done' && (
-            <div className="bg-green-50 border border-green-200 rounded-lg p-2 md:p-3">
-              <div className="flex items-center justify-between">
-                <span className="text-xs md:text-sm font-medium text-green-800">Score:</span>
-                <span className="text-base md:text-lg font-bold text-green-900">{score}</span>
-              </div>
+      
+      <CardContent className="pt-0 space-y-4">
+        {/* Title */}
+        <h3 className="font-semibold text-base text-gray-900 leading-tight">{title}</h3>
+        
+        {/* Description */}
+        <p className="text-sm text-gray-600 leading-relaxed line-clamp-3">{description}</p>
+        
+        {/* Score display if available */}
+        {score && status === 'done' && (
+          <div className="bg-green-50 border border-green-200 rounded-lg p-3">
+            <div className="flex items-center justify-between">
+              <span className="text-sm font-medium text-green-800">Score:</span>
+              <span className="text-lg font-bold text-green-900">{score}</span>
             </div>
-          )}
-          
-          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 pt-2">
-            <div className="flex items-center space-x-2">
-              {getStatusIcon()}
-              <span className="text-xs md:text-sm text-gray-500">
-                Deadline: {formatDeadline(deadline)}
-              </span>
-            </div>
-            <Button 
-              onClick={() => onCheck(type, moduleId, weekId, courseId)} 
-              className="bg-purple-500 hover:bg-purple-600 text-white px-4 md:px-6 py-2 rounded-md text-xs md:text-sm w-full sm:w-auto"
-            >
-              Check
-            </Button>
           </div>
+        )}
+        
+        {/* Bottom section with status and button */}
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 pt-2 border-t border-gray-100">
+          <div className="flex items-center space-x-2 flex-1">
+            {getStatusIcon()}
+            <span className="text-sm text-gray-500 truncate">
+              Deadline: {formatDeadline(deadline)}
+            </span>
+          </div>
+          
+          <Button 
+            onClick={() => onCheck(type, moduleId, weekId, courseId)} 
+            className="bg-purple-500 hover:bg-purple-600 text-white px-4 py-2 rounded-md text-sm font-medium w-full sm:w-auto"
+          >
+            Check
+          </Button>
         </div>
       </CardContent>
     </Card>
