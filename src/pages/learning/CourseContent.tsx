@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -38,7 +39,12 @@ const CourseContent = () => {
     lessonId,
     projectModuleId,
     projectWeekId
-  } = useParams();
+  } = useParams<{
+    courseId: string;
+    lessonId?: string;
+    projectModuleId?: string;
+    projectWeekId?: string;
+  }>();
   const navigate = useNavigate();
   const { toast } = useToast();
   const [currentLesson, setCurrentLesson] = useState<Lesson | null>(null);
@@ -50,7 +56,7 @@ const CourseContent = () => {
   const [modules, setModules] = useState<CourseSidebarModule[]>([]);
 
   // Determine if we're viewing a project based on URL params
-  const isProjectView = projectModuleId && (projectWeekId || projectModuleId);
+  const isProjectView = Boolean(projectModuleId && (projectWeekId || projectModuleId));
   const projectType = projectWeekId ? 'minor' : 'major';
   
   console.log("Route params:", { courseId, lessonId, projectModuleId, projectWeekId });
@@ -202,11 +208,11 @@ const CourseContent = () => {
             <Skeleton className="h-4 w-1/2" />
             <Skeleton className="h-64 w-full" />
           </div>
-        ) : isProjectView ? (
+        ) : isProjectView && projectModuleId ? (
           // Show project submission view
           <ProjectSubmissionView 
             type={projectType as 'minor' | 'major'} 
-            moduleId={projectModuleId!} 
+            moduleId={projectModuleId} 
             weekId={projectWeekId} 
           />
         ) : !currentLesson && !lessonId ? (
