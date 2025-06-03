@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { CalendarDays, Clock, PlayCircle, User, Users, Loader2, BookOpen, Award, Target } from 'lucide-react';
@@ -50,7 +49,7 @@ const LearningDashboard = () => {
     }
   ];
 
-  // Mock modules for the responsive menu
+  // Mock modules for the responsive menu with correct types
   const mockModules = [
     {
       id: '1',
@@ -60,8 +59,8 @@ const LearningDashboard = () => {
           id: '1',
           title: 'Week 1: Introduction',
           lessons: [
-            { id: '1', title: 'Getting Started', type: 'video', duration: '15 min', isCompleted: true, isLocked: false },
-            { id: '2', title: 'Basics', type: 'reading', duration: '10 min', isCompleted: false, isLocked: false }
+            { id: '1', title: 'Getting Started', type: 'video' as const, duration: '15 min', isCompleted: true, isLocked: false },
+            { id: '2', title: 'Basics', type: 'reading' as const, duration: '10 min', isCompleted: false, isLocked: false }
           ]
         }
       ]
