@@ -48,46 +48,50 @@ const ProjectHeader: React.FC<ProjectHeaderProps> = ({
   ];
 
   return (
-    <div className="flex items-center justify-between mb-6">
-      <h1 className="text-3xl font-bold text-gray-900">{title}</h1>
+    <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
+      <h1 className="text-2xl md:text-3xl font-bold text-gray-900">{title}</h1>
       
-      <div className="flex items-center space-x-4">
-        <Select value={weekFilter} onValueChange={onWeekFilterChange}>
-          <SelectTrigger className="w-[130px]">
-            <SelectValue placeholder="Week" />
-          </SelectTrigger>
-          <SelectContent>
-            {weekOptions.map((option) => (
-              <SelectItem key={option.value} value={option.value}>
-                {option.label}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+      <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-4 w-full sm:w-auto">
+        <div className="grid grid-cols-2 gap-2 sm:flex sm:gap-4">
+          <Select value={weekFilter} onValueChange={onWeekFilterChange}>
+            <SelectTrigger className="w-full sm:w-[130px] text-xs sm:text-sm">
+              <SelectValue placeholder="Week" />
+            </SelectTrigger>
+            <SelectContent>
+              {weekOptions.map((option) => (
+                <SelectItem key={option.value} value={option.value}>
+                  {option.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
 
-        <Select value={monthFilter} onValueChange={onMonthFilterChange}>
-          <SelectTrigger className="w-[140px]">
-            <SelectValue placeholder="Month" />
-          </SelectTrigger>
-          <SelectContent>
-            {monthOptions.map((option) => (
-              <SelectItem key={option.value} value={option.value}>
-                {option.label}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+          <Select value={monthFilter} onValueChange={onMonthFilterChange}>
+            <SelectTrigger className="w-full sm:w-[140px] text-xs sm:text-sm">
+              <SelectValue placeholder="Month" />
+            </SelectTrigger>
+            <SelectContent>
+              {monthOptions.map((option) => (
+                <SelectItem key={option.value} value={option.value}>
+                  {option.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
         
-        <Button variant="outline" className="flex items-center space-x-2">
-          <Filter className="h-4 w-4" />
-          <span>Filter</span>
-        </Button>
-        
-        <div className="relative">
-          <Button variant="outline" className="flex items-center space-x-2">
-            <span>{filterValue}</span>
-            <ChevronDown className="h-4 w-4" />
+        <div className="flex gap-2 w-full sm:w-auto">
+          <Button variant="outline" className="flex items-center space-x-2 flex-1 sm:flex-none text-xs sm:text-sm">
+            <Filter className="h-3 w-3 sm:h-4 sm:w-4" />
+            <span>Filter</span>
           </Button>
+          
+          <div className="relative flex-1 sm:flex-none">
+            <Button variant="outline" className="flex items-center space-x-2 w-full justify-between text-xs sm:text-sm">
+              <span className="truncate">{filterValue}</span>
+              <ChevronDown className="h-3 w-3 sm:h-4 sm:w-4 flex-shrink-0" />
+            </Button>
+          </div>
         </div>
       </div>
     </div>
