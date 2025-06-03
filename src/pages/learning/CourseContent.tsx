@@ -249,17 +249,17 @@ const CourseContent = () => {
         />
       </div>
       
-      {/* Main Content - Increased width for better visibility */}
-      <div className="flex-1 overflow-y-auto">
+      {/* Main Content - Added top margin for mobile to prevent hamburger overlap */}
+      <div className="flex-1 overflow-y-auto mt-16 lg:mt-0">
         {isLoading ? (
-          <div className="p-4 sm:p-6 lg:p-8 space-y-4 max-w-6xl mx-auto">
+          <div className="p-4 sm:p-6 lg:p-8 space-y-4 max-w-7xl mx-auto">
             <Skeleton className="h-8 w-1/3" />
             <Skeleton className="h-4 w-1/2" />
             <Skeleton className="h-64 w-full" />
           </div>
         ) : isProjectView && projectModuleId ? (
           // Show project submission view with increased width
-          <div className="max-w-6xl mx-auto">
+          <div className="max-w-7xl mx-auto">
             <ProjectSubmissionView 
               type={projectType as 'minor' | 'major'} 
               moduleId={projectModuleId} 
@@ -267,14 +267,14 @@ const CourseContent = () => {
             />
           </div>
         ) : !currentLesson && !lessonId ? (
-          <div className="max-w-6xl mx-auto">
+          <div className="max-w-7xl mx-auto">
             <CustomWelcomeMessage 
               isPurchased={isPurchased} 
               courseTitle={courseTitle} 
             />
           </div>
         ) : currentLesson ? (
-          <div className="max-w-6xl mx-auto">
+          <div className="max-w-7xl mx-auto">
             {isContentLocked ? (
               <div className="flex flex-col items-center justify-center h-64 text-center p-4 sm:p-6 lg:p-8">
                 <Lock className="h-16 w-16 text-gray-400 mb-4" />
@@ -321,7 +321,7 @@ const CourseContent = () => {
             )}
           </div>
         ) : (
-          <div className="flex flex-col items-center justify-center h-64 max-w-6xl mx-auto">
+          <div className="flex flex-col items-center justify-center h-64 max-w-7xl mx-auto">
             <p className="text-gray-500">Lesson not found</p>
           </div>
         )}
