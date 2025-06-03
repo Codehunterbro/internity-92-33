@@ -227,7 +227,7 @@ const CourseContent = () => {
       </div>
       
       {/* Main Content - Added top margin for mobile to prevent hamburger overlap */}
-      <div className="flex-1 overflow-y-auto mt-16 lg:mt-0 my-[23px]">
+      <div className="flex-1 overflow-y-auto mt-16 lg:mt-0 my-[22px]">
         {isLoading ? <div className="p-4 sm:p-6 lg:p-8 space-y-4 max-w-7xl mx-auto">
             <Skeleton className="h-8 w-1/3" />
             <Skeleton className="h-4 w-1/2" />
