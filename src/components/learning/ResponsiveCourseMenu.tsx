@@ -59,20 +59,20 @@ const ResponsiveCourseMenu = ({
   const getLessonIcon = (lesson: any) => {
     const isCompleted = lessonCompletionStatus[lesson.id] || lesson.isCompleted;
     
-    if (isCompleted) return <CheckCircle className="w-4 h-4 text-green-500" />;
+    if (isCompleted) return <CheckCircle className="w-4 h-4 text-green-500 flex-shrink-0" />;
     
     switch (lesson.type) {
       case 'video':
-        return <PlayCircle className="w-4 h-4 text-orange-500" />;
+        return <PlayCircle className="w-4 h-4 text-orange-500 flex-shrink-0" />;
       case 'reading':
-        return <FileText className="w-4 h-4 text-blue-500" />;
+        return <FileText className="w-4 h-4 text-blue-500 flex-shrink-0" />;
       case 'quiz':
-        return <PlayCircle className="w-4 h-4 text-orange-500" />;
+        return <PlayCircle className="w-4 h-4 text-orange-500 flex-shrink-0" />;
       case 'minor_project':
       case 'major_project':
-        return <File className="w-4 h-4 text-indigo-500" />;
+        return <File className="w-4 h-4 text-indigo-500 flex-shrink-0" />;
       default:
-        return <PlayCircle className="w-4 h-4 text-orange-500" />;
+        return <PlayCircle className="w-4 h-4 text-orange-500 flex-shrink-0" />;
     }
   };
 

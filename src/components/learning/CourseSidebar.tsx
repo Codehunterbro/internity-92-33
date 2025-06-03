@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from 'react';
 import { Link, useParams, useNavigate } from 'react-router-dom';
 import { ChevronDown, CheckCircle, Circle, Lock, PlayCircle, FileText, Book, Calendar, ArrowLeft, PanelLeft, PanelRight, File } from 'lucide-react';
@@ -164,20 +163,20 @@ const CourseSidebar = ({
   const getLessonIcon = (lesson: Lesson) => {
     const isCompleted = lessonCompletionStatus[lesson.id] || lesson.isCompleted;
     
-    if (isCompleted) return <CheckCircle className="w-4 h-4 text-green-500" />;
+    if (isCompleted) return <CheckCircle className="w-4 h-4 text-green-500 flex-shrink-0" />;
     
     switch (lesson.type) {
       case 'video':
-        return <PlayCircle className="w-4 h-4 text-orange-500" />;
+        return <PlayCircle className="w-4 h-4 text-orange-500 flex-shrink-0" />;
       case 'reading':
-        return <FileText className="w-4 h-4 text-blue-500" />;
+        return <FileText className="w-4 h-4 text-blue-500 flex-shrink-0" />;
       case 'quiz':
-        return <PlayCircle className="w-4 h-4 text-orange-500" />;
+        return <PlayCircle className="w-4 h-4 text-orange-500 flex-shrink-0" />;
       case 'minor_project':
       case 'major_project':
-        return <File className="w-4 h-4 text-indigo-500" />;
+        return <File className="w-4 h-4 text-indigo-500 flex-shrink-0" />;
       default:
-        return <PlayCircle className="w-4 h-4 text-orange-500" />;
+        return <PlayCircle className="w-4 h-4 text-orange-500 flex-shrink-0" />;
     }
   };
 
@@ -245,12 +244,12 @@ const CourseSidebar = ({
       
       {/* Module list */}
       {!isCollapsed && (
-        <div className="flex-1 overflow-y-auto">
+        <div className="flex-1 overflow-y-auto p-3 space-y-2">
           {modules.length > 0 ? (
             modules.map((module) => (
               <div key={module.id} className="mb-1">
                 <div 
-                  className="px-4 py-3 flex items-center cursor-pointer hover:bg-gray-50 border-b border-gray-50"
+                  className="p-3 flex items-center cursor-pointer hover:bg-gray-50 rounded-lg border border-gray-100 bg-white shadow-sm transition-all"
                   onClick={(e) => toggleModule(module.id, e)}
                 >
                   <div className="mr-3 flex-shrink-0">
@@ -258,54 +257,54 @@ const CourseSidebar = ({
                       <Book className="w-4 h-4 text-blue-600" />
                     </div>
                   </div>
-                  <div className="flex-1">
-                    <span className="text-sm font-semibold text-gray-900">{module.title}</span>
+                  <div className="flex-1 min-w-0">
+                    <span className="text-sm font-semibold text-gray-900 block truncate">{module.title}</span>
                     <p className="text-xs text-gray-500 mt-0.5">{module.weeks?.length || 0} weeks</p>
                   </div>
                   <ChevronDown
-                    className={`w-4 h-4 text-gray-400 transition-transform ${
+                    className={`w-4 h-4 text-gray-400 transition-transform flex-shrink-0 ${
                       expandedModules.includes(module.id) ? 'transform rotate-180' : ''
                     }`}
                   />
                 </div>
                 
                 {expandedModules.includes(module.id) && module.weeks && module.weeks.length > 0 && (
-                  <div className="bg-gray-50/50">
+                  <div className="mt-2 ml-2 space-y-2">
                     {module.weeks.map((week) => (
-                      <div key={`${module.id}-${week.id}`} className="ml-4">
+                      <div key={`${module.id}-${week.id}`}>
                         <div 
-                          className="px-4 py-2.5 flex items-center cursor-pointer hover:bg-white/50 border-b border-gray-100/50"
+                          className="p-2.5 flex items-center cursor-pointer hover:bg-gray-50 rounded-md border border-gray-100 bg-white transition-all"
                           onClick={(e) => toggleWeek(module.id, week.id, e)}
                         >
-                          <div className="mr-3 flex-shrink-0">
-                            <div className="w-6 h-6 bg-white rounded-md flex items-center justify-center border border-gray-200">
+                          <div className="mr-2 flex-shrink-0">
+                            <div className="w-6 h-6 bg-gray-50 rounded-md flex items-center justify-center border border-gray-200">
                               <Calendar className="w-3 h-3 text-gray-600" />
                             </div>
                           </div>
-                          <div className="flex-1">
-                            <span className="text-sm font-medium text-gray-800">{week.title}</span>
+                          <div className="flex-1 min-w-0">
+                            <span className="text-sm font-medium text-gray-800 truncate block">{week.title}</span>
                             <p className="text-xs text-gray-500 mt-0.5">{week.lessons?.length || 0} lessons</p>
                           </div>
                           <ChevronDown
-                            className={`w-4 h-4 text-gray-400 transition-transform ${
+                            className={`w-4 h-4 text-gray-400 transition-transform flex-shrink-0 ${
                               expandedWeeks.includes(`${module.id}-${week.id}`) ? 'transform rotate-180' : ''
                             }`}
                           />
                         </div>
                         
                         {expandedWeeks.includes(`${module.id}-${week.id}`) && week.lessons && week.lessons.length > 0 && (
-                          <div className="bg-white/50 ml-4 border-l border-gray-200">
+                          <div className="ml-3 mt-1 space-y-1">
                             {week.lessons.map((lesson, index) => (
                               <div
                                 key={lesson.id}
-                                className={`flex items-center py-3 px-4 text-sm cursor-pointer border-b border-gray-100/50 last:border-b-0 ${
+                                className={`flex items-center p-2.5 rounded-md text-sm cursor-pointer border transition-all ${
                                   lessonId === lesson.id
-                                    ? 'bg-blue-50 text-blue-700 border-l-3 border-l-blue-500'
-                                    : 'text-gray-700 hover:bg-gray-50'
+                                    ? 'bg-blue-50 text-blue-700 border-blue-200 shadow-sm'
+                                    : 'text-gray-700 hover:bg-gray-50 border-gray-100 bg-white'
                                 } ${lesson.isLocked ? 'opacity-60' : ''}`}
                                 onClick={() => handleLessonClick(module.id, week.id, lesson.id, lesson.isLocked)}
                               >
-                                <div className="mr-3 flex-shrink-0">
+                                <div className="mr-2 flex-shrink-0">
                                   {lesson.isLocked ? (
                                     <Lock className="w-4 h-4 text-gray-400" />
                                   ) : (
@@ -313,21 +312,18 @@ const CourseSidebar = ({
                                   )}
                                 </div>
                                 <div className="flex-1 min-w-0">
-                                  <div className="font-medium">Day {index + 1}</div>
+                                  <div className="font-medium text-xs">Day {index + 1}</div>
                                   <div className="text-xs text-gray-500 truncate">{lesson.title}</div>
                                 </div>
-                                {lesson.duration && (
-                                  <span className="text-xs text-gray-400">{lesson.duration}</span>
-                                )}
                               </div>
                             ))}
                             
                             {/* Minor Project Submission */}
                             <div
-                              className="flex items-center py-3 px-4 text-sm cursor-pointer bg-blue-50 hover:bg-blue-100 border border-blue-200 mx-2 my-2 rounded-lg"
+                              className="flex items-center p-2.5 rounded-md text-sm cursor-pointer bg-blue-50 hover:bg-blue-100 border border-blue-200 mt-2 transition-all"
                               onClick={() => handleProjectClick('minor', module.id, week.id)}
                             >
-                              <div className="mr-3 flex-shrink-0">
+                              <div className="mr-2 flex-shrink-0">
                                 <File className="w-4 h-4 text-blue-600" />
                               </div>
                               <span className="font-semibold text-blue-700 text-xs uppercase tracking-wide">Minor Project</span>
@@ -338,12 +334,12 @@ const CourseSidebar = ({
                     ))}
                     
                     {/* Major Project Submission */}
-                    <div className="mx-4 mb-4">
+                    <div className="mt-3">
                       <div
-                        className="flex items-center py-3 px-4 text-sm cursor-pointer bg-purple-50 hover:bg-purple-100 border border-purple-200 rounded-lg"
+                        className="flex items-center p-2.5 rounded-md text-sm cursor-pointer bg-purple-50 hover:bg-purple-100 border border-purple-200 transition-all"
                         onClick={() => handleProjectClick('major', module.id)}
                       >
-                        <div className="mr-3 flex-shrink-0">
+                        <div className="mr-2 flex-shrink-0">
                           <File className="w-4 h-4 text-purple-600" />
                         </div>
                         <span className="font-semibold text-purple-700 text-xs uppercase tracking-wide">Major Project</span>
@@ -354,8 +350,9 @@ const CourseSidebar = ({
               </div>
             ))
           ) : (
-            <div className="p-4 text-center text-gray-500">
-              No modules available
+            <div className="text-center py-8">
+              <Book className="w-12 h-12 text-gray-300 mx-auto mb-3" />
+              <p className="text-gray-500 text-sm">No modules available</p>
             </div>
           )}
         </div>

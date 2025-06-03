@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { CheckCircle, AlertCircle, Lock } from 'lucide-react';
@@ -215,16 +214,16 @@ const QuizSection: React.FC<QuizSectionProps> = ({ lessonId, onComplete, complet
   // Loading state
   if (isLoading) {
     return (
-      <div className="bg-white rounded-lg shadow-md p-6">
-        <div className="animate-pulse space-y-4">
-          <div className="h-6 bg-gray-200 rounded w-1/4"></div>
-          <div className="h-4 bg-gray-200 rounded w-full"></div>
+      <div className="bg-white rounded-lg shadow-md p-3 sm:p-4 lg:p-6">
+        <div className="animate-pulse space-y-3 sm:space-y-4">
+          <div className="h-4 sm:h-6 bg-gray-200 rounded w-1/4"></div>
+          <div className="h-3 sm:h-4 bg-gray-200 rounded w-full"></div>
           <div className="space-y-2">
             {[1, 2, 3, 4].map(i => (
-              <div key={i} className="h-12 bg-gray-200 rounded"></div>
+              <div key={i} className="h-8 sm:h-10 lg:h-12 bg-gray-200 rounded"></div>
             ))}
           </div>
-          <div className="h-10 bg-gray-200 rounded w-1/3 mx-auto"></div>
+          <div className="h-8 sm:h-10 bg-gray-200 rounded w-1/3 mx-auto"></div>
         </div>
       </div>
     );
@@ -233,18 +232,18 @@ const QuizSection: React.FC<QuizSectionProps> = ({ lessonId, onComplete, complet
   // Locked state
   if (isQuizLocked) {
     return (
-      <div className="bg-white rounded-lg shadow-md p-6 text-center">
-        <div className="mb-6">
-          <div className="inline-flex items-center justify-center p-4 bg-gray-100 rounded-full">
-            <Lock className="h-12 w-12 text-gray-400" />
+      <div className="bg-white rounded-lg shadow-md p-3 sm:p-4 lg:p-6 text-center">
+        <div className="mb-4 sm:mb-6">
+          <div className="inline-flex items-center justify-center p-3 sm:p-4 bg-gray-100 rounded-full">
+            <Lock className="h-8 w-8 sm:h-10 sm:w-10 lg:h-12 lg:w-12 text-gray-400" />
           </div>
         </div>
-        <h2 className="text-2xl font-bold mb-2">Quiz Locked</h2>
-        <p className="text-gray-600 mb-4">{lockReason}</p>
+        <h2 className="text-lg sm:text-xl lg:text-2xl font-bold mb-2">Quiz Locked</h2>
+        <p className="text-gray-600 mb-3 sm:mb-4 text-sm sm:text-base px-2">{lockReason}</p>
         
         {attendanceAlreadyMarked && (
-          <div className="bg-green-50 rounded-lg p-4 mb-4">
-            <p className="text-green-700 font-medium">
+          <div className="bg-green-50 rounded-lg p-3 sm:p-4 mb-3 sm:mb-4">
+            <p className="text-green-700 font-medium text-sm sm:text-base">
               ✅ Today's attendance has been marked!
             </p>
           </div>
@@ -253,6 +252,7 @@ const QuizSection: React.FC<QuizSectionProps> = ({ lessonId, onComplete, complet
         <Button 
           onClick={() => window.history.back()}
           variant="outline"
+          className="text-sm sm:text-base"
         >
           Back to Lessons
         </Button>
@@ -267,31 +267,34 @@ const QuizSection: React.FC<QuizSectionProps> = ({ lessonId, onComplete, complet
     const percentage = Math.round((finalScore / quizQuestions.length) * 100);
     
     return (
-      <div className="bg-white rounded-lg shadow-md p-8 text-center">
-        <div className="mb-6">
-          <div className="inline-flex items-center justify-center p-4 bg-green-100 rounded-full">
-            <CheckCircle className="h-12 w-12 text-green-500" />
+      <div className="bg-white rounded-lg shadow-md p-4 sm:p-6 lg:p-8 text-center">
+        <div className="mb-4 sm:mb-6">
+          <div className="inline-flex items-center justify-center p-3 sm:p-4 bg-green-100 rounded-full">
+            <CheckCircle className="h-8 w-8 sm:h-10 sm:w-10 lg:h-12 lg:w-12 text-green-500" />
           </div>
         </div>
-        <h2 className="text-2xl font-bold mb-2">Quiz Completed!</h2>
-        <p className="text-gray-600 mb-4">
+        <h2 className="text-lg sm:text-xl lg:text-2xl font-bold mb-2">Quiz Completed!</h2>
+        <p className="text-gray-600 mb-3 sm:mb-4 text-sm sm:text-base px-2">
           You scored {finalScore} out of {quizQuestions.length} ({percentage}%)
         </p>
         
-        <div className="w-full bg-gray-200 rounded-full h-4 mb-6">
+        <div className="w-full bg-gray-200 rounded-full h-3 sm:h-4 mb-4 sm:mb-6">
           <div 
-            className="bg-green-500 h-4 rounded-full" 
+            className="bg-green-500 h-3 sm:h-4 rounded-full transition-all duration-500" 
             style={{ width: `${percentage}%` }}
           ></div>
         </div>
         
-        <div className="bg-blue-50 rounded-lg p-4 mb-6">
-          <p className="text-blue-700 font-medium">
+        <div className="bg-blue-50 rounded-lg p-3 sm:p-4 mb-4 sm:mb-6">
+          <p className="text-blue-700 font-medium text-sm sm:text-base">
             🎉 Quiz completed successfully! Attendance has been marked for today.
           </p>
         </div>
         
-        <Button onClick={() => window.history.back()}>
+        <Button 
+          onClick={() => window.history.back()}
+          className="text-sm sm:text-base px-4 sm:px-6"
+        >
           Back to Lessons
         </Button>
       </div>
@@ -301,19 +304,20 @@ const QuizSection: React.FC<QuizSectionProps> = ({ lessonId, onComplete, complet
   // No questions available
   if (quizQuestions.length === 0) {
     return (
-      <div className="bg-white rounded-lg shadow-md p-6 text-center">
-        <div className="mb-6">
-          <div className="inline-flex items-center justify-center p-4 bg-gray-100 rounded-full">
-            <AlertCircle className="h-12 w-12 text-gray-400" />
+      <div className="bg-white rounded-lg shadow-md p-3 sm:p-4 lg:p-6 text-center">
+        <div className="mb-4 sm:mb-6">
+          <div className="inline-flex items-center justify-center p-3 sm:p-4 bg-gray-100 rounded-full">
+            <AlertCircle className="h-8 w-8 sm:h-10 sm:w-10 lg:h-12 lg:w-12 text-gray-400" />
           </div>
         </div>
-        <h2 className="text-2xl font-bold mb-2">No Quiz Available</h2>
-        <p className="text-gray-600 mb-4">
+        <h2 className="text-lg sm:text-xl lg:text-2xl font-bold mb-2">No Quiz Available</h2>
+        <p className="text-gray-600 mb-3 sm:mb-4 text-sm sm:text-base px-2">
           No quiz questions are available for this lesson at the moment.
         </p>
         <Button 
           onClick={() => window.history.back()}
           variant="outline"
+          className="text-sm sm:text-base"
         >
           Back to Lessons
         </Button>
@@ -326,33 +330,33 @@ const QuizSection: React.FC<QuizSectionProps> = ({ lessonId, onComplete, complet
   const options = getOptions(currentQuestion);
 
   return (
-    <div className="bg-white rounded-lg shadow-md p-6">
-      <div className="mb-6">
-        <h2 className="text-xl font-bold mb-4">Lesson Quiz</h2>
-        <div className="flex items-center justify-between mb-4">
-          <span className="text-base font-medium">
+    <div className="bg-white rounded-lg shadow-md p-3 sm:p-4 lg:p-6">
+      <div className="mb-4 sm:mb-6">
+        <h2 className="text-lg sm:text-xl font-bold mb-3 sm:mb-4">Lesson Quiz</h2>
+        <div className="flex items-center justify-between mb-3 sm:mb-4">
+          <span className="text-sm sm:text-base font-medium">
             Question {currentQuestionIndex + 1} of {quizQuestions.length}
           </span>
-          <span className="text-base font-medium">
+          <span className="text-sm sm:text-base font-medium">
             Score: {score}/{currentQuestionIndex}
           </span>
         </div>
-        <div className="h-2 bg-gray-200 rounded-full w-full mb-8">
+        <div className="h-2 bg-gray-200 rounded-full w-full mb-4 sm:mb-6 lg:mb-8">
           <div 
-            className="h-full bg-blue-500 rounded-full" 
+            className="h-full bg-blue-500 rounded-full transition-all duration-300" 
             style={{ width: `${((currentQuestionIndex + 1) / quizQuestions.length) * 100}%` }}
           ></div>
         </div>
       </div>
 
-      <div className="mb-8">
-        <h3 className="text-xl font-semibold mb-6">{currentQuestion.question}</h3>
-        <div className="space-y-4">
+      <div className="mb-4 sm:mb-6 lg:mb-8">
+        <h3 className="text-base sm:text-lg lg:text-xl font-semibold mb-4 sm:mb-6 px-1">{currentQuestion.question}</h3>
+        <div className="space-y-2 sm:space-y-3 lg:space-y-4">
           {options.map((option, index) => (
             <div 
               key={index}
               onClick={() => handleOptionSelect(index)}
-              className={`p-4 border rounded-lg cursor-pointer transition-colors ${
+              className={`p-3 sm:p-4 border rounded-lg cursor-pointer transition-colors ${
                 selectedOption === index 
                   ? showAnswer 
                     ? index === currentQuestion.correct_answer 
@@ -362,8 +366,8 @@ const QuizSection: React.FC<QuizSectionProps> = ({ lessonId, onComplete, complet
                   : 'border-gray-200 hover:bg-gray-50'
               }`}
             >
-              <div className="flex items-center">
-                <div className={`flex-shrink-0 w-6 h-6 mr-3 rounded-full border ${
+              <div className="flex items-start sm:items-center">
+                <div className={`flex-shrink-0 w-5 h-5 sm:w-6 sm:h-6 mr-2 sm:mr-3 rounded-full border mt-0.5 sm:mt-0 ${
                   selectedOption === index 
                     ? showAnswer 
                       ? index === currentQuestion.correct_answer 
@@ -373,16 +377,16 @@ const QuizSection: React.FC<QuizSectionProps> = ({ lessonId, onComplete, complet
                     : 'border-gray-300'
                 } flex items-center justify-center`}>
                   {selectedOption === index && !showAnswer && (
-                    <div className="w-3 h-3 bg-blue-500 rounded-full"></div>
+                    <div className="w-2 h-2 sm:w-3 sm:h-3 bg-blue-500 rounded-full"></div>
                   )}
                   {showAnswer && index === currentQuestion.correct_answer && (
-                    <CheckCircle className="h-4 w-4 text-green-500" />
+                    <CheckCircle className="h-3 w-3 sm:h-4 sm:w-4 text-green-500" />
                   )}
                   {showAnswer && selectedOption === index && index !== currentQuestion.correct_answer && (
-                    <AlertCircle className="h-4 w-4 text-red-500" />
+                    <AlertCircle className="h-3 w-3 sm:h-4 sm:w-4 text-red-500" />
                   )}
                 </div>
-                <span className="text-base">{option}</span>
+                <span className="text-sm sm:text-base leading-relaxed">{option}</span>
               </div>
             </div>
           ))}
@@ -390,8 +394,8 @@ const QuizSection: React.FC<QuizSectionProps> = ({ lessonId, onComplete, complet
       </div>
 
       {showAnswer && currentQuestion.explanation && (
-        <div className="mb-6 p-4 bg-blue-50 rounded-md">
-          <p className="text-sm text-blue-700">{currentQuestion.explanation}</p>
+        <div className="mb-4 sm:mb-6 p-3 sm:p-4 bg-blue-50 rounded-md">
+          <p className="text-xs sm:text-sm text-blue-700">{currentQuestion.explanation}</p>
         </div>
       )}
 
@@ -400,14 +404,14 @@ const QuizSection: React.FC<QuizSectionProps> = ({ lessonId, onComplete, complet
           <Button 
             onClick={handleCheckAnswer}
             disabled={selectedOption === null}
-            className="w-full py-4 text-lg bg-purple-400 hover:bg-purple-500"
+            className="w-full py-3 sm:py-4 text-sm sm:text-base lg:text-lg bg-purple-400 hover:bg-purple-500"
           >
             Check Answer
           </Button>
         ) : (
           <Button 
             onClick={handleNextQuestion}
-            className="w-full py-4 text-lg bg-blue-500 hover:bg-blue-600"
+            className="w-full py-3 sm:py-4 text-sm sm:text-base lg:text-lg bg-blue-500 hover:bg-blue-600"
           >
             {currentQuestionIndex === quizQuestions.length - 1 ? 'Finish Quiz' : 'Next Question'}
           </Button>
