@@ -1,10 +1,8 @@
-
 import React from 'react';
 import { Calendar, CheckCircle, Clock, AlertCircle } from 'lucide-react';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-
 interface ProjectCardProps {
   id: string;
   title: string;
@@ -18,7 +16,6 @@ interface ProjectCardProps {
   score?: string;
   onCheck: (type: 'minor' | 'major', moduleId: string, weekId?: string, courseId?: string) => void;
 }
-
 const ProjectCard: React.FC<ProjectCardProps> = ({
   id,
   title,
@@ -44,7 +41,6 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
         return <Badge variant="secondary" className="bg-yellow-100 text-yellow-700">PENDING</Badge>;
     }
   };
-
   const getStatusIcon = () => {
     switch (status) {
       case 'done':
@@ -57,34 +53,24 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
         return <AlertCircle className="h-4 w-4 text-yellow-600" />;
     }
   };
-
   const getCategoryIcon = () => {
-    return (
-      <div className="flex items-center justify-center w-8 h-8 bg-gray-100 rounded border">
-        <span className="text-xs font-medium text-gray-600">
-          {type === 'major' ? 'M' : 'm'}
-        </span>
-      </div>
-    );
+    return;
   };
-
   const formatDeadline = (deadline: string) => {
     try {
       const date = new Date(deadline);
-      return date.toLocaleDateString('en-US', { 
-        weekday: 'short', 
-        day: '2-digit', 
-        month: 'short' 
+      return date.toLocaleDateString('en-US', {
+        weekday: 'short',
+        day: '2-digit',
+        month: 'short'
       });
     } catch {
       return deadline;
     }
   };
-
-  return (
-    <Card className="w-full hover:shadow-md transition-shadow">
+  return <Card className="w-full hover:shadow-md transition-shadow">
       <CardHeader className="pb-3">
-        <div className="flex items-start justify-between">
+        <div className="flex items-start justify-between mx-0">
           <div className="flex items-center space-x-3">
             {getCategoryIcon()}
             <Badge variant="outline" className="text-xs">
@@ -106,14 +92,12 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
           <p className="text-sm text-gray-600 leading-relaxed">{description}</p>
           
           {/* Display marks if available and status is marked */}
-          {score && status === 'done' && (
-            <div className="bg-green-50 border border-green-200 rounded-lg p-3">
+          {score && status === 'done' && <div className="bg-green-50 border border-green-200 rounded-lg p-3">
               <div className="flex items-center justify-between">
                 <span className="text-sm font-medium text-green-800">Score:</span>
                 <span className="text-lg font-bold text-green-900">{score}</span>
               </div>
-            </div>
-          )}
+            </div>}
           
           <div className="flex items-center justify-between pt-2">
             <div className="flex items-center space-x-2">
@@ -122,17 +106,12 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
                 Deadline: {formatDeadline(deadline)}
               </span>
             </div>
-            <Button 
-              onClick={() => onCheck(type, moduleId, weekId, courseId)}
-              className="bg-purple-500 hover:bg-purple-600 text-white px-6 py-2 rounded-md"
-            >
+            <Button onClick={() => onCheck(type, moduleId, weekId, courseId)} className="bg-purple-500 hover:bg-purple-600 text-white px-6 py-2 rounded-md">
               Check
             </Button>
           </div>
         </div>
       </CardContent>
-    </Card>
-  );
+    </Card>;
 };
-
 export default ProjectCard;
