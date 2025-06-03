@@ -1,16 +1,13 @@
-
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowRight } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
-
 const HeroSection = () => {
   const [isLoaded, setIsLoaded] = useState(false);
   const [seatsTaken, setSeatsTaken] = useState(() => {
     // Initialize with calculation based on dates
     return calculateSeatsBasedOnDate();
   });
-  
   const totalSeats = 250;
   const seatsLeft = totalSeats - seatsTaken;
   const isLowSeats = seatsLeft <= 20;
@@ -20,10 +17,10 @@ const HeroSection = () => {
     // Campaign start date (when seats were at initial value)
     const campaignStartStr = localStorage.getItem('campaignStartDate');
     const initialSeats = 73; // Starting number of seats taken
-    
+
     let campaignStart;
     let initialSeatsTaken;
-    
+
     // If we have a stored campaign start, use it
     if (campaignStartStr) {
       campaignStart = new Date(campaignStartStr);
@@ -38,37 +35,36 @@ const HeroSection = () => {
       localStorage.setItem('initialSeatsTaken', initialSeats.toString());
       initialSeatsTaken = initialSeats;
     }
-    
+
     // Current date
     const today = new Date();
-    
+
     // Calculate days since campaign start
     const dayDifference = Math.floor((today.getTime() - campaignStart.getTime()) / (1000 * 60 * 60 * 24));
-    
+
     // For each day, add 10-15 seats (using a seeded random number based on the date)
     // This ensures the same number is generated for a given date
     let calculatedSeatsTaken = initialSeatsTaken;
-    
     for (let i = 1; i <= dayDifference; i++) {
       // Create a date object for each day since start
       const currentDate = new Date(campaignStart);
       currentDate.setDate(campaignStart.getDate() + i);
-      
+
       // Use the date string as a simple "seed" for deterministic randomness
       const dateSeed = currentDate.toISOString().split('T')[0].replace(/-/g, '');
       const seedNumber = parseInt(dateSeed) % 100;
-      
+
       // Generate a "random" number between 10-15 based on the date
-      const dailyIncrease = 10 + (seedNumber % 6);
-      
+      const dailyIncrease = 10 + seedNumber % 6;
+
       // Add to running total
       calculatedSeatsTaken += dailyIncrease;
     }
-    
+
     // Ensure we don't exceed max (always leave at least 9 seats)
     return Math.min(calculatedSeatsTaken, 241);
   }
-  
+
   // Update seats when component mounts and periodically check for date changes
   useEffect(() => {
     // Update the seats based on current date
@@ -77,31 +73,22 @@ const HeroSection = () => {
       setSeatsTaken(calculatedSeats);
       localStorage.setItem('lastCalculatedSeats', calculatedSeats.toString());
     };
-    
+
     // Initial update
     updateSeats();
-    
+
     // Check for date changes every hour
     const dateCheckInterval = setInterval(() => {
       updateSeats();
     }, 3600000); // 1 hour
-    
+
     setIsLoaded(true);
-    
     return () => clearInterval(dateCheckInterval);
   }, []);
-
-  return (
-    <section className="relative pt-32 pb-20 md:pt-40 md:pb-32 overflow-hidden">
+  return <section className="relative pt-32 pb-20 md:pt-40 md:pb-32 overflow-hidden">
       {/* Full-screen background video */}
       <div className="absolute inset-0 z-0 overflow-hidden">
-        <video 
-          autoPlay 
-          loop 
-          muted 
-          playsInline 
-          className="absolute top-1/2 left-1/2 min-w-full min-h-full w-full transform -translate-x-1/2 -translate-y-1/2 object-cover"
-        >
+        <video autoPlay loop muted playsInline className="absolute top-1/2 left-1/2 min-w-full min-h-full w-full transform -translate-x-1/2 -translate-y-1/2 object-cover">
           <source src="/internity-assets/hero-video.mp4" type="video/mp4" />
           Your browser does not support the video tag.
         </video>
@@ -127,20 +114,17 @@ const HeroSection = () => {
                   <Badge variant={isLowSeats ? "destructive" : "secondary"} className="px-2 py-0.5">
                     Limited Enrollment
                   </Badge>
-                  {isLowSeats && 
-                    <Badge variant="destructive" className="px-2 py-0.5 animate-pulse">
+                  {isLowSeats && <Badge variant="destructive" className="px-2 py-0.5 animate-pulse">
                       Urgent
-                    </Badge>
-                  }
+                    </Badge>}
                 </div>
                 <p className="text-white font-medium">
                   Only <span className={`font-bold text-xl ${isLowSeats ? 'text-red-400' : 'text-brand-purple'}`}>{seatsLeft}</span> seats remaining out of <span className="font-medium">{totalSeats}</span>
                 </p>
                 <div className="w-full mt-2 bg-white/20 rounded-full h-2.5">
-                  <div 
-                    className={`h-2.5 rounded-full ${isLowSeats ? 'bg-red-500' : 'bg-brand-purple'}`} 
-                    style={{ width: `${(seatsTaken / totalSeats) * 100}%` }}
-                  ></div>
+                  <div className={`h-2.5 rounded-full ${isLowSeats ? 'bg-red-500' : 'bg-brand-purple'}`} style={{
+                  width: `${seatsTaken / totalSeats * 100}%`
+                }}></div>
                 </div>
                 <p className="text-xs text-white/70 mt-1">
                   {isLowSeats ? 'Hurry! Only ' + seatsLeft + ' seats left!' : 'Seats are filling up fast!'}
@@ -158,20 +142,7 @@ const HeroSection = () => {
             </div>
             
             {/* Stats */}
-            <div className="mt-12 grid grid-cols-3 gap-4 max-w-md mx-auto lg:mx-0">
-              <div className="text-center">
-                <h3 className="text-3xl font-bold text-brand-purple mb-1">100+</h3>
-                <p className="text-sm text-white/80">Courses</p>
-              </div>
-              <div className="text-center">
-                <h3 className="text-3xl font-bold text-brand-purple mb-1">50+</h3>
-                <p className="text-sm text-white/80">Instructors</p>
-              </div>
-              <div className="text-center">
-                <h3 className="text-3xl font-bold text-brand-purple mb-1">10k+</h3>
-                <p className="text-sm text-white/80">Students</p>
-              </div>
-            </div>
+            
           </div>
 
           {/* Empty right side */}
@@ -180,8 +151,6 @@ const HeroSection = () => {
           </div>
         </div>
       </div>
-    </section>
-  );
+    </section>;
 };
-
 export default HeroSection;
