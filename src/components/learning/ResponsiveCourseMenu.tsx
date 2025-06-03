@@ -155,49 +155,60 @@ const ResponsiveCourseMenu = ({
                         </CollapsibleTrigger>
                         
                         <CollapsibleContent className="ml-3 mt-1 space-y-1">
-                          {week.lessons && week.lessons.map((lesson, index) => (
+                          {week.lessons && week.lessons.map((lesson, index) => {
+                            const isCompleted = lessonCompletionStatus[lesson.id] || lesson.isCompleted;
+                            return (
+                              <div
+                                key={lesson.id}
+                                className={`flex items-center p-2.5 rounded-md text-sm cursor-pointer border transition-all ${
+                                  lessonId === lesson.id
+                                    ? 'bg-blue-50 text-blue-700 border-blue-200 shadow-sm'
+                                    : 'text-gray-700 hover:bg-gray-50 border-gray-100 bg-white'
+                                }`}
+                                onClick={() => handleLessonClick(module.id, week.id, lesson.id)}
+                              >
+                                <div className="mr-2 flex-shrink-0">
+                                  {isCompleted ? (
+                                    <CheckCircle className="w-4 h-4 text-green-500" />
+                                  ) : (
+                                    <PlayCircle className="w-4 h-4 text-orange-500" />
+                                  )}
+                                </div>
+                                <div className="flex-1 min-w-0">
+                                  <span className="font-medium block text-xs">Day {index + 1}</span>
+                                  <span className="block text-xs text-gray-500 truncate">{lesson.title}</span>
+                                </div>
+                              </div>
+                            );
+                          })}
+                          
+                          {/* Minor Project - Fixed spacing and overlap issue */}
+                          <div className="pt-2">
                             <div
-                              key={lesson.id}
-                              className={`flex items-center p-2.5 rounded-md text-sm cursor-pointer border transition-all ${
-                                lessonId === lesson.id
-                                  ? 'bg-blue-50 text-blue-700 border-blue-200 shadow-sm'
-                                  : 'text-gray-700 hover:bg-gray-50 border-gray-100 bg-white'
-                              }`}
-                              onClick={() => handleLessonClick(module.id, week.id, lesson.id)}
+                              className="flex items-center p-2.5 rounded-md text-sm cursor-pointer bg-blue-50 hover:bg-blue-100 border border-blue-200 transition-all"
+                              onClick={() => handleProjectClick('minor', module.id, week.id)}
                             >
                               <div className="mr-2 flex-shrink-0">
-                                {getLessonIcon(lesson)}
+                                <File className="w-4 h-4 text-blue-600" />
                               </div>
-                              <div className="flex-1 min-w-0">
-                                <span className="font-medium block text-xs">Day {index + 1}</span>
-                                <span className="block text-xs text-gray-500 truncate">{lesson.title}</span>
-                              </div>
+                              <span className="font-semibold text-blue-700 text-xs uppercase tracking-wide">Minor Project</span>
                             </div>
-                          ))}
-                          
-                          {/* Minor Project */}
-                          <div
-                            className="flex items-center p-2.5 rounded-md text-sm cursor-pointer bg-blue-50 hover:bg-blue-100 border border-blue-200 mt-2 transition-all"
-                            onClick={() => handleProjectClick('minor', module.id, week.id)}
-                          >
-                            <div className="mr-2 flex-shrink-0">
-                              <File className="w-4 h-4 text-blue-600" />
-                            </div>
-                            <span className="font-semibold text-blue-700 text-xs uppercase tracking-wide">Minor Project</span>
                           </div>
                         </CollapsibleContent>
                       </Collapsible>
                     ))}
                     
-                    {/* Major Project */}
-                    <div
-                      className="flex items-center p-2.5 rounded-md text-sm cursor-pointer bg-purple-50 hover:bg-purple-100 border border-purple-200 mt-3 transition-all"
-                      onClick={() => handleProjectClick('major', module.id)}
-                    >
-                      <div className="mr-2 flex-shrink-0">
-                        <File className="w-4 h-4 text-purple-600" />
+                    {/* Major Project - Fixed spacing and overlap issue */}
+                    <div className="pt-3">
+                      <div
+                        className="flex items-center p-2.5 rounded-md text-sm cursor-pointer bg-purple-50 hover:bg-purple-100 border border-purple-200 transition-all"
+                        onClick={() => handleProjectClick('major', module.id)}
+                      >
+                        <div className="mr-2 flex-shrink-0">
+                          <File className="w-4 h-4 text-purple-600" />
+                        </div>
+                        <span className="font-semibold text-purple-700 text-xs uppercase tracking-wide">Major Project</span>
                       </div>
-                      <span className="font-semibold text-purple-700 text-xs uppercase tracking-wide">Major Project</span>
                     </div>
                   </CollapsibleContent>
                 </Collapsible>

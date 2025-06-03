@@ -16,6 +16,8 @@ import CustomWelcomeMessage from '@/components/learning/CustomWelcomeMessage';
 import { checkUserPurchasedCoursesCount } from '@/services/coursePurchaseService';
 import { getCourseById } from '@/services/courseService';
 import { Lock } from 'lucide-react';
+import { useAuth } from '@/contexts/AuthContext';
+import { supabase } from '@/integrations/supabase/client';
 
 // Define interfaces for lesson types
 interface Lesson {
@@ -47,6 +49,7 @@ const CourseContent = () => {
   }>();
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { user } = useAuth();
   const [currentLesson, setCurrentLesson] = useState<Lesson | null>(null);
   const [lessonContent, setLessonContent] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -54,6 +57,7 @@ const CourseContent = () => {
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [courseTitle, setCourseTitle] = useState('');
   const [modules, setModules] = useState<CourseSidebarModule[]>([]);
+  const [lessonCompletionStatus, setLessonCompletionStatus] = useState<Record<string, boolean>>({});
 
   // Determine if we're viewing a project based on URL params
   const isProjectView = Boolean(projectModuleId && (projectWeekId || projectModuleId));
@@ -61,6 +65,34 @@ const CourseContent = () => {
   
   console.log("Route params:", { courseId, lessonId, projectModuleId, projectWeekId });
   console.log("Is project view:", isProjectView, "Project type:", projectType);
+
+  // Fetch lesson completion status
+  const fetchLessonCompletionStatus = async () => {
+    if (!user || !courseId) return;
+
+    try {
+      const { data: progressData, error } = await supabase
+        .from('lesson_progress')
+        .select('lesson_id, status')
+        .eq('user_id', user.id)
+        .eq('course_id', courseId)
+        .eq('status', 'completed');
+
+      if (error) {
+        console.error('Error fetching lesson progress:', error);
+        return;
+      }
+
+      const completionMap: Record<string, boolean> = {};
+      progressData?.forEach(progress => {
+        completionMap[progress.lesson_id] = true;
+      });
+
+      setLessonCompletionStatus(completionMap);
+    } catch (error) {
+      console.error('Error in fetchLessonCompletionStatus:', error);
+    }
+  };
 
   // Check if course is purchased and get course title
   useEffect(() => {
@@ -92,6 +124,9 @@ const CourseContent = () => {
         const modulesData = await getModulesWithLessonsForCourse(courseId);
         console.log("Modules data fetched:", modulesData);
         setModules(modulesData);
+
+        // Fetch lesson completion status
+        await fetchLessonCompletionStatus();
       } catch (error) {
         console.error('Error fetching course data:', error);
         toast({
@@ -104,7 +139,21 @@ const CourseContent = () => {
       }
     };
     fetchCourseData();
-  }, [courseId, navigate, toast]);
+  }, [courseId, navigate, toast, user]);
+
+  // Listen for lesson completion events
+  useEffect(() => {
+    const handleLessonCompleted = () => {
+      console.log('Refreshing lesson completion status...');
+      fetchLessonCompletionStatus();
+    };
+
+    window.addEventListener('lessonCompleted', handleLessonCompleted);
+    
+    return () => {
+      window.removeEventListener('lessonCompleted', handleLessonCompleted);
+    };
+  }, [user, courseId]);
 
   // Fetch lesson when the lesson ID changes
   useEffect(() => {
@@ -184,7 +233,7 @@ const CourseContent = () => {
           lessonId={lessonId}
           onLessonClick={handleLessonClick}
           onProjectClick={handleProjectClick}
-          lessonCompletionStatus={{}}
+          lessonCompletionStatus={lessonCompletionStatus}
         />
       </div>
 
@@ -200,30 +249,34 @@ const CourseContent = () => {
         />
       </div>
       
-      {/* Main Content */}
+      {/* Main Content - Increased width for better visibility */}
       <div className="flex-1 overflow-y-auto">
         {isLoading ? (
-          <div className="p-8 space-y-4">
+          <div className="p-4 sm:p-6 lg:p-8 space-y-4 max-w-6xl mx-auto">
             <Skeleton className="h-8 w-1/3" />
             <Skeleton className="h-4 w-1/2" />
             <Skeleton className="h-64 w-full" />
           </div>
         ) : isProjectView && projectModuleId ? (
-          // Show project submission view
-          <ProjectSubmissionView 
-            type={projectType as 'minor' | 'major'} 
-            moduleId={projectModuleId} 
-            weekId={projectWeekId} 
-          />
+          // Show project submission view with increased width
+          <div className="max-w-6xl mx-auto">
+            <ProjectSubmissionView 
+              type={projectType as 'minor' | 'major'} 
+              moduleId={projectModuleId} 
+              weekId={projectWeekId} 
+            />
+          </div>
         ) : !currentLesson && !lessonId ? (
-          <CustomWelcomeMessage 
-            isPurchased={isPurchased} 
-            courseTitle={courseTitle} 
-          />
+          <div className="max-w-6xl mx-auto">
+            <CustomWelcomeMessage 
+              isPurchased={isPurchased} 
+              courseTitle={courseTitle} 
+            />
+          </div>
         ) : currentLesson ? (
-          <div className="p-6">
+          <div className="max-w-6xl mx-auto">
             {isContentLocked ? (
-              <div className="flex flex-col items-center justify-center h-64 text-center">
+              <div className="flex flex-col items-center justify-center h-64 text-center p-4 sm:p-6 lg:p-8">
                 <Lock className="h-16 w-16 text-gray-400 mb-4" />
                 <h3 className="text-xl font-semibold text-gray-700 mb-2">Content Locked</h3>
                 <p className="text-gray-500 mb-4">
@@ -268,7 +321,7 @@ const CourseContent = () => {
             )}
           </div>
         ) : (
-          <div className="flex flex-col items-center justify-center h-64">
+          <div className="flex flex-col items-center justify-center h-64 max-w-6xl mx-auto">
             <p className="text-gray-500">Lesson not found</p>
           </div>
         )}
