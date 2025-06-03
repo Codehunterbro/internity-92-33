@@ -222,7 +222,7 @@ const CourseContent = () => {
       </div>
 
       {/* Desktop Sidebar - hidden on small screens */}
-      <div className={`hidden lg:block ${isCollapsed ? 'w-16' : 'w-72'} border-r border-gray-200 overflow-y-auto transition-all duration-300`}>
+      <div className={`hidden lg:block ${isCollapsed ? 'w-16' : 'w-96'} border-r border-gray-200 overflow-y-auto transition-all duration-300`}>
         <CourseSidebar modules={modules} isCollapsed={isCollapsed} onToggleCollapse={handleToggleCollapse} onLessonClick={handleLessonClick} onProjectClick={handleProjectClick} isLoading={isLoading} />
       </div>
       

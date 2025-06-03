@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from 'react';
 import { Link, useParams, useNavigate } from 'react-router-dom';
 import { ChevronDown, CheckCircle, Circle, Lock, PlayCircle, FileText, Book, Calendar, ArrowLeft, PanelLeft, PanelRight, File } from 'lucide-react';
@@ -184,7 +185,7 @@ const CourseSidebar = ({
     return (
       <aside 
         className={`bg-white border-r border-gray-200 h-screen transition-all duration-300 ${
-          isCollapsed ? 'w-12' : 'w-80'
+          isCollapsed ? 'w-12' : 'w-96'
         } flex flex-col`}
       >
         <div className="h-16 flex items-center justify-between px-4 border-b border-gray-200">
@@ -223,7 +224,7 @@ const CourseSidebar = ({
   return (
     <aside 
       className={`bg-white border-r border-gray-100 h-screen transition-all duration-300 ${
-        isCollapsed ? 'w-12' : 'w-80'
+        isCollapsed ? 'w-12' : 'w-96'
       } flex flex-col`}
     >
       {/* Sidebar header */}
