@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from 'react';
 import { Link, useParams, useNavigate } from 'react-router-dom';
 import { ChevronDown, CheckCircle, Circle, Lock, PlayCircle, FileText, Book, Calendar, ArrowLeft, PanelLeft, PanelRight, File } from 'lucide-react';
@@ -118,7 +119,6 @@ const CourseSidebar = ({
   const toggleModule = (moduleId: string, event: React.MouseEvent) => {
     event.preventDefault();
     
-    // Call the onModuleClick callback if provided
     if (onModuleClick) {
       onModuleClick(moduleId);
     }
@@ -133,7 +133,6 @@ const CourseSidebar = ({
   const toggleWeek = (moduleId: string, weekId: string, event: React.MouseEvent) => {
     event.preventDefault();
     
-    // Call the onWeekClick callback if provided
     if (onWeekClick) {
       onWeekClick(moduleId, weekId);
     }
@@ -149,12 +148,10 @@ const CourseSidebar = ({
   const handleLessonClick = (moduleId: string, weekId: string, lessonId: string, isLocked: boolean) => {
     if (isLocked) return;
     
-    // Call the onLessonClick callback if provided
     if (onLessonClick) {
       onLessonClick(moduleId, weekId, lessonId);
     }
     
-    // Navigate to the lesson
     navigate(`/learn/course/${courseId}/lesson/${lessonId}`);
   };
 
@@ -165,14 +162,13 @@ const CourseSidebar = ({
   };
 
   const getLessonIcon = (lesson: Lesson) => {
-    // Check completion status from our fetched data
     const isCompleted = lessonCompletionStatus[lesson.id] || lesson.isCompleted;
     
     if (isCompleted) return <CheckCircle className="w-4 h-4 text-green-500" />;
     
     switch (lesson.type) {
       case 'video':
-        return <PlayCircle className="w-4 h-4 text-purple-500" />;
+        return <PlayCircle className="w-4 h-4 text-orange-500" />;
       case 'reading':
         return <FileText className="w-4 h-4 text-blue-500" />;
       case 'quiz':
@@ -181,7 +177,7 @@ const CourseSidebar = ({
       case 'major_project':
         return <File className="w-4 h-4 text-indigo-500" />;
       default:
-        return <PlayCircle className="w-4 h-4 text-gray-500" />;
+        return <PlayCircle className="w-4 h-4 text-orange-500" />;
     }
   };
 
@@ -227,23 +223,23 @@ const CourseSidebar = ({
 
   return (
     <aside 
-      className={`bg-white border-r border-gray-200 h-screen transition-all duration-300 ${
+      className={`bg-white border-r border-gray-100 h-screen transition-all duration-300 ${
         isCollapsed ? 'w-12' : 'w-80'
       } flex flex-col`}
     >
       {/* Sidebar header */}
-      <div className="h-16 flex items-center justify-between px-4 border-b border-gray-200">
+      <div className="h-16 flex items-center justify-between px-4 border-b border-gray-100">
         {!isCollapsed && (
-          <button onClick={handleBackClick} className="flex items-center">
-            <ArrowLeft className="w-5 h-5 mr-2" />
+          <button onClick={handleBackClick} className="flex items-center text-gray-600 hover:text-gray-900">
+            <ArrowLeft className="w-4 h-4 mr-2" />
             <span className="font-medium text-sm">Back to My Courses</span>
           </button>
         )}
         <button 
           onClick={onToggleCollapse}
-          className="p-1 rounded-md hover:bg-gray-100"
+          className="p-1.5 rounded-md hover:bg-gray-100 text-gray-500"
         >
-          {isCollapsed ? <PanelRight className="w-5 h-5" /> : <PanelLeft className="w-5 h-5" />}
+          {isCollapsed ? <PanelRight className="w-4 h-4" /> : <PanelLeft className="w-4 h-4" />}
         </button>
       </div>
       
@@ -252,54 +248,60 @@ const CourseSidebar = ({
         <div className="flex-1 overflow-y-auto">
           {modules.length > 0 ? (
             modules.map((module) => (
-              <div key={module.id} className="border-b border-gray-100 last:border-none">
+              <div key={module.id} className="mb-1">
                 <div 
-                  className="p-4 flex items-center cursor-pointer hover:bg-gray-50"
+                  className="px-4 py-3 flex items-center cursor-pointer hover:bg-gray-50 border-b border-gray-50"
                   onClick={(e) => toggleModule(module.id, e)}
                 >
                   <div className="mr-3 flex-shrink-0">
-                    <div className="w-7 h-7 bg-blue-100 rounded-md flex items-center justify-center">
+                    <div className="w-8 h-8 bg-blue-50 rounded-lg flex items-center justify-center border border-blue-100">
                       <Book className="w-4 h-4 text-blue-600" />
                     </div>
                   </div>
-                  <span className="text-sm font-bold">{module.title}</span>
+                  <div className="flex-1">
+                    <span className="text-sm font-semibold text-gray-900">{module.title}</span>
+                    <p className="text-xs text-gray-500 mt-0.5">{module.weeks?.length || 0} weeks</p>
+                  </div>
                   <ChevronDown
-                    className={`ml-auto w-5 h-5 text-gray-400 transition-transform ${
+                    className={`w-4 h-4 text-gray-400 transition-transform ${
                       expandedModules.includes(module.id) ? 'transform rotate-180' : ''
                     }`}
                   />
                 </div>
                 
                 {expandedModules.includes(module.id) && module.weeks && module.weeks.length > 0 && (
-                  <div className="pl-4">
+                  <div className="bg-gray-50/50">
                     {module.weeks.map((week) => (
-                      <div key={`${module.id}-${week.id}`} className="mb-2">
+                      <div key={`${module.id}-${week.id}`} className="ml-4">
                         <div 
-                          className="pl-4 pr-2 py-2 flex items-center cursor-pointer hover:bg-gray-50"
+                          className="px-4 py-2.5 flex items-center cursor-pointer hover:bg-white/50 border-b border-gray-100/50"
                           onClick={(e) => toggleWeek(module.id, week.id, e)}
                         >
                           <div className="mr-3 flex-shrink-0">
-                            <div className="w-6 h-6 bg-gray-100 rounded-md flex items-center justify-center">
-                              <Calendar className="w-4 h-4 text-gray-500" />
+                            <div className="w-6 h-6 bg-white rounded-md flex items-center justify-center border border-gray-200">
+                              <Calendar className="w-3 h-3 text-gray-600" />
                             </div>
                           </div>
-                          <span className="text-sm font-medium">{week.title}</span>
+                          <div className="flex-1">
+                            <span className="text-sm font-medium text-gray-800">{week.title}</span>
+                            <p className="text-xs text-gray-500 mt-0.5">{week.lessons?.length || 0} lessons</p>
+                          </div>
                           <ChevronDown
-                            className={`ml-auto w-5 h-5 text-gray-400 transition-transform ${
+                            className={`w-4 h-4 text-gray-400 transition-transform ${
                               expandedWeeks.includes(`${module.id}-${week.id}`) ? 'transform rotate-180' : ''
                             }`}
                           />
                         </div>
                         
                         {expandedWeeks.includes(`${module.id}-${week.id}`) && week.lessons && week.lessons.length > 0 && (
-                          <div className="pl-12 pr-4 pb-2 space-y-1">
+                          <div className="bg-white/50 ml-4 border-l border-gray-200">
                             {week.lessons.map((lesson, index) => (
                               <div
                                 key={lesson.id}
-                                className={`flex items-center py-2 px-3 rounded-md text-sm cursor-pointer ${
+                                className={`flex items-center py-3 px-4 text-sm cursor-pointer border-b border-gray-100/50 last:border-b-0 ${
                                   lessonId === lesson.id
-                                    ? 'bg-gray-100 text-blue-600'
-                                    : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
+                                    ? 'bg-blue-50 text-blue-700 border-l-3 border-l-blue-500'
+                                    : 'text-gray-700 hover:bg-gray-50'
                                 } ${lesson.isLocked ? 'opacity-60' : ''}`}
                                 onClick={() => handleLessonClick(module.id, week.id, lesson.id, lesson.isLocked)}
                               >
@@ -310,38 +312,41 @@ const CourseSidebar = ({
                                     getLessonIcon(lesson)
                                   )}
                                 </div>
-                                <span className="truncate">Day {index + 1}: {lesson.title}</span>
+                                <div className="flex-1 min-w-0">
+                                  <div className="font-medium">Day {index + 1}</div>
+                                  <div className="text-xs text-gray-500 truncate">{lesson.title}</div>
+                                </div>
                                 {lesson.duration && (
-                                  <span className="ml-auto text-xs text-gray-400">{lesson.duration}</span>
+                                  <span className="text-xs text-gray-400">{lesson.duration}</span>
                                 )}
                               </div>
                             ))}
                             
-                            {/* Minor Project Submission Tile at the end of each week */}
+                            {/* Minor Project Submission */}
                             <div
-                              className="flex items-center py-2 px-3 rounded-md text-sm cursor-pointer bg-blue-50 hover:bg-blue-100 border border-blue-200 mt-2"
+                              className="flex items-center py-3 px-4 text-sm cursor-pointer bg-blue-50 hover:bg-blue-100 border border-blue-200 mx-2 my-2 rounded-lg"
                               onClick={() => handleProjectClick('minor', module.id, week.id)}
                             >
                               <div className="mr-3 flex-shrink-0">
-                                <File className="w-4 h-4 text-indigo-600" />
+                                <File className="w-4 h-4 text-blue-600" />
                               </div>
-                              <span className="font-medium text-indigo-700">MINOR PROJECT</span>
+                              <span className="font-semibold text-blue-700 text-xs uppercase tracking-wide">Minor Project</span>
                             </div>
                           </div>
                         )}
                       </div>
                     ))}
                     
-                    {/* Major Project Submission Tile at the end of each module */}
-                    <div className="pl-4 pr-4 pb-4">
+                    {/* Major Project Submission */}
+                    <div className="mx-4 mb-4">
                       <div
-                        className="flex items-center py-3 px-4 rounded-md text-sm cursor-pointer bg-purple-50 hover:bg-purple-100 border border-purple-200 mt-2"
+                        className="flex items-center py-3 px-4 text-sm cursor-pointer bg-purple-50 hover:bg-purple-100 border border-purple-200 rounded-lg"
                         onClick={() => handleProjectClick('major', module.id)}
                       >
                         <div className="mr-3 flex-shrink-0">
-                          <File className="w-5 h-5 text-purple-600" />
+                          <File className="w-4 h-4 text-purple-600" />
                         </div>
-                        <span className="font-medium text-purple-700">MAJOR PROJECT</span>
+                        <span className="font-semibold text-purple-700 text-xs uppercase tracking-wide">Major Project</span>
                       </div>
                     </div>
                   </div>

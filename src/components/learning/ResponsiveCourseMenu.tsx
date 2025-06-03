@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { Menu, X, ChevronDown, CheckCircle, PlayCircle, FileText, File, Book, Calendar } from 'lucide-react';
+import { AlignJustify, X, ChevronDown, CheckCircle, PlayCircle, FileText, File, Book, Calendar } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
@@ -63,7 +63,7 @@ const ResponsiveCourseMenu = ({
     
     switch (lesson.type) {
       case 'video':
-        return <PlayCircle className="w-4 h-4 text-purple-500" />;
+        return <PlayCircle className="w-4 h-4 text-orange-500" />;
       case 'reading':
         return <FileText className="w-4 h-4 text-blue-500" />;
       case 'quiz':
@@ -72,7 +72,7 @@ const ResponsiveCourseMenu = ({
       case 'major_project':
         return <File className="w-4 h-4 text-indigo-500" />;
       default:
-        return <PlayCircle className="w-4 h-4 text-gray-500" />;
+        return <PlayCircle className="w-4 h-4 text-orange-500" />;
     }
   };
 
@@ -83,27 +83,26 @@ const ResponsiveCourseMenu = ({
           <Button 
             variant="outline" 
             size="sm" 
-            className="fixed top-4 left-4 z-50 bg-white shadow-lg border-gray-300 lg:hidden"
+            className="fixed top-4 left-4 z-50 bg-white shadow-md border border-gray-200 lg:hidden w-10 h-10 p-0"
           >
-            <Menu className="w-4 h-4" />
-            <span className="ml-2 text-sm">Course Menu</span>
+            <AlignJustify className="w-5 h-5 text-gray-700" />
           </Button>
         </SheetTrigger>
-        <SheetContent side="left" className="w-[90vw] max-w-sm p-0 lg:hidden">
+        <SheetContent side="left" className="w-[85vw] max-w-sm p-0 lg:hidden bg-white">
           <div className="flex flex-col h-full">
-            <div className="p-4 border-b bg-gradient-to-r from-blue-50 to-purple-50">
+            <div className="p-4 border-b border-gray-100 bg-gray-50">
               <div className="flex items-center justify-between">
                 <div>
                   <h2 className="font-semibold text-lg text-gray-900">Course Content</h2>
-                  <p className="text-sm text-gray-600 mt-1">Navigate through modules and lessons</p>
+                  <p className="text-sm text-gray-600 mt-1">Navigate through modules</p>
                 </div>
-                <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
+                <div className="w-10 h-10 bg-blue-50 rounded-lg flex items-center justify-center border border-blue-100">
                   <Book className="w-5 h-5 text-blue-600" />
                 </div>
               </div>
             </div>
             
-            <div className="flex-1 overflow-y-auto p-3 space-y-2">
+            <div className="flex-1 overflow-y-auto p-3 space-y-1">
               {modules.length > 0 ? modules.map((module) => (
                 <Collapsible 
                   key={module.id}
@@ -111,9 +110,9 @@ const ResponsiveCourseMenu = ({
                   onOpenChange={() => toggleModule(module.id)}
                 >
                   <CollapsibleTrigger className="w-full">
-                    <div className="flex items-center p-3 hover:bg-gray-50 rounded-lg border border-gray-200 bg-white shadow-sm transition-all hover:shadow-md">
+                    <div className="flex items-center p-3 hover:bg-gray-50 rounded-lg border border-gray-100 bg-white shadow-sm transition-all">
                       <div className="mr-3 flex-shrink-0">
-                        <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
+                        <div className="w-8 h-8 bg-blue-50 rounded-lg flex items-center justify-center border border-blue-100">
                           <Book className="w-4 h-4 text-blue-600" />
                         </div>
                       </div>
@@ -139,7 +138,7 @@ const ResponsiveCourseMenu = ({
                         <CollapsibleTrigger className="w-full">
                           <div className="flex items-center p-2.5 hover:bg-gray-50 rounded-md border border-gray-100 bg-white transition-all">
                             <div className="mr-2 flex-shrink-0">
-                              <div className="w-6 h-6 bg-gray-100 rounded-md flex items-center justify-center">
+                              <div className="w-6 h-6 bg-gray-50 rounded-md flex items-center justify-center border border-gray-200">
                                 <Calendar className="w-3 h-3 text-gray-600" />
                               </div>
                             </div>
@@ -159,10 +158,10 @@ const ResponsiveCourseMenu = ({
                           {week.lessons && week.lessons.map((lesson, index) => (
                             <div
                               key={lesson.id}
-                              className={`flex items-center p-2 rounded-md text-sm cursor-pointer border transition-all ${
+                              className={`flex items-center p-2.5 rounded-md text-sm cursor-pointer border transition-all ${
                                 lessonId === lesson.id
                                   ? 'bg-blue-50 text-blue-700 border-blue-200 shadow-sm'
-                                  : 'text-gray-700 hover:bg-gray-50 border-transparent hover:border-gray-200 bg-white'
+                                  : 'text-gray-700 hover:bg-gray-50 border-gray-100 bg-white'
                               }`}
                               onClick={() => handleLessonClick(module.id, week.id, lesson.id)}
                             >
@@ -170,7 +169,7 @@ const ResponsiveCourseMenu = ({
                                 {getLessonIcon(lesson)}
                               </div>
                               <div className="flex-1 min-w-0">
-                                <span className="font-medium block">Day {index + 1}</span>
+                                <span className="font-medium block text-xs">Day {index + 1}</span>
                                 <span className="block text-xs text-gray-500 truncate">{lesson.title}</span>
                               </div>
                             </div>
@@ -178,13 +177,13 @@ const ResponsiveCourseMenu = ({
                           
                           {/* Minor Project */}
                           <div
-                            className="flex items-center p-2 rounded-md text-sm cursor-pointer bg-blue-50 hover:bg-blue-100 border border-blue-200 mt-2 transition-all"
+                            className="flex items-center p-2.5 rounded-md text-sm cursor-pointer bg-blue-50 hover:bg-blue-100 border border-blue-200 mt-2 transition-all"
                             onClick={() => handleProjectClick('minor', module.id, week.id)}
                           >
                             <div className="mr-2 flex-shrink-0">
-                              <File className="w-4 h-4 text-indigo-600" />
+                              <File className="w-4 h-4 text-blue-600" />
                             </div>
-                            <span className="font-semibold text-indigo-700 text-xs">MINOR PROJECT</span>
+                            <span className="font-semibold text-blue-700 text-xs uppercase tracking-wide">Minor Project</span>
                           </div>
                         </CollapsibleContent>
                       </Collapsible>
@@ -198,7 +197,7 @@ const ResponsiveCourseMenu = ({
                       <div className="mr-2 flex-shrink-0">
                         <File className="w-4 h-4 text-purple-600" />
                       </div>
-                      <span className="font-semibold text-purple-700 text-xs">MAJOR PROJECT</span>
+                      <span className="font-semibold text-purple-700 text-xs uppercase tracking-wide">Major Project</span>
                     </div>
                   </CollapsibleContent>
                 </Collapsible>
