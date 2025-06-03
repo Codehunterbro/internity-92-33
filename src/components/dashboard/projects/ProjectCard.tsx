@@ -1,5 +1,5 @@
 import React from 'react';
-import { Calendar, CheckCircle, Clock, AlertCircle } from 'lucide-react';
+import { Calendar, CheckCircle, Clock, AlertCircle, FileText } from 'lucide-react';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -54,7 +54,7 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
     }
   };
   const getCategoryIcon = () => {
-    return;
+    return <FileText className="h-4 w-4 text-gray-500" />;
   };
   const formatDeadline = (deadline: string) => {
     try {
