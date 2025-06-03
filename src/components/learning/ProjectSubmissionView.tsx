@@ -69,10 +69,10 @@ const ProjectSubmissionView: React.FC<ProjectSubmissionViewProps> = ({
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center p-12">
+      <div className="flex items-center justify-center p-8 lg:p-12">
         <div className="text-center">
-          <Loader2 className="h-10 w-10 animate-spin text-brand-purple mx-auto mb-4" />
-          <p className="text-lg text-gray-600">Loading project...</p>
+          <Loader2 className="h-8 w-8 lg:h-10 lg:w-10 animate-spin text-brand-purple mx-auto mb-3 lg:mb-4" />
+          <p className="text-base lg:text-lg text-gray-600">Loading project...</p>
         </div>
       </div>
     );
@@ -80,11 +80,11 @@ const ProjectSubmissionView: React.FC<ProjectSubmissionViewProps> = ({
 
   if (error) {
     return (
-      <div className="p-6 text-center">
-        <p className="text-red-600 mb-4">{error}</p>
+      <div className="p-4 lg:p-6 text-center">
+        <p className="text-red-600 mb-4 text-sm lg:text-base">{error}</p>
         <button 
           onClick={fetchData} 
-          className="text-blue-600 hover:underline"
+          className="text-blue-600 hover:underline text-sm lg:text-base"
         >
           Try Again
         </button>
@@ -93,8 +93,8 @@ const ProjectSubmissionView: React.FC<ProjectSubmissionViewProps> = ({
   }
 
   return (
-    <div className="p-6 max-w-4xl mx-auto">
-      <h1 className="text-2xl font-bold mb-6">
+    <div className="p-4 lg:p-6 max-w-4xl mx-auto">
+      <h1 className="text-xl lg:text-2xl font-bold mb-4 lg:mb-6">
         {type === 'major' ? 'Major Project Submission' : 'Minor Project Submission'}
       </h1>
       
