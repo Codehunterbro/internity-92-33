@@ -14,8 +14,6 @@ const Projects: React.FC = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [activeTab, setActiveTab] = useState<'all' | 'pending' | 'submitted' | 'marked'>('all');
-  const [filterValue, setFilterValue] = useState('Today');
-  const [weekFilter, setWeekFilter] = useState('all');
   const [monthFilter, setMonthFilter] = useState('all');
   const [projects, setProjects] = useState<DashboardProject[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -69,16 +67,6 @@ const Projects: React.FC = () => {
     }
   };
 
-  // Helper function to filter projects by week
-  const filterByWeek = (project: DashboardProject): boolean => {
-    if (weekFilter === 'all') return true;
-    if (!project.weekId) return false;
-    
-    const weekNumber = project.weekId.toLowerCase().replace('week_', '').replace('week', '');
-    const filterWeekNumber = weekFilter.replace('week', '');
-    return weekNumber === filterWeekNumber;
-  };
-
   // Helper function to filter projects by month
   const filterByMonth = (project: DashboardProject): boolean => {
     if (monthFilter === 'all') return true;
@@ -101,7 +89,6 @@ const Projects: React.FC = () => {
       if (activeTab === 'marked') return project.status === 'done';
       return true;
     })
-    .filter(filterByWeek)
     .filter(filterByMonth)
     .sort((a, b) => {
       // First sort by status priority
@@ -153,11 +140,7 @@ const Projects: React.FC = () => {
       <div className="p-6">
         <ProjectHeader 
           title="Projects"
-          filterValue={filterValue}
-          onFilterChange={setFilterValue}
-          weekFilter={weekFilter}
           monthFilter={monthFilter}
-          onWeekFilterChange={setWeekFilter}
           onMonthFilterChange={setMonthFilter}
         />
         
