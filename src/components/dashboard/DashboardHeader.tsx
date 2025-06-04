@@ -78,15 +78,15 @@ const DashboardHeader = ({
                   </span>}
               </Button>
             </SheetTrigger>
-            <SheetContent className="w-[400px] sm:max-w-[400px]">
+            <SheetContent className="w-[350px] sm:max-w-[350px]">
               <SheetHeader>
                 <SheetTitle>Selected Courses</SheetTitle>
               </SheetHeader>
               <div className="mt-6 space-y-4">
                 {selectedCourses.map(course => <div key={course.id} className="flex items-start gap-3 p-3 bg-gray-50 rounded-lg">
-                    <img src={course.image} alt={course.title} className="w-20 h-20 object-cover rounded-md" />
+                    <img src={course.image} alt={course.title} className="w-16 h-16 object-cover rounded-md" />
                     <div className="flex-1 min-w-0">
-                      <h4 className="font-medium truncate">{course.title}</h4>
+                      <h4 className="font-medium truncate text-sm">{course.title}</h4>
                       <p className="text-sm text-muted-foreground mt-1">₹{course.priceINR.toLocaleString('en-IN')}</p>
                     </div>
                     <Button variant="ghost" size="icon" onClick={() => removeCourse(course.id)} className="text-gray-400 hover:text-red-500">
@@ -156,7 +156,7 @@ const DashboardHeader = ({
                 <MoreVertical className="h-5 w-5" />
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-56 bg-white border shadow-lg">
+            <DropdownMenuContent align="end" className="w-56 bg-white border shadow-lg rounded-xl">
               <div className="px-3 py-2 border-b">
                 <div className="flex items-center gap-2">
                   <Avatar className="w-8 h-8">
@@ -188,19 +188,19 @@ const DashboardHeader = ({
                       </span>
                     )}
                   </SheetTrigger>
-                  <SheetContent className="w-[400px] sm:max-w-[400px]">
+                  <SheetContent className="w-[320px] sm:max-w-[320px]">
                     <SheetHeader>
                       <SheetTitle>Selected Courses</SheetTitle>
                     </SheetHeader>
                     <div className="mt-6 space-y-4">
-                      {selectedCourses.map(course => <div key={course.id} className="flex items-start gap-3 p-3 bg-gray-50 rounded-lg">
-                          <img src={course.image} alt={course.title} className="w-20 h-20 object-cover rounded-md" />
+                      {selectedCourses.map(course => <div key={course.id} className="flex items-start gap-2 p-2 bg-gray-50 rounded-lg">
+                          <img src={course.image} alt={course.title} className="w-14 h-14 object-cover rounded-md" />
                           <div className="flex-1 min-w-0">
-                            <h4 className="font-medium truncate">{course.title}</h4>
-                            <p className="text-sm text-muted-foreground mt-1">₹{course.priceINR.toLocaleString('en-IN')}</p>
+                            <h4 className="font-medium truncate text-xs">{course.title}</h4>
+                            <p className="text-xs text-muted-foreground mt-1">₹{course.priceINR.toLocaleString('en-IN')}</p>
                           </div>
-                          <Button variant="ghost" size="icon" onClick={() => removeCourse(course.id)} className="text-gray-400 hover:text-red-500">
-                            <X className="h-4 w-4" />
+                          <Button variant="ghost" size="icon" onClick={() => removeCourse(course.id)} className="text-gray-400 hover:text-red-500 h-6 w-6">
+                            <X className="h-3 w-3" />
                           </Button>
                         </div>)}
                       
@@ -219,13 +219,13 @@ const DashboardHeader = ({
                               <span>₹{finalAmount.toLocaleString('en-IN')}</span>
                             </div>
                           </div>
-                          <Button className="w-full bg-brand-purple hover:bg-brand-purple/90" onClick={() => navigate('/checkout')}>
+                          <Button className="w-full bg-brand-purple hover:bg-brand-purple/90 text-sm" onClick={() => navigate('/checkout')}>
                             Proceed to Checkout
                           </Button>
                         </div> : <div className="text-center py-6 text-muted-foreground">
-                          <ShoppingCart className="h-12 w-12 mx-auto mb-3 opacity-20" />
-                          <p>Your cart is empty</p>
-                          <Button variant="link" className="mt-2 text-brand-purple" onClick={() => navigate('/dashboard/courses')}>
+                          <ShoppingCart className="h-10 w-10 mx-auto mb-3 opacity-20" />
+                          <p className="text-sm">Your cart is empty</p>
+                          <Button variant="link" className="mt-2 text-brand-purple text-sm" onClick={() => navigate('/dashboard/courses')}>
                             Browse Courses
                           </Button>
                         </div>}

@@ -82,7 +82,7 @@ const ProfileDialog = ({ isOpen, onClose, onProfileUpdate }: ProfileDialogProps)
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[425px] max-w-[90vw] max-h-[85vh] overflow-y-auto">
+      <DialogContent className="sm:max-w-[400px] max-w-[85vw] max-h-[80vh] overflow-y-auto rounded-xl sm:rounded-lg">
         {user && profile && !isEditing ? (
           <div className="space-y-4 sm:space-y-6 p-2 sm:p-6">
             <div className="text-center">
