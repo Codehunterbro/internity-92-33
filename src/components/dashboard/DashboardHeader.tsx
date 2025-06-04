@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { Menu, Bell, User, ShoppingCart, X, MoreVertical, LogOut } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -144,19 +143,10 @@ const DashboardHeader = ({
           </div>
         </div>
 
-        {/* Mobile three-dot menu */}
+        {/* Mobile navigation */}
         <div className="md:hidden flex items-center gap-3">
           <Button variant="ghost" size="icon" onClick={() => setShowNotifications(true)}>
             <Bell className="h-6 w-6" />
-          </Button>
-          
-          <Button variant="ghost" className="flex items-center gap-2" onClick={() => setShowProfile(true)}>
-            <Avatar className="w-8 h-8">
-              <AvatarImage src={profilePicture || undefined} />
-              <AvatarFallback className="bg-brand-purple/10 text-brand-purple font-bold text-xs">
-                {userDisplayName.charAt(0).toUpperCase()}
-              </AvatarFallback>
-            </Avatar>
           </Button>
 
           <DropdownMenu>
@@ -166,6 +156,10 @@ const DashboardHeader = ({
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-56">
+              <DropdownMenuItem onClick={() => setShowProfile(true)} className="cursor-pointer">
+                <User className="h-4 w-4 mr-2" />
+                <span>Profile</span>
+              </DropdownMenuItem>
               <DropdownMenuItem asChild>
                 <Sheet>
                   <SheetTrigger className="w-full flex items-center cursor-pointer">
