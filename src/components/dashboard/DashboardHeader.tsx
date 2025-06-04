@@ -1,8 +1,7 @@
 
 import { useState, useEffect } from 'react';
-import { Menu, Search, Bell, User, ShoppingCart, X } from 'lucide-react';
+import { Menu, Bell, User, ShoppingCart, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import NotificationDialog from './NotificationDialog';
 import ProfileDialog from './ProfileDialog';
 import SettingsDialog from './SettingsDialog';
@@ -58,11 +57,6 @@ const DashboardHeader = ({
         <Button variant="ghost" size="icon" className="mr-4 lg:hidden" onClick={onToggleSidebar}>
           <Menu className="h-6 w-6 md:h-5 md:w-5" />
         </Button>
-
-        <div className="relative hidden md:flex items-center">
-          <Search className="h-4 w-4 absolute left-3 text-muted-foreground" />
-          <Input placeholder="Search..." className="pl-10 w-[200px] lg:w-[300px] bg-gray-50" />
-        </div>
       </div>
 
       <div className="flex items-center gap-3">

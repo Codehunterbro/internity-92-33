@@ -1,11 +1,43 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import DashboardLayout from '@/components/dashboard/DashboardLayout';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Activity, Calendar, Clock, GraduationCap, Trophy, FileText } from 'lucide-react';
 import ActivityCalendar from '@/components/dashboard/ActivityCalendar';
+import { useAuth } from '@/contexts/AuthContext';
+import { supabase } from '@/integrations/supabase/client';
 
 const Dashboard = () => {
+  const { user } = useAuth();
+  const [firstName, setFirstName] = useState('');
+
+  useEffect(() => {
+    const fetchUserProfile = async () => {
+      if (user?.id) {
+        const { data, error } = await supabase
+          .from('profiles')
+          .select('first_name')
+          .eq('id', user.id)
+          .single();
+
+        if (!error && data?.first_name) {
+          setFirstName(data.first_name);
+        } else {
+          // Fallback to user metadata or email
+          const fullName = user?.user_metadata?.full_name;
+          if (fullName) {
+            const extractedFirstName = fullName.split(' ')[0];
+            setFirstName(extractedFirstName);
+          } else {
+            setFirstName('Student');
+          }
+        }
+      }
+    };
+
+    fetchUserProfile();
+  }, [user]);
+
   // Mock data for the dashboard
   const stats = [{
     title: 'Courses Enrolled',
@@ -98,7 +130,7 @@ const Dashboard = () => {
   return <DashboardLayout>
       <div className="p-6 space-y-8">
         <div>
-          <h1 className="text-2xl font-bold mb-2">Hi Michael !</h1>
+          <h1 className="text-2xl font-bold mb-2">Hi {firstName}!</h1>
         </div>
 
         {/* Activity Calendar - GitHub style (full year) */}
