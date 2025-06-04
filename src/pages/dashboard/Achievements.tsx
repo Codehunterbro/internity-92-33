@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import DashboardLayout from '@/components/dashboard/DashboardLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -6,7 +5,6 @@ import { Button } from '@/components/ui/button';
 import { GraduationCap, Download, FileText } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
-
 interface Achievement {
   id: string;
   title: string;
@@ -16,32 +14,27 @@ interface Achievement {
   file_type?: string;
   uploaded_by?: string;
 }
-
 const Achievements = () => {
-  const { user } = useAuth();
+  const {
+    user
+  } = useAuth();
   const [achievements, setAchievements] = useState<Achievement[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-
   const fetchAchievements = async () => {
     if (!user) return;
-
     try {
       setIsLoading(true);
       setError(null);
-
       console.log('Fetching achievements for user:', user.id);
-
-      const { data, error: fetchError } = await supabase
-        .from('student_achievements')
-        .select('*')
-        .eq('user_id', user.id);
-
+      const {
+        data,
+        error: fetchError
+      } = await supabase.from('student_achievements').select('*').eq('user_id', user.id);
       if (fetchError) {
         console.error('Error fetching achievements:', fetchError);
         throw fetchError;
       }
-
       console.log('Fetched achievements:', data);
       setAchievements(data || []);
     } catch (error) {
@@ -51,16 +44,13 @@ const Achievements = () => {
       setIsLoading(false);
     }
   };
-
   const handleDownload = async (achievement: Achievement) => {
     if (!achievement.attachment_url) {
       console.log('No attachment URL available');
       return;
     }
-
     try {
       console.log('Downloading achievement:', achievement.title);
-      
       const link = document.createElement('a');
       link.href = achievement.attachment_url;
       link.download = `${achievement.title}.${achievement.file_type || 'pdf'}`;
@@ -72,24 +62,21 @@ const Achievements = () => {
       console.error('Error downloading achievement:', error);
     }
   };
-
   const formatFileSize = (sizeStr?: string) => {
     if (!sizeStr) return '';
     return ` (${sizeStr})`;
   };
-
   useEffect(() => {
     fetchAchievements();
   }, [user]);
-
   if (isLoading) {
-    return (
-      <DashboardLayout>
+    return <DashboardLayout>
         <div className="p-4 md:p-6">
           <h1 className="text-xl md:text-2xl font-bold mb-4 md:mb-6">My Achievements</h1>
           <div className="grid gap-4 md:gap-6">
-            {Array.from({ length: 3 }).map((_, index) => (
-              <Card key={index}>
+            {Array.from({
+            length: 3
+          }).map((_, index) => <Card key={index}>
                 <CardContent className="p-4 md:p-6">
                   <div className="flex items-center gap-3 md:gap-4">
                     <div className="h-10 md:h-12 w-10 md:w-12 bg-gray-200 rounded-full animate-pulse"></div>
@@ -99,17 +86,13 @@ const Achievements = () => {
                     </div>
                   </div>
                 </CardContent>
-              </Card>
-            ))}
+              </Card>)}
           </div>
         </div>
-      </DashboardLayout>
-    );
+      </DashboardLayout>;
   }
-
   if (error) {
-    return (
-      <DashboardLayout>
+    return <DashboardLayout>
         <div className="p-4 md:p-6">
           <h1 className="text-xl md:text-2xl font-bold mb-4 md:mb-6">My Achievements</h1>
           <Card>
@@ -121,17 +104,13 @@ const Achievements = () => {
             </CardContent>
           </Card>
         </div>
-      </DashboardLayout>
-    );
+      </DashboardLayout>;
   }
-
-  return (
-    <DashboardLayout>
+  return <DashboardLayout>
       <div className="p-4 md:p-6">
         <h1 className="text-xl md:text-2xl font-bold mb-4 md:mb-6">My Achievements</h1>
         
-        {achievements.length === 0 ? (
-          <Card>
+        {achievements.length === 0 ? <Card>
             <CardContent className="p-4 md:p-6 text-center">
               <GraduationCap className="h-10 md:h-12 w-10 md:w-12 text-gray-400 mx-auto mb-3 md:mb-4" />
               <h3 className="text-base md:text-lg font-medium text-gray-900 mb-2">No Achievements Yet</h3>
@@ -139,11 +118,8 @@ const Achievements = () => {
                 Complete courses and projects to earn your first achievement!
               </p>
             </CardContent>
-          </Card>
-        ) : (
-          <div className="grid gap-4 md:gap-6">
-            {achievements.map((achievement) => (
-              <Card key={achievement.id} className="hover:shadow-md transition-shadow">
+          </Card> : <div className="grid gap-4 md:gap-6">
+            {achievements.map(achievement => <Card key={achievement.id} className="hover:shadow-md transition-shadow">
                 <CardContent className="p-4 md:p-6">
                   <div className="flex flex-col sm:flex-row items-start gap-3 md:gap-4">
                     <div className="h-10 md:h-12 w-10 md:w-12 bg-purple-100 rounded-full flex items-center justify-center flex-shrink-0">
@@ -153,44 +129,29 @@ const Achievements = () => {
                       <h3 className="font-medium text-base md:text-lg text-gray-900 break-words">
                         {achievement.title}
                       </h3>
-                      {achievement.description && (
-                        <p className="text-xs md:text-sm text-gray-600 mt-1 break-words">
+                      {achievement.description && <p className="md:text-sm text-gray-600 mt-1 break-words text-sm">
                           {achievement.description}
-                        </p>
-                      )}
+                        </p>}
                       <div className="flex flex-wrap items-center gap-2 md:gap-3 text-xs md:text-sm text-gray-500 mt-2">
-                        <span className="text-brand-purple font-medium">INTERNITY</span>
-                        {achievement.file_type && (
-                          <>
+                        <span className="text-brand-purple font-medium text-base">INTERNITY</span>
+                        {achievement.file_type && <>
                             <span className="hidden sm:inline">•</span>
                             <div className="flex items-center gap-1">
                               <FileText className="h-3 w-3" />
                               <span>{achievement.file_type.toUpperCase()}{formatFileSize(achievement.file_size)}</span>
                             </div>
-                          </>
-                        )}
+                          </>}
                       </div>
                     </div>
-                    {achievement.attachment_url && (
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => handleDownload(achievement)}
-                        className="flex items-center gap-2 w-full sm:w-auto mt-2 sm:mt-0 text-xs md:text-sm"
-                      >
+                    {achievement.attachment_url && <Button variant="outline" size="sm" onClick={() => handleDownload(achievement)} className="flex items-center gap-2 w-full sm:w-auto mt-2 sm:mt-0 text-xs md:text-sm">
                         <Download className="h-3 md:h-4 w-3 md:w-4" />
                         Download
-                      </Button>
-                    )}
+                      </Button>}
                   </div>
                 </CardContent>
-              </Card>
-            ))}
-          </div>
-        )}
+              </Card>)}
+          </div>}
       </div>
-    </DashboardLayout>
-  );
+    </DashboardLayout>;
 };
-
 export default Achievements;
