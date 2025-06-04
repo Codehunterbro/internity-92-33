@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { Menu, Search, Bell, User, ShoppingCart, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -34,10 +35,9 @@ const DashboardHeader = ({
     removeCourse
   } = useCart();
   const totalAmount = selectedCourses.reduce((sum, course) => sum + course.priceINR, 0);
-  const discount = 1000; // Fixed discount of ₹1000 instead of percentage
+  const discount = 1000;
   const finalAmount = totalAmount - discount;
 
-  // Fetch profile picture when user changes
   useEffect(() => {
     const fetchProfilePicture = async () => {
       if (user?.id) {
@@ -52,11 +52,11 @@ const DashboardHeader = ({
     };
     fetchProfilePicture();
   }, [user]);
+
   return <header className="bg-white border-b flex items-center justify-between px-6 py-3 sticky top-0 z-10">
-      {/* Left section - Mobile menu trigger and search */}
       <div className="flex items-center">
         <Button variant="ghost" size="icon" className="mr-4 lg:hidden" onClick={onToggleSidebar}>
-          <Menu className="h-5 w-5" />
+          <Menu className="h-6 w-6 md:h-5 md:w-5" />
         </Button>
 
         <div className="relative hidden md:flex items-center">
@@ -65,12 +65,11 @@ const DashboardHeader = ({
         </div>
       </div>
 
-      {/* Right section - User actions */}
       <div className="flex items-center gap-3">
         <Sheet>
           <SheetTrigger asChild>
             <Button variant="ghost" size="icon" className="relative">
-              <ShoppingCart className="h-5 w-5" />
+              <ShoppingCart className="h-6 w-6 md:h-5 md:w-5" />
               {selectedCourses.length > 0 && <span className="absolute -top-1 -right-1 bg-brand-purple text-white text-xs rounded-full w-4 h-4 flex items-center justify-center">
                   {selectedCourses.length}
                 </span>}
@@ -122,12 +121,12 @@ const DashboardHeader = ({
         </Sheet>
 
         <Button variant="ghost" size="icon" onClick={() => setShowNotifications(true)}>
-          <Bell className="h-5 w-5" />
+          <Bell className="h-6 w-6 md:h-5 md:w-5" />
         </Button>
         
         <div className="flex items-center gap-3">
           <Button variant="ghost" className="flex items-center gap-2" onClick={() => setShowProfile(true)}>
-            <Avatar className="w-8 h-8">
+            <Avatar className="w-9 h-9 md:w-8 md:h-8">
               <AvatarImage src={profilePicture || undefined} />
               <AvatarFallback className="bg-brand-purple/10 text-brand-purple font-bold text-xs">
                 {userDisplayName.charAt(0).toUpperCase()}
@@ -142,11 +141,9 @@ const DashboardHeader = ({
         </div>
       </div>
 
-      {/* Dialogs */}
       <NotificationDialog isOpen={showNotifications} onClose={() => setShowNotifications(false)} />
       
       <ProfileDialog isOpen={showProfile} onClose={() => setShowProfile(false)} onProfileUpdate={() => {
-      // Refresh profile picture when profile is updated
       if (user?.id) {
         supabase.from('profiles').select('profile_picture').eq('id', user.id).single().then(({
           data

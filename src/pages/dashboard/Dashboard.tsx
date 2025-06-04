@@ -4,30 +4,31 @@ import DashboardLayout from '@/components/dashboard/DashboardLayout';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Activity, Calendar, Clock, GraduationCap, Trophy, FileText } from 'lucide-react';
 import ActivityCalendar from '@/components/dashboard/ActivityCalendar';
+
 const Dashboard = () => {
   // Mock data for the dashboard
   const stats = [{
     title: 'Courses Enrolled',
     value: '3',
-    icon: <GraduationCap className="h-5 w-5 text-brand-purple" />,
+    icon: <GraduationCap className="h-6 w-6 md:h-5 md:w-5 text-brand-purple" />,
     change: '+1 this month',
     trend: 'up'
   }, {
     title: 'Completed Lessons',
     value: '24',
-    icon: <Activity className="h-5 w-5 text-green-500" />,
+    icon: <Activity className="h-6 w-6 md:h-5 md:w-5 text-green-500" />,
     change: '70% complete',
     trend: 'up'
   }, {
     title: 'Hours Learned',
     value: '48',
-    icon: <Clock className="h-5 w-5 text-yellow-500" />,
+    icon: <Clock className="h-6 w-6 md:h-5 md:w-5 text-yellow-500" />,
     change: '+12 this week',
     trend: 'up'
   }, {
     title: 'Achievements',
     value: '5',
-    icon: <Trophy className="h-5 w-5 text-orange-500" />,
+    icon: <Trophy className="h-6 w-6 md:h-5 md:w-5 text-orange-500" />,
     change: 'Bronze level',
     trend: 'neutral'
   }];
@@ -98,7 +99,6 @@ const Dashboard = () => {
       <div className="p-6 space-y-8">
         <div>
           <h1 className="text-2xl font-bold mb-2">Hi Michael !</h1>
-          
         </div>
 
         {/* Activity Calendar - GitHub style (full year) */}
@@ -160,7 +160,7 @@ const Dashboard = () => {
               <div className="space-y-4">
                 {achievements.slice(0, 2).map(achievement => <div key={achievement.id} className="flex items-center gap-4">
                     <div className="h-12 w-12 bg-purple-100 rounded-full flex items-center justify-center">
-                      <GraduationCap className="h-6 w-6 text-brand-purple" />
+                      <GraduationCap className="h-7 w-7 md:h-6 md:w-6 text-brand-purple" />
                     </div>
                     <div>
                       <h4 className="font-medium">{achievement.title}</h4>
@@ -174,4 +174,5 @@ const Dashboard = () => {
       </div>
     </DashboardLayout>;
 };
+
 export default Dashboard;

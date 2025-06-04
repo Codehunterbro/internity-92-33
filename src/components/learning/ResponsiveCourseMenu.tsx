@@ -1,9 +1,10 @@
 
 import React, { useState } from 'react';
-import { AlignJustify, X, ChevronDown, CheckCircle, PlayCircle, FileText, File, Book, Calendar } from 'lucide-react';
+import { AlignJustify, X, ChevronDown, CheckCircle, PlayCircle, FileText, File, Book, Calendar, ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import { useNavigate } from 'react-router-dom';
 import { Module } from './CourseSidebar';
 
 interface ResponsiveCourseMenuProps {
@@ -24,6 +25,7 @@ const ResponsiveCourseMenu = ({
   const [isOpen, setIsOpen] = useState(false);
   const [expandedModules, setExpandedModules] = useState<string[]>([]);
   const [expandedWeeks, setExpandedWeeks] = useState<string[]>([]);
+  const navigate = useNavigate();
 
   const toggleModule = (moduleId: string) => {
     setExpandedModules(prev => 
@@ -56,23 +58,28 @@ const ResponsiveCourseMenu = ({
     setIsOpen(false);
   };
 
+  const handleMyCoursesClick = () => {
+    navigate('/dashboard/my-courses');
+    setIsOpen(false);
+  };
+
   const getLessonIcon = (lesson: any) => {
     const isCompleted = lessonCompletionStatus[lesson.id] || lesson.isCompleted;
     
-    if (isCompleted) return <CheckCircle className="w-4 h-4 text-green-500 flex-shrink-0" />;
+    if (isCompleted) return <CheckCircle className="w-5 h-5 text-green-500 flex-shrink-0" />;
     
     switch (lesson.type) {
       case 'video':
-        return <PlayCircle className="w-4 h-4 text-orange-500 flex-shrink-0" />;
+        return <PlayCircle className="w-5 h-5 text-orange-500 flex-shrink-0" />;
       case 'reading':
-        return <FileText className="w-4 h-4 text-blue-500 flex-shrink-0" />;
+        return <FileText className="w-5 h-5 text-blue-500 flex-shrink-0" />;
       case 'quiz':
-        return <PlayCircle className="w-4 h-4 text-orange-500 flex-shrink-0" />;
+        return <PlayCircle className="w-5 h-5 text-orange-500 flex-shrink-0" />;
       case 'minor_project':
       case 'major_project':
-        return <File className="w-4 h-4 text-indigo-500 flex-shrink-0" />;
+        return <File className="w-5 h-5 text-indigo-500 flex-shrink-0" />;
       default:
-        return <PlayCircle className="w-4 h-4 text-orange-500 flex-shrink-0" />;
+        return <PlayCircle className="w-5 h-5 text-orange-500 flex-shrink-0" />;
     }
   };
 
@@ -83,15 +90,15 @@ const ResponsiveCourseMenu = ({
           <Button 
             variant="outline" 
             size="sm" 
-            className="fixed top-4 left-4 z-50 bg-white shadow-md border border-gray-200 lg:hidden w-10 h-10 p-0"
+            className="fixed top-4 left-4 z-50 bg-white shadow-md border border-gray-200 lg:hidden w-12 h-12 p-0"
           >
-            <AlignJustify className="w-5 h-5 text-gray-700" />
+            <AlignJustify className="w-6 h-6 text-gray-700" />
           </Button>
         </SheetTrigger>
         <SheetContent side="left" className="w-[85vw] max-w-sm p-0 lg:hidden bg-white">
           <div className="flex flex-col h-full">
             <div className="p-4 border-b border-gray-100 bg-gray-50">
-              <div className="flex items-center justify-between">
+              <div className="flex items-center justify-between mb-4">
                 <div>
                   <h2 className="font-semibold text-lg text-gray-900">Course Content</h2>
                   <p className="text-sm text-gray-600 mt-1">Navigate through modules</p>
@@ -100,6 +107,16 @@ const ResponsiveCourseMenu = ({
                   <Book className="w-5 h-5 text-blue-600" />
                 </div>
               </div>
+              
+              {/* Navigation to My Courses */}
+              <Button
+                onClick={handleMyCoursesClick}
+                variant="outline"
+                className="w-full flex items-center justify-center gap-2 bg-white border-gray-200 hover:bg-gray-50"
+              >
+                <ArrowLeft className="w-4 h-4" />
+                <span className="text-sm font-medium">My Courses</span>
+              </Button>
             </div>
             
             <div className="flex-1 overflow-y-auto p-3 space-y-1">
@@ -168,11 +185,7 @@ const ResponsiveCourseMenu = ({
                                 onClick={() => handleLessonClick(module.id, week.id, lesson.id)}
                               >
                                 <div className="mr-2 flex-shrink-0">
-                                  {isCompleted ? (
-                                    <CheckCircle className="w-4 h-4 text-green-500" />
-                                  ) : (
-                                    <PlayCircle className="w-4 h-4 text-orange-500" />
-                                  )}
+                                  {getLessonIcon(lesson)}
                                 </div>
                                 <div className="flex-1 min-w-0">
                                   <span className="font-medium block text-xs">Day {index + 1}</span>
@@ -182,14 +195,13 @@ const ResponsiveCourseMenu = ({
                             );
                           })}
                           
-                          {/* Minor Project - Fixed spacing and overlap issue */}
                           <div className="pt-2">
                             <div
                               className="flex items-center p-2.5 rounded-md text-sm cursor-pointer bg-blue-50 hover:bg-blue-100 border border-blue-200 transition-all"
                               onClick={() => handleProjectClick('minor', module.id, week.id)}
                             >
                               <div className="mr-2 flex-shrink-0">
-                                <File className="w-4 h-4 text-blue-600" />
+                                <File className="w-5 h-5 text-blue-600" />
                               </div>
                               <span className="font-semibold text-blue-700 text-xs uppercase tracking-wide">Minor Project</span>
                             </div>
@@ -198,14 +210,13 @@ const ResponsiveCourseMenu = ({
                       </Collapsible>
                     ))}
                     
-                    {/* Major Project - Fixed spacing and overlap issue */}
                     <div className="pt-3">
                       <div
                         className="flex items-center p-2.5 rounded-md text-sm cursor-pointer bg-purple-50 hover:bg-purple-100 border border-purple-200 transition-all"
                         onClick={() => handleProjectClick('major', module.id)}
                       >
                         <div className="mr-2 flex-shrink-0">
-                          <File className="w-4 h-4 text-purple-600" />
+                          <File className="w-5 h-5 text-purple-600" />
                         </div>
                         <span className="font-semibold text-purple-700 text-xs uppercase tracking-wide">Major Project</span>
                       </div>
