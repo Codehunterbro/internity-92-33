@@ -13,8 +13,8 @@ interface CourseWithDuration {
   title: string;
   image: string | null;
   duration: string | null;
-  totallessons: number;
-  lessonscompleted: number;
+  totalLessons: number;
+  lessonsCompleted: number;
 }
 
 const PurchasedCoursesSection = () => {
@@ -45,8 +45,8 @@ const PurchasedCoursesSection = () => {
             title: course.title,
             image: course.image,
             duration: courseData?.duration || null,
-            totallessons: course.totallessons,
-            lessonscompleted: course.lessonscompleted
+            totalLessons: course.totalLessons,
+            lessonsCompleted: course.lessonsCompleted
           };
         });
 
@@ -101,8 +101,8 @@ const PurchasedCoursesSection = () => {
   return (
     <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
       {coursesWithDuration.map((course) => {
-        const progress = course.totallessons > 0 
-          ? Math.round((course.lessonscompleted / course.totallessons) * 100) 
+        const progress = course.totalLessons > 0 
+          ? Math.round((course.lessonsCompleted / course.totalLessons) * 100) 
           : 0;
 
         return (
@@ -144,7 +144,7 @@ const PurchasedCoursesSection = () => {
                 </div>
                 <Progress value={progress} className="h-2" />
                 <div className="flex justify-between text-xs text-gray-500 mt-1">
-                  <span>{course.lessonscompleted} of {course.totallessons} lessons</span>
+                  <span>{course.lessonsCompleted} of {course.totalLessons} lessons</span>
                 </div>
               </div>
 
