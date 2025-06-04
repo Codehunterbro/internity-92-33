@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { FileText, BookOpen, HelpCircle, Video } from 'lucide-react';
@@ -7,7 +6,6 @@ import QuizSection from '@/components/learning/QuizSection';
 import { getQuizQuestionsByLessonId } from '@/services/lessonService';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
-
 interface Resource {
   id: string;
   name: string;
@@ -15,7 +13,6 @@ interface Resource {
   size: string;
   url: string;
 }
-
 interface LessonContentProps {
   lesson: {
     id: string;
@@ -29,7 +26,6 @@ interface LessonContentProps {
   resources: Resource[];
   quizQuestions: any[];
 }
-
 const LessonContent = ({
   lesson,
   resources,
@@ -42,7 +38,6 @@ const LessonContent = ({
   } = useAuth();
   const [isLoadingQuiz, setIsLoadingQuiz] = useState(false);
   const [quizQuestions, setQuizQuestions] = useState(initialQuizQuestions || []);
-
   useEffect(() => {
     const fetchQuizQuestions = async () => {
       if (activeTab === 'quiz' && user && lesson.id && quizQuestions.length === 0) {
@@ -64,12 +59,10 @@ const LessonContent = ({
     };
     fetchQuizQuestions();
   }, [activeTab, lesson.id, user, quizQuestions.length]);
-
   const handleQuizComplete = async (score: number) => {
     setQuizCompleted(true);
     toast.success('Quiz completed successfully!');
   };
-
   const renderVideoContent = () => {
     if (lesson.video_id && lesson.video_type === 'youtube') {
       return <VideoPlayer lessonData={{
@@ -86,7 +79,6 @@ const LessonContent = ({
         }))
       }} lessonId={lesson.id} />;
     }
-
     const videoResources = resources.filter(r => r.type.toLowerCase().includes('video') || r.url.toLowerCase().includes('.mp4') || r.url.toLowerCase().includes('.webm') || r.url.toLowerCase().includes('.mov'));
     if (videoResources.length > 0) {
       return <div className="space-y-4">
@@ -107,7 +99,6 @@ const LessonContent = ({
     }
     return null;
   };
-
   const renderLessonContent = () => {
     if (lesson.content && lesson.content.trim()) {
       return <div className="prose prose-sm lg:prose max-w-none" dangerouslySetInnerHTML={{
@@ -116,10 +107,9 @@ const LessonContent = ({
     }
     return null;
   };
-
   return <div className="p-4 lg:p-6">
       <h1 className="text-xl lg:text-2xl font-bold mb-2">{lesson.title}</h1>
-      {lesson.subtitle && <p className="text-gray-600 mb-4 lg:mb-6 text-sm lg:text-base">{lesson.subtitle}</p>}
+      {lesson.subtitle && <p className="text-gray-600 mb-4 lg:mb-6 lg:text-base text-base">{lesson.subtitle}</p>}
       
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
         <TabsList className="mb-4 lg:mb-6 w-full grid grid-cols-3 h-auto">
@@ -177,5 +167,4 @@ const LessonContent = ({
       </Tabs>
     </div>;
 };
-
 export default LessonContent;
