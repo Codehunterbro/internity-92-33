@@ -1,6 +1,6 @@
 
 import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog';
-import { Bell, Filter, BookOpen, Calendar, CheckCircle, AlertCircle, Clock } from 'lucide-react';
+import { Bell, BookOpen, Calendar, CheckCircle, AlertCircle, Clock } from 'lucide-react';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useEffect, useState } from 'react';
 import { supabase } from "@/integrations/supabase/client";
@@ -23,7 +23,6 @@ interface Notification {
 const NotificationDialog: React.FC<NotificationDialogProps> = ({ isOpen, onClose }) => {
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [isLoading, setIsLoading] = useState(false);
-  const [filter, setFilter] = useState<string | null>(null);
   const { user } = useAuth();
 
   useEffect(() => {
@@ -151,10 +150,6 @@ const NotificationDialog: React.FC<NotificationDialogProps> = ({ isOpen, onClose
     );
   };
 
-  const filteredNotifications = filter 
-    ? notifications.filter(notification => notification.type === filter)
-    : notifications;
-  
   const getNotificationIcon = (type: string) => {
     switch (type) {
       case 'course':
@@ -187,59 +182,11 @@ const NotificationDialog: React.FC<NotificationDialogProps> = ({ isOpen, onClose
             </div>
             <DialogTitle className="text-lg font-semibold">Notifications</DialogTitle>
           </div>
-          <div className="flex items-center gap-2">
-            <div className="relative group">
-              <Filter 
-                className="h-4 w-4 text-gray-400 cursor-pointer hover:text-gray-600" 
-                onClick={() => setFilter(filter ? null : 'course')}
-              />
-              <div className="absolute right-0 mt-1 w-40 bg-white shadow-md rounded-md overflow-hidden hidden group-hover:block z-10">
-                <div 
-                  className={`px-3 py-2 cursor-pointer hover:bg-gray-50 ${!filter ? 'bg-purple-50 text-purple-700' : ''}`}
-                  onClick={() => setFilter(null)}
-                >
-                  All Notifications
-                </div>
-                <div 
-                  className={`px-3 py-2 cursor-pointer hover:bg-gray-50 ${filter === 'course' ? 'bg-purple-50 text-purple-700' : ''}`}
-                  onClick={() => setFilter('course')}
-                >
-                  Course Updates
-                </div>
-                <div 
-                  className={`px-3 py-2 cursor-pointer hover:bg-gray-50 ${filter === 'assignment' ? 'bg-purple-50 text-purple-700' : ''}`}
-                  onClick={() => setFilter('assignment')}
-                >
-                  Assignments
-                </div>
-                <div 
-                  className={`px-3 py-2 cursor-pointer hover:bg-gray-50 ${filter === 'quiz' ? 'bg-purple-50 text-purple-700' : ''}`}
-                  onClick={() => setFilter('quiz')}
-                >
-                  Quizzes
-                </div>
-                <div 
-                  className={`px-3 py-2 cursor-pointer hover:bg-gray-50 ${filter === 'event' ? 'bg-purple-50 text-purple-700' : ''}`}
-                  onClick={() => setFilter('event')}
-                >
-                  Events
-                </div>
-              </div>
-            </div>
-          </div>
         </div>
         
         <div className="p-4 border-b border-gray-100">
           <div className="flex items-center justify-between">
-            <span className="font-medium">Results ({filteredNotifications.length})</span>
-            {filter && (
-              <button 
-                className="text-sm text-purple-600 hover:text-purple-800"
-                onClick={() => setFilter(null)}
-              >
-                Clear Filter
-              </button>
-            )}
+            <span className="font-medium">All Notifications ({notifications.length})</span>
           </div>
         </div>
         
@@ -249,8 +196,8 @@ const NotificationDialog: React.FC<NotificationDialogProps> = ({ isOpen, onClose
               <div className="flex justify-center items-center p-8">
                 <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-purple-500"></div>
               </div>
-            ) : filteredNotifications.length > 0 ? (
-              filteredNotifications.map((notification) => (
+            ) : notifications.length > 0 ? (
+              notifications.map((notification) => (
                 <div 
                   key={notification.id} 
                   className={`border-b border-gray-100 ${!notification.isRead ? 'bg-purple-50' : ''}`}
@@ -295,14 +242,6 @@ const NotificationDialog: React.FC<NotificationDialogProps> = ({ isOpen, onClose
               <div className="text-center py-8">
                 <Bell className="mx-auto h-12 w-12 text-gray-300" />
                 <p className="mt-2 text-gray-500">No notifications found</p>
-                {filter && (
-                  <button 
-                    className="mt-2 text-sm text-purple-600 hover:text-purple-800"
-                    onClick={() => setFilter(null)}
-                  >
-                    View all notifications
-                  </button>
-                )}
               </div>
             )}
           </div>

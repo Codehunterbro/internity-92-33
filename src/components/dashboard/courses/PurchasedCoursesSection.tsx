@@ -1,3 +1,4 @@
+
 import { Loader2 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { usePurchasedCourses } from '@/contexts/PurchasedCoursesContext';
@@ -14,32 +15,58 @@ const PurchasedCoursesSection = () => {
   const { toast } = useToast();
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [courseImages, setCourseImages] = useState<Record<string, string>>({});
+  const [courseDurations, setCourseDurations] = useState<Record<string, string>>({});
 
-  // Function to fetch course images
-  const fetchCourseImages = async () => {
+  // Function to fetch course images and durations
+  const fetchCourseDetails = async () => {
     if (!purchasedCourses || purchasedCourses.length === 0) return;
     
     const imageData: Record<string, string> = {};
+    const durationData: Record<string, string> = {};
     
     for (const course of purchasedCourses) {
       try {
-        // Fetch course details from courses table to get actual image
+        // Fetch course details from courses table to get actual image and duration
         const courseDetails = await getCourseById(course.course_id);
-        if (courseDetails && courseDetails.image) {
-          imageData[course.id] = courseDetails.image;
+        if (courseDetails) {
+          if (courseDetails.image) {
+            imageData[course.id] = courseDetails.image;
+          }
+          if (courseDetails.duration) {
+            // Convert duration to months format if it's not already
+            const duration = courseDetails.duration;
+            if (duration.toLowerCase().includes('month')) {
+              durationData[course.id] = duration;
+            } else {
+              // Assume it's in weeks or other format, convert to approximate months
+              const numMatch = duration.match(/\d+/);
+              if (numMatch) {
+                const num = parseInt(numMatch[0]);
+                if (duration.toLowerCase().includes('week')) {
+                  const months = Math.ceil(num / 4); // Convert weeks to months
+                  durationData[course.id] = `${months} month${months > 1 ? 's' : ''}`;
+                } else {
+                  durationData[course.id] = duration;
+                }
+              } else {
+                durationData[course.id] = duration;
+              }
+            }
+          }
         }
       } catch (err) {
-        console.error(`Failed to fetch image for course ${course.id}:`, err);
+        console.error(`Failed to fetch details for course ${course.id}:`, err);
       }
     }
     
     setCourseImages(imageData);
+    setCourseDurations(durationData);
   };
 
-  // Fetch course images when purchased courses load
+  // Fetch course details when purchased courses load
   useEffect(() => {
     if (purchasedCourses && purchasedCourses.length > 0) {
-      fetchCourseImages();
+      fetchCourseDetails();
     }
   }, [purchasedCourses]);
 
@@ -105,6 +132,7 @@ const PurchasedCoursesSection = () => {
     // Log course data to debug
     console.log("Rendering purchased courses:", purchasedCourses);
     console.log("Course images data:", courseImages);
+    console.log("Course durations data:", courseDurations);
 
     return (
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -116,7 +144,7 @@ const PurchasedCoursesSection = () => {
             image={courseImages[course.id] || course.image || '/placeholder.svg'}
             completedLessons={course.lessonsCompleted || 0}
             totalLessons={course.totalLessons || 0}
-            duration={course.duration || "N/A"}
+            duration={courseDurations[course.id] || course.duration || "N/A"}
           />
         ))}
       </div>
