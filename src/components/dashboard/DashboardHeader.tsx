@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { Menu, Bell, User, ShoppingCart, X, MoreVertical, LogOut } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -58,14 +59,14 @@ const DashboardHeader = ({
     fetchProfilePicture();
   }, [user]);
 
-  return <header className="bg-white border-b flex items-center justify-between px-6 py-3 sticky top-0 z-10">
+  return <header className="bg-white border-b flex items-center justify-between px-4 md:px-6 py-3 sticky top-0 z-10">
       <div className="flex items-center">
-        <Button variant="ghost" size="icon" className="mr-4 lg:hidden" onClick={onToggleSidebar}>
-          <Menu className="h-6 w-6 md:h-5 md:w-5" />
+        <Button variant="ghost" size="icon" className="mr-3 md:mr-4 lg:hidden" onClick={onToggleSidebar}>
+          <Menu className="h-5 w-5 md:h-5 md:w-5" />
         </Button>
       </div>
 
-      <div className="flex items-center gap-3">
+      <div className="flex items-center gap-2 md:gap-3">
         {/* Desktop cart and user controls */}
         <div className="hidden md:flex items-center gap-3">
           <Sheet>
@@ -143,27 +144,43 @@ const DashboardHeader = ({
           </div>
         </div>
 
-        {/* Mobile navigation */}
-        <div className="md:hidden flex items-center gap-3">
-          <Button variant="ghost" size="icon" onClick={() => setShowNotifications(true)}>
-            <Bell className="h-6 w-6" />
+        {/* Mobile navigation - improved design */}
+        <div className="md:hidden flex items-center gap-2">
+          <Button variant="ghost" size="icon" className="relative p-2" onClick={() => setShowNotifications(true)}>
+            <Bell className="h-5 w-5" />
           </Button>
 
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="icon">
+              <Button variant="ghost" size="icon" className="p-2">
                 <MoreVertical className="h-5 w-5" />
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-56">
-              <DropdownMenuItem onClick={() => setShowProfile(true)} className="cursor-pointer">
-                <User className="h-4 w-4 mr-2" />
-                <span>Profile</span>
+            <DropdownMenuContent align="end" className="w-56 bg-white border shadow-lg">
+              <div className="px-3 py-2 border-b">
+                <div className="flex items-center gap-2">
+                  <Avatar className="w-8 h-8">
+                    <AvatarImage src={profilePicture || undefined} />
+                    <AvatarFallback className="bg-brand-purple/10 text-brand-purple font-bold text-xs">
+                      {userDisplayName.charAt(0).toUpperCase()}
+                    </AvatarFallback>
+                  </Avatar>
+                  <div className="flex flex-col">
+                    <span className="text-sm font-medium truncate max-w-[140px]">{userDisplayName}</span>
+                    <span className="text-xs text-muted-foreground">Student</span>
+                  </div>
+                </div>
+              </div>
+              
+              <DropdownMenuItem onClick={() => setShowProfile(true)} className="cursor-pointer py-3">
+                <User className="h-4 w-4 mr-3" />
+                <span>View Profile</span>
               </DropdownMenuItem>
+              
               <DropdownMenuItem asChild>
                 <Sheet>
-                  <SheetTrigger className="w-full flex items-center cursor-pointer">
-                    <ShoppingCart className="h-4 w-4 mr-2" />
+                  <SheetTrigger className="w-full flex items-center cursor-pointer py-3 px-2 hover:bg-accent rounded-sm">
+                    <ShoppingCart className="h-4 w-4 mr-3" />
                     <span>Cart</span>
                     {selectedCourses.length > 0 && (
                       <span className="ml-auto bg-brand-purple text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
@@ -216,9 +233,11 @@ const DashboardHeader = ({
                   </SheetContent>
                 </Sheet>
               </DropdownMenuItem>
+              
               <DropdownMenuSeparator />
-              <DropdownMenuItem onClick={signOut} className="text-red-600">
-                <LogOut className="h-4 w-4 mr-2" />
+              
+              <DropdownMenuItem onClick={signOut} className="text-red-600 cursor-pointer py-3">
+                <LogOut className="h-4 w-4 mr-3" />
                 <span>Logout</span>
               </DropdownMenuItem>
             </DropdownMenuContent>
