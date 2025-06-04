@@ -98,9 +98,7 @@ const Dashboard = () => {
       <div className="p-6 space-y-8">
         <div>
           <h1 className="text-2xl font-bold mb-2">Hi Michael !</h1>
-          <p className="text-muted-foreground text-lg">
-            What do you want to <span className="text-brand-purple">learn</span> today?
-          </p>
+          
         </div>
 
         {/* Activity Calendar - GitHub style (full year) */}
