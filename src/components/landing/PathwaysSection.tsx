@@ -1,18 +1,23 @@
-
 import { Search } from 'lucide-react';
 import { Button } from "@/components/ui/button";
-
-const categories = [
-  { name: "Coding", active: true },
-  { name: "Design", active: false },
-  { name: "Health", active: false },
-  { name: "Business", active: false },
-  { name: "Marketing", active: false }
-];
-
+const categories = [{
+  name: "Coding",
+  active: true
+}, {
+  name: "Design",
+  active: false
+}, {
+  name: "Health",
+  active: false
+}, {
+  name: "Business",
+  active: false
+}, {
+  name: "Marketing",
+  active: false
+}];
 const PathwaysSection = () => {
-  return (
-    <section className="py-8 md:py-16 bg-white">
+  return <section className="py-8 md:py-16 bg-white">
       <div className="container mx-auto px-4">
         {/* Enhanced Bottom Gradient Card */}
         <div className="mt-6 md:mt-12 rounded-xl overflow-hidden shadow-xl">
@@ -51,7 +56,7 @@ const PathwaysSection = () => {
                       <span className="flex items-center justify-center w-5 md:w-6 h-5 md:h-6 bg-yellow-100 text-yellow-600 rounded-full text-xs">1</span>
                       Learning Objectives
                     </h4>
-                    <p className="text-gray-600 ml-6 md:ml-8 text-xs md:text-sm">Develop comprehensive strategies across multiple channels to achieve measurable outcomes and drive sustainable results.</p>
+                    <p className="text-gray-600 ml-6 md:ml-8 md:text-sm text-sm">Develop comprehensive strategies across multiple channels to achieve measurable outcomes and drive sustainable results.</p>
                   </div>
                   
                   <div>
@@ -59,30 +64,32 @@ const PathwaysSection = () => {
                       <span className="flex items-center justify-center w-5 md:w-6 h-5 md:h-6 bg-green-100 text-green-600 rounded-full text-xs">2</span>
                       Course Overview
                     </h4>
-                    <p className="text-gray-600 ml-6 md:ml-8 text-xs md:text-sm">Master the development of data-driven plans that deliver measurable results through practical applications and case studies.</p>
+                    <p className="text-gray-600 ml-6 md:ml-8 md:text-sm text-sm">Master the development of data-driven plans that deliver measurable results through practical applications and case studies.</p>
                   </div>
                   
-                  <div className="p-3 md:p-4 bg-gray-50 rounded-lg border border-gray-100 ml-6 md:ml-8">
+                  <div className="p-3 md:p-4 bg-gray-50 rounded-lg border border-gray-100 ml-6 md:ml-8 px-[13px] py-[12px] mx-0">
                     <h4 className="font-semibold text-gray-800 mb-2 md:mb-3 text-sm md:text-base">Key Learning Modules:</h4>
                     <ul className="space-y-1 md:space-y-2 text-gray-600">
                       <li className="flex items-start gap-2">
                         <span className="text-green-500 mt-1 text-xs">✓</span>
-                        <span className="text-xs md:text-sm">Advanced research methodologies and audience analysis techniques</span>
+                        <span className="md:text-sm text-sm">Advanced research methodologies and audience analysis techniques</span>
                       </li>
                       <li className="flex items-start gap-2">
                         <span className="text-green-500 mt-1 text-xs">✓</span>
-                        <span className="text-xs md:text-sm">Strategic content formulation and execution plans</span>
+                        <span className="md:text-sm text-sm">Strategic content formulation and execution plans</span>
                       </li>
                       <li className="flex items-start gap-2">
                         <span className="text-green-500 mt-1 text-xs">✓</span>
-                        <span className="text-xs md:text-sm">Performance metrics implementation and outcome measurement</span>
+                        <span className="md:text-sm text-sm">Performance metrics implementation and outcome measurement</span>
                       </li>
                     </ul>
                   </div>
                   
                   <div className="mt-4 md:mt-6">
                     <div className="h-1.5 w-full bg-gray-100 rounded-full overflow-hidden">
-                      <div className="h-full bg-gradient-to-r from-yellow-400 to-green-400 rounded-full" style={{ width: '75%' }}></div>
+                      <div className="h-full bg-gradient-to-r from-yellow-400 to-green-400 rounded-full" style={{
+                      width: '75%'
+                    }}></div>
                     </div>
                     <div className="flex justify-between text-xs text-gray-500 mt-2">
                       <span>Beginner</span>
@@ -96,8 +103,6 @@ const PathwaysSection = () => {
           </div>
         </div>
       </div>
-    </section>
-  );
+    </section>;
 };
-
 export default PathwaysSection;
