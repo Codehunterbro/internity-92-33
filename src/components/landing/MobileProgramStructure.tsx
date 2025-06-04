@@ -42,10 +42,10 @@ const MobileProgramStructure = () => {
   return (
     <div className="space-y-4 px-4">
       <div className="text-center mb-8">
-        <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-4">
+        <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
           Your 6-Month Journey to Success
         </h2>
-        <p className="text-base md:text-lg text-gray-600 max-w-2xl mx-auto">
+        <p className="text-lg md:text-xl text-gray-600 max-w-2xl mx-auto">
           Follow your journey from beginner to professional with our comprehensive 6-month program.
         </p>
       </div>
@@ -63,27 +63,27 @@ const MobileProgramStructure = () => {
                 
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center justify-between mb-2">
-                    <span className="text-sm font-semibold text-gray-500 uppercase tracking-wide">
+                    <span className="text-sm md:text-base font-semibold text-gray-500 uppercase tracking-wide">
                       {phase.month}
                     </span>
                     <ChevronRight className="w-4 h-4 text-gray-400" />
                   </div>
                   
-                  <h3 className="text-xl font-bold text-gray-900 mb-2">
+                  <h3 className="text-xl md:text-2xl font-bold text-gray-900 mb-2">
                     {phase.title}
                   </h3>
                   
-                  <p className="text-gray-600 text-sm mb-4 leading-relaxed">
+                  <p className="text-gray-600 text-base md:text-lg mb-4 leading-relaxed">
                     {phase.description}
                   </p>
                   
                   <div className="space-y-2">
-                    <p className="text-sm font-medium text-gray-700 mb-2">Key Topics:</p>
+                    <p className="text-sm md:text-base font-medium text-gray-700 mb-2">Key Topics:</p>
                     <div className="flex flex-wrap gap-2">
                       {phase.topics.map((topic, topicIndex) => (
                         <span 
                           key={topicIndex}
-                          className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-white text-gray-700 border border-gray-200"
+                          className="inline-flex items-center px-3 py-1 rounded-full text-sm md:text-base font-medium bg-white text-gray-700 border border-gray-200"
                         >
                           {topic}
                         </span>
@@ -98,11 +98,11 @@ const MobileProgramStructure = () => {
       </div>
 
       <div className="mt-8 p-6 bg-gradient-to-r from-brand-purple to-purple-600 rounded-xl text-white text-center">
-        <h3 className="text-xl font-bold mb-2">Ready to Start Your Journey?</h3>
-        <p className="text-purple-100 mb-4 text-sm">
+        <h3 className="text-xl md:text-2xl font-bold mb-2">Ready to Start Your Journey?</h3>
+        <p className="text-purple-100 mb-4 text-base md:text-lg">
           Join thousands of students who have transformed their careers
         </p>
-        <div className="flex items-center justify-center space-x-4 text-sm">
+        <div className="flex items-center justify-center space-x-4 text-sm md:text-base">
           <div className="flex items-center">
             <Clock className="w-4 h-4 mr-1" />
             <span>6 Months</span>

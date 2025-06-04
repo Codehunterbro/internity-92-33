@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useCart } from '@/contexts/CartContext';
@@ -393,30 +394,30 @@ const Checkout = () => {
                              selectedCourses.length !== 2;
 
   return (
-    <div className="min-h-screen bg-gray-50 py-12">
+    <div className="min-h-screen bg-gray-50 py-6 md:py-12">
       <div className="container mx-auto px-4">
         <div className="max-w-6xl mx-auto">
-          <div className="text-center mb-8">
-            <h1 className="text-3xl font-bold mb-2">Checkout</h1>
-            <p className="text-muted-foreground">Complete your enrollment in our 12-month program</p>
+          <div className="text-center mb-6 md:mb-8">
+            <h1 className="text-2xl md:text-3xl font-bold mb-2">Checkout</h1>
+            <p className="text-muted-foreground text-sm md:text-base">Complete your enrollment in our 12-month program</p>
             {isLoadingCourses && (
-              <p className="text-sm text-amber-600 mt-2">Verifying course information...</p>
+              <p className="text-xs md:text-sm text-amber-600 mt-2">Verifying course information...</p>
             )}
             
             {!isCheckoutEnabled && checkoutAvailableAfter && new Date() < checkoutAvailableAfter && (
               <div className="flex items-center justify-center gap-2 mt-4 text-amber-600">
                 <Clock className="h-4 w-4" />
-                <p>{remainingTimeText}</p>
+                <p className="text-sm md:text-base">{remainingTimeText}</p>
               </div>
             )}
           </div>
           <div className="max-w-lg mx-auto">
             <OrderSummary />
             
-            <div className="mt-6">
+            <div className="mt-4 md:mt-6 px-2 md:px-0">
               <Button 
                 onClick={handlePayment}
-                className="w-full py-6 text-base bg-brand-purple hover:bg-brand-purple-hover"
+                className="w-full py-4 md:py-6 text-sm md:text-base bg-brand-purple hover:bg-brand-purple-hover"
                 disabled={isProcessing || isLoadingCourses || isCheckoutDisabled}
               >
                 {isProcessing ? "Processing..." : `Pay ₹${total.toLocaleString('en-IN')} & Enroll Now`}
