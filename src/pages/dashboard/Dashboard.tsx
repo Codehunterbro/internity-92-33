@@ -16,12 +16,13 @@ const Dashboard = () => {
       if (user?.id) {
         const { data, error } = await supabase
           .from('profiles')
-          .select('first_name')
+          .select('full_name')
           .eq('id', user.id)
           .single();
 
-        if (!error && data?.first_name) {
-          setFirstName(data.first_name);
+        if (!error && data?.full_name) {
+          const extractedFirstName = data.full_name.split(' ')[0];
+          setFirstName(extractedFirstName);
         } else {
           // Fallback to user metadata or email
           const fullName = user?.user_metadata?.full_name;
