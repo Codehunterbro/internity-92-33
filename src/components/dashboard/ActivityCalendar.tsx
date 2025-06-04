@@ -140,7 +140,7 @@ const ActivityCalendar: React.FC<ActivityCalendarProps> = ({
     return weeks;
   };
   const weeksData = getWeeksData();
-  return <div className="bg-white p-6 rounded-lg shadow-sm">
+  return <div className="bg-white p-6 rounded-lg shadow-sm px-0 py-0">
       
       <div className="overflow-x-auto" ref={containerRef}>
         <div className="min-w-max">
