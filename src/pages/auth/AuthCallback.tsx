@@ -15,90 +15,88 @@ const AuthCallback = () => {
     const handleAuthCallback = async () => {
       try {
         console.log('Auth callback started');
+        console.log('Current URL:', window.location.href);
+        console.log('Current hash:', window.location.hash);
         setProgress(30);
         
-        // Get the current URL to debug any issues
-        const currentUrl = window.location.href;
-        console.log('Current callback URL:', currentUrl);
-        
         // Clean up the URL immediately to prevent showing confusing hash
+        const originalHash = window.location.hash;
         window.history.replaceState({}, document.title, '/');
         
-        // Get the current session without relying on URL hash which might cause 404s
-        const { data, error } = await supabase.auth.getSession();
-        setProgress(70);
+        // Parse the hash parameters
+        const hashParams = new URLSearchParams(originalHash.substring(1));
+        const accessToken = hashParams.get('access_token');
+        const refreshToken = hashParams.get('refresh_token');
+        const errorParam = hashParams.get('error');
+        const errorDescription = hashParams.get('error_description');
         
-        if (error) {
-          console.error('Auth callback error:', error);
-          setError(error.message);
-          toast.error('Authentication failed', {
-            description: error.message
-          });
-          setTimeout(() => navigate('/', { replace: true }), 3000);
-          return;
+        // Check for OAuth errors first
+        if (errorParam) {
+          console.error('OAuth error from URL:', errorParam, errorDescription);
+          throw new Error(errorDescription || errorParam);
         }
         
-        if (data?.session) {
-          // Successfully authenticated
-          console.log('Successfully authenticated in callback');
+        setProgress(50);
+        
+        // If we have tokens in the URL, set the session
+        if (accessToken && refreshToken) {
+          console.log('Found tokens in URL hash, setting session');
+          setProgress(70);
+          
+          const { data: sessionData, error: sessionError } = await supabase.auth.setSession({
+            access_token: accessToken,
+            refresh_token: refreshToken,
+          });
+          
+          if (sessionError) {
+            console.error('Error setting session from tokens:', sessionError);
+            throw new Error('Failed to complete authentication');
+          }
+          
+          if (sessionData?.session) {
+            console.log('Successfully set session from URL tokens');
+            setProgress(100);
+            toast.success('Successfully logged in');
+            navigate('/dashboard', { replace: true });
+            return;
+          }
+        }
+        
+        // Fallback: check for existing session
+        const { data: existingSession, error: sessionError } = await supabase.auth.getSession();
+        setProgress(85);
+        
+        if (sessionError) {
+          console.error('Session check error:', sessionError);
+          throw sessionError;
+        }
+        
+        if (existingSession?.session) {
+          console.log('Found existing session');
           setProgress(100);
           toast.success('Successfully logged in');
           navigate('/dashboard', { replace: true });
         } else {
-          // No session found, but no error either
-          console.log('No session found in callback, checking URL hash');
-          
-          // Try to handle the URL hash directly in case the session wasn't automatically processed
-          const hashParams = new URLSearchParams(window.location.hash.substring(1));
-          const accessToken = hashParams.get('access_token');
-          
-          if (accessToken) {
-            console.log('Found access token in URL, attempting to set session');
-            setProgress(85);
-            // We have an access token in the URL, try to set the session manually
-            const { error: setSessionError } = await supabase.auth.setSession({
-              access_token: accessToken,
-              refresh_token: hashParams.get('refresh_token') || '',
-            });
-            
-            if (setSessionError) {
-              console.error('Error setting session from URL params:', setSessionError);
-              setError('Failed to complete authentication');
-              toast.error('Authentication failed', {
-                description: 'Failed to complete the login process'
-              });
-              setTimeout(() => navigate('/', { replace: true }), 3000);
-              return;
-            }
-            
-            // Successfully set the session, now get user details
-            const { data: userData } = await supabase.auth.getUser();
-            if (userData?.user) {
-              setProgress(100);
-              toast.success('Successfully logged in');
-              navigate('/dashboard', { replace: true });
-              return;
-            }
-          }
-          
-          // Final fallback - redirect to home instead of login
-          console.log('No authentication data found, redirecting to home');
-          setError('Authentication incomplete. Redirecting to home...');
-          toast.error('Authentication incomplete', {
-            description: 'Please try logging in again'
-          });
-          setTimeout(() => navigate('/', { replace: true }), 3000);
+          // No valid authentication data found
+          console.log('No authentication data found');
+          throw new Error('No authentication data received. Please try again.');
         }
-      } catch (err) {
-        console.error('Unexpected error in auth callback:', err);
-        setError('An unexpected error occurred');
-        toast.error('An unexpected error occurred');
-        setTimeout(() => navigate('/', { replace: true }), 3000);
+        
+      } catch (err: any) {
+        console.error('Auth callback error:', err);
+        setError(err.message || 'Authentication failed');
+        toast.error('Authentication failed', {
+          description: err.message || 'Please try logging in again'
+        });
+        
+        // Redirect to home page after a delay
+        setTimeout(() => {
+          navigate('/', { replace: true });
+        }, 3000);
       }
     };
     
     // Start the auth process
-    setProgress(10);
     handleAuthCallback();
   }, [navigate]);
 
@@ -109,10 +107,10 @@ const AuthCallback = () => {
         
         {error ? (
           <div className="mb-4 text-red-500">
-            <p className="font-medium">Error</p>
+            <p className="font-medium">Authentication Error</p>
             <p className="text-sm">{error}</p>
-            <p className="text-sm mt-2">Redirecting you to home...</p>
-            <Progress value={progress} className="mt-4" />
+            <p className="text-sm mt-2">Redirecting you back...</p>
+            <Progress value={100} className="mt-4" />
           </div>
         ) : (
           <div className="space-y-4">
