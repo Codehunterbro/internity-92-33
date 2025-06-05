@@ -128,19 +128,26 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       // Clean up any existing auth state to prevent conflicts
       localStorage.removeItem('supabase.auth.token');
       
-      // Get hostname and build redirect URL more carefully
-      let redirectUrl = window.location.origin;
+      // Get the current hostname and build redirect URL
+      const hostname = window.location.hostname;
+      const protocol = window.location.protocol;
       
-      // Make sure the redirectUrl ends with '/auth/callback'
-      if (!redirectUrl.endsWith('/')) redirectUrl += '/';
-      redirectUrl += 'auth/callback';
+      // Build redirect URL based on the current environment
+      let redirectUrl;
       
-      // Clean up any duplicate slashes in the URL
-      redirectUrl = redirectUrl.replace(/([^:]\/)\/+/g, '$1');
+      if (hostname === 'theinternity.com' || hostname.includes('theinternity.com')) {
+        // Production environment
+        redirectUrl = 'https://theinternity.com/#/auth/callback';
+      } else if (hostname.includes('lovable.app')) {
+        // Lovable staging environment
+        redirectUrl = `${protocol}//${hostname}/#/auth/callback`;
+      } else {
+        // Local development
+        redirectUrl = `${protocol}//${hostname}${window.location.port ? ':' + window.location.port : ''}/#/auth/callback`;
+      }
       
       console.log('Using redirect URL:', redirectUrl);
       
-      // Direct oauth flow without the loading page
       const { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
@@ -156,9 +163,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         console.error('Google sign-in error:', error);
         toast.error("Google login failed: " + error.message);
       } else if (data) {
-        console.log('Auth data received, redirecting:', data);
-        // The redirectTo option handles the redirect to Google
-        // We're not navigating to the loading page anymore
+        console.log('Google OAuth initiated successfully:', data);
+        // The browser will redirect to Google OAuth page
       }
     } catch (error) {
       console.error('Error signing in with Google:', error);
