@@ -1,4 +1,3 @@
-
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
@@ -125,44 +124,45 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     try {
       console.log('Starting Google sign-in process');
       
-      // Clean up any existing auth state to prevent conflicts
-      localStorage.removeItem('supabase.auth.token');
+      // Get current URL details
+      const protocol = window.location.protocol;
+      const hostname = window.location.hostname;
+      const port = window.location.port;
       
-      // Get hostname and build redirect URL more carefully
-      let redirectUrl = window.location.origin;
+      // Build the base URL
+      let baseUrl = `${protocol}//${hostname}`;
+      if (port && !['80', '443'].includes(port)) {
+        baseUrl += `:${port}`;
+      }
       
-      // Make sure the redirectUrl ends with '/auth/callback'
-      if (!redirectUrl.endsWith('/')) redirectUrl += '/';
-      redirectUrl += 'auth/callback';
+      // Always use the auth/callback route for OAuth
+      const redirectUrl = `${baseUrl}/auth/callback`;
       
-      // Clean up any duplicate slashes in the URL
-      redirectUrl = redirectUrl.replace(/([^:]\/)\/+/g, '$1');
+      console.log('OAuth redirect URL:', redirectUrl);
+      console.log('Current location:', window.location.href);
       
-      console.log('Using redirect URL:', redirectUrl);
-      
-      // Direct oauth flow without the loading page
       const { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
+          redirectTo: redirectUrl,
           queryParams: {
             access_type: 'offline',
-            prompt: 'consent',
+            prompt: 'select_account',
           },
-          redirectTo: redirectUrl
         }
       });
       
       if (error) {
-        console.error('Google sign-in error:', error);
-        toast.error("Google login failed: " + error.message);
-      } else if (data) {
-        console.log('Auth data received, redirecting:', data);
-        // The redirectTo option handles the redirect to Google
-        // We're not navigating to the loading page anymore
+        console.error('Google OAuth error:', error);
+        toast.error(`Google login failed: ${error.message}`);
+        return;
       }
-    } catch (error) {
-      console.error('Error signing in with Google:', error);
-      toast.error("Google login failed: An unexpected error occurred.");
+      
+      console.log('Google OAuth initiated successfully:', data);
+      
+    } catch (error: any) {
+      console.error('Unexpected error during Google sign-in:', error);
+      toast.error(`Google login failed: ${error.message || 'An unexpected error occurred'}`);
     }
   };
 

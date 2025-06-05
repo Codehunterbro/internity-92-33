@@ -15,90 +15,94 @@ const AuthCallback = () => {
     const handleAuthCallback = async () => {
       try {
         console.log('Auth callback started');
+        console.log('Current URL:', window.location.href);
+        console.log('URL search params:', window.location.search);
+        console.log('URL hash:', window.location.hash);
+        
         setProgress(30);
         
-        // Get the current URL to debug any issues
-        const currentUrl = window.location.href;
-        console.log('Current callback URL:', currentUrl);
+        // Parse URL parameters for OAuth callback
+        const urlParams = new URLSearchParams(window.location.search);
+        const hashParams = new URLSearchParams(window.location.hash.substring(1));
         
-        // Clean up the URL immediately to prevent showing confusing hash
-        window.history.replaceState({}, document.title, '/');
-        
-        // Get the current session without relying on URL hash which might cause 404s
-        const { data, error } = await supabase.auth.getSession();
-        setProgress(70);
+        // Check for OAuth error parameters
+        const error = urlParams.get('error') || hashParams.get('error');
+        const errorDescription = urlParams.get('error_description') || hashParams.get('error_description');
         
         if (error) {
-          console.error('Auth callback error:', error);
-          setError(error.message);
-          toast.error('Authentication failed', {
-            description: error.message
-          });
-          setTimeout(() => navigate('/', { replace: true }), 3000);
+          console.error('OAuth error from URL:', error, errorDescription);
+          throw new Error(errorDescription || error);
+        }
+        
+        setProgress(50);
+        
+        // Let Supabase handle the OAuth callback automatically
+        const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
+        
+        setProgress(70);
+        
+        if (sessionError) {
+          console.error('Session error:', sessionError);
+          throw sessionError;
+        }
+        
+        if (sessionData?.session) {
+          console.log('Session found:', sessionData.session);
+          setProgress(100);
+          
+          // Clean up URL
+          window.history.replaceState({}, document.title, '/');
+          
+          toast.success('Successfully logged in with Google');
+          navigate('/dashboard', { replace: true });
           return;
         }
         
-        if (data?.session) {
-          // Successfully authenticated
-          console.log('Successfully authenticated in callback');
-          setProgress(100);
-          toast.success('Successfully logged in');
-          navigate('/dashboard', { replace: true });
-        } else {
-          // No session found, but no error either
-          console.log('No session found in callback, checking URL hash');
-          
-          // Try to handle the URL hash directly in case the session wasn't automatically processed
-          const hashParams = new URLSearchParams(window.location.hash.substring(1));
-          const accessToken = hashParams.get('access_token');
-          
-          if (accessToken) {
-            console.log('Found access token in URL, attempting to set session');
-            setProgress(85);
-            // We have an access token in the URL, try to set the session manually
-            const { error: setSessionError } = await supabase.auth.setSession({
-              access_token: accessToken,
-              refresh_token: hashParams.get('refresh_token') || '',
-            });
-            
-            if (setSessionError) {
-              console.error('Error setting session from URL params:', setSessionError);
-              setError('Failed to complete authentication');
-              toast.error('Authentication failed', {
-                description: 'Failed to complete the login process'
-              });
-              setTimeout(() => navigate('/', { replace: true }), 3000);
-              return;
-            }
-            
-            // Successfully set the session, now get user details
-            const { data: userData } = await supabase.auth.getUser();
-            if (userData?.user) {
-              setProgress(100);
-              toast.success('Successfully logged in');
-              navigate('/dashboard', { replace: true });
-              return;
-            }
-          }
-          
-          // Final fallback - redirect to home instead of login
-          console.log('No authentication data found, redirecting to home');
-          setError('Authentication incomplete. Redirecting to home...');
-          toast.error('Authentication incomplete', {
-            description: 'Please try logging in again'
-          });
-          setTimeout(() => navigate('/', { replace: true }), 3000);
+        // If no session yet, wait a bit and try again
+        console.log('No session found immediately, waiting...');
+        setProgress(85);
+        
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        
+        const { data: retrySessionData, error: retryError } = await supabase.auth.getSession();
+        
+        if (retryError) {
+          console.error('Retry session error:', retryError);
+          throw retryError;
         }
-      } catch (err) {
-        console.error('Unexpected error in auth callback:', err);
-        setError('An unexpected error occurred');
-        toast.error('An unexpected error occurred');
-        setTimeout(() => navigate('/', { replace: true }), 3000);
+        
+        if (retrySessionData?.session) {
+          console.log('Session found on retry:', retrySessionData.session);
+          setProgress(100);
+          
+          // Clean up URL
+          window.history.replaceState({}, document.title, '/');
+          
+          toast.success('Successfully logged in with Google');
+          navigate('/dashboard', { replace: true });
+          return;
+        }
+        
+        // Still no session - this might be an incomplete callback
+        console.log('No session found after retry, redirecting to login');
+        throw new Error('Authentication incomplete. Please try again.');
+        
+      } catch (err: any) {
+        console.error('Auth callback error:', err);
+        setError(err.message || 'Authentication failed');
+        
+        toast.error('Google login failed', {
+          description: err.message || 'Please try again'
+        });
+        
+        // Wait a moment then redirect
+        setTimeout(() => {
+          window.history.replaceState({}, document.title, '/');
+          navigate('/login', { replace: true });
+        }, 3000);
       }
     };
     
-    // Start the auth process
-    setProgress(10);
     handleAuthCallback();
   }, [navigate]);
 
@@ -109,15 +113,22 @@ const AuthCallback = () => {
         
         {error ? (
           <div className="mb-4 text-red-500">
-            <p className="font-medium">Error</p>
+            <p className="font-medium">Authentication Error</p>
             <p className="text-sm">{error}</p>
-            <p className="text-sm mt-2">Redirecting you to home...</p>
-            <Progress value={progress} className="mt-4" />
+            <p className="text-sm mt-2">Redirecting to login...</p>
+            <Progress value={100} className="mt-4 bg-red-100">
+              <div className="h-full bg-red-500 transition-all" style={{ width: '100%' }} />
+            </Progress>
           </div>
         ) : (
           <div className="space-y-4">
-            <p className="text-gray-600 mb-6">Please wait while we complete the authentication process...</p>
+            <p className="text-gray-600 mb-6">Please wait while we complete your Google sign-in...</p>
             <Progress value={progress} className="mb-4" />
+            <div className="text-sm text-gray-500">
+              {progress < 50 && "Initializing..."}
+              {progress >= 50 && progress < 85 && "Verifying credentials..."}
+              {progress >= 85 && "Completing sign-in..."}
+            </div>
           </div>
         )}
         
