@@ -1,3 +1,4 @@
+
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
@@ -127,30 +128,19 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       // Clean up any existing auth state to prevent conflicts
       localStorage.removeItem('supabase.auth.token');
       
-      // Get the current hostname and determine the correct redirect URL
-      const currentOrigin = window.location.origin;
-      const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
-      const isLovablePreview = window.location.hostname.includes('lovable.app');
-      const isProduction = window.location.hostname === 'theinternity.com';
+      // Get hostname and build redirect URL more carefully
+      let redirectUrl = window.location.origin;
       
-      let redirectUrl;
+      // Make sure the redirectUrl ends with '/auth/callback'
+      if (!redirectUrl.endsWith('/')) redirectUrl += '/';
+      redirectUrl += 'auth/callback';
       
-      if (isLocalhost) {
-        redirectUrl = `${currentOrigin}/#/auth/callback`;
-      } else if (isLovablePreview) {
-        redirectUrl = `${currentOrigin}/#/auth/callback`;
-      } else if (isProduction) {
-        redirectUrl = 'https://theinternity.com/#/auth/callback';
-      } else {
-        // Fallback for any other domains
-        redirectUrl = `${currentOrigin}/#/auth/callback`;
-      }
+      // Clean up any duplicate slashes in the URL
+      redirectUrl = redirectUrl.replace(/([^:]\/)\/+/g, '$1');
       
       console.log('Using redirect URL:', redirectUrl);
-      console.log('Current origin:', currentOrigin);
-      console.log('Environment check:', { isLocalhost, isLovablePreview, isProduction });
       
-      // Direct oauth flow
+      // Direct oauth flow without the loading page
       const { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
@@ -166,8 +156,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         console.error('Google sign-in error:', error);
         toast.error("Google login failed: " + error.message);
       } else if (data) {
-        console.log('Auth data received, redirecting to Google:', data);
-        // The browser will redirect to Google OAuth
+        console.log('Auth data received, redirecting:', data);
+        // The redirectTo option handles the redirect to Google
+        // We're not navigating to the loading page anymore
       }
     } catch (error) {
       console.error('Error signing in with Google:', error);

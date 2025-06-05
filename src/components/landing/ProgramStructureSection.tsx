@@ -48,7 +48,7 @@ const ProgramStructureSection = () => {
 
     // Set rocket initial position
     if (rocketRef.current) {
-      const rocketSize = isMobile ? 60 : 150;
+      const rocketSize = isMobile ? 80 : 150;
       gsap.set(rocketRef.current, {
         x: 70 - rocketSize / 2,
         y: 100 - rocketSize / 2,
@@ -63,7 +63,7 @@ const ProgramStructureSection = () => {
       defaults: {
         duration: 0.05,
         autoAlpha: 1,
-        scale: isMobile ? 1.3 : 2.0,
+        scale: isMobile ? 1.5 : 2.0,
         transformOrigin: 'center',
         ease: "elastic(1.5, 1)"
       }
@@ -157,9 +157,9 @@ const ProgramStructureSection = () => {
       className="program-structure-section relative overflow-hidden" 
       style={{
         background: "#000010",
-        minHeight: isMobile ? "200vh" : "200vh",
+        minHeight: isMobile ? "150vh" : "200vh",
         paddingTop: "2rem",
-        paddingBottom: isMobile ? "4rem" : "10rem"
+        paddingBottom: isMobile ? "2rem" : "10rem"
       }} 
       data-bg="default"
     >
@@ -218,41 +218,37 @@ const ProgramStructureSection = () => {
         ref={svgRef} 
         xmlns="http://www.w3.org/2000/svg" 
         viewBox="0 0 1000 1950" 
-        className={`${isMobile ? 'w-full h-auto' : 'max-w-full md:max-w-4xl lg:max-w-5xl'} mx-auto block px-2 md:px-5 box-border relative z-10 mt-4 md:mt-8 mb-2 md:mb-4`}
-        style={isMobile ? { 
-          transform: 'scale(1.4)', 
-          transformOrigin: 'center top',
-          minHeight: '800px'
-        } : {}}
+        className={`${isMobile ? 'w-full' : 'max-w-full md:max-w-4xl lg:max-w-5xl'} mx-auto block px-2 md:px-5 box-border relative z-10 mt-4 md:mt-8 mb-2 md:mb-4`}
+        style={isMobile ? { transform: 'scale(1.1)', transformOrigin: 'center top' } : {}}
       >
         
         {/* Month labels - Smaller text for mobile */}
-        <text className="month-label month1" x="40" y="190" fill="#00BFFF" fontSize={isMobile ? "12px" : "14px"} fontWeight="bold" visibility="hidden">MONTH 1</text>
-        <text className="month-label month2" x="40" y="360" fill="#00BFFF" fontSize={isMobile ? "12px" : "14px"} fontWeight="bold" visibility="hidden">MONTH 1</text>
-        <text className="month-label month3" x="40" y="530" fill="#00BFFF" fontSize={isMobile ? "12px" : "14px"} fontWeight="bold" visibility="hidden">MONTH 2</text>
-        <text className="month-label month4" x="40" y="700" fill="#00BFFF" fontSize={isMobile ? "12px" : "14px"} fontWeight="bold" visibility="hidden">MONTH 2</text>
-        <text className="month-label month5" x="40" y="870" fill="#00BFFF" fontSize={isMobile ? "12px" : "14px"} fontWeight="bold" visibility="hidden">MONTH 3</text>
-        <text className="month-label month6" x="40" y="1040" fill="#00BFFF" fontSize={isMobile ? "12px" : "14px"} fontWeight="bold" visibility="hidden">MONTH 3</text>
-        <text className="month-label month7" x="40" y="1210" fill="#00BFFF" fontSize={isMobile ? "12px" : "14px"} fontWeight="bold" visibility="hidden">MONTH 4</text>
-        <text className="month-label month8" x="40" y="1380" fill="#00BFFF" fontSize={isMobile ? "12px" : "14px"} fontWeight="bold" visibility="hidden">MONTH 4</text>
-        <text className="month-label month9" x="40" y="1550" fill="#00BFFF" fontSize={isMobile ? "12px" : "14px"} fontWeight="bold" visibility="hidden">MONTH 5</text>
-        <text className="month-label month10" x="40" y="1670" fill="#00BFFF" fontSize={isMobile ? "12px" : "14px"} fontWeight="bold" visibility="hidden">MONTH 5</text>
-        <text className="month-label month11" x="40" y="1790" fill="#00BFFF" fontSize={isMobile ? "12px" : "14px"} fontWeight="bold" visibility="hidden">MONTH 6</text>
-        <text className="month-label month12" x="40" y="1890" fill="#00BFFF" fontSize={isMobile ? "12px" : "14px"} fontWeight="bold" visibility="hidden">MONTH 6</text>
+        <text className="month-label month1" x="40" y="190" fill="#00BFFF" fontSize={isMobile ? "10px" : "14px"} fontWeight="bold" visibility="hidden">MONTH 1</text>
+        <text className="month-label month2" x="40" y="360" fill="#00BFFF" fontSize={isMobile ? "10px" : "14px"} fontWeight="bold" visibility="hidden">MONTH 1</text>
+        <text className="month-label month3" x="40" y="530" fill="#00BFFF" fontSize={isMobile ? "10px" : "14px"} fontWeight="bold" visibility="hidden">MONTH 2</text>
+        <text className="month-label month4" x="40" y="700" fill="#00BFFF" fontSize={isMobile ? "10px" : "14px"} fontWeight="bold" visibility="hidden">MONTH 2</text>
+        <text className="month-label month5" x="40" y="870" fill="#00BFFF" fontSize={isMobile ? "10px" : "14px"} fontWeight="bold" visibility="hidden">MONTH 3</text>
+        <text className="month-label month6" x="40" y="1040" fill="#00BFFF" fontSize={isMobile ? "10px" : "14px"} fontWeight="bold" visibility="hidden">MONTH 3</text>
+        <text className="month-label month7" x="40" y="1210" fill="#00BFFF" fontSize={isMobile ? "10px" : "14px"} fontWeight="bold" visibility="hidden">MONTH 4</text>
+        <text className="month-label month8" x="40" y="1380" fill="#00BFFF" fontSize={isMobile ? "10px" : "14px"} fontWeight="bold" visibility="hidden">MONTH 4</text>
+        <text className="month-label month9" x="40" y="1550" fill="#00BFFF" fontSize={isMobile ? "10px" : "14px"} fontWeight="bold" visibility="hidden">MONTH 5</text>
+        <text className="month-label month10" x="40" y="1670" fill="#00BFFF" fontSize={isMobile ? "10px" : "14px"} fontWeight="bold" visibility="hidden">MONTH 5</text>
+        <text className="month-label month11" x="40" y="1790" fill="#00BFFF" fontSize={isMobile ? "10px" : "14px"} fontWeight="bold" visibility="hidden">MONTH 6</text>
+        <text className="month-label month12" x="40" y="1890" fill="#00BFFF" fontSize={isMobile ? "10px" : "14px"} fontWeight="bold" visibility="hidden">MONTH 6</text>
         
         {/* Milestone descriptions - Better positioning for mobile */}
-        <text className="milestone-text m-text1" x={isMobile ? "180" : "300"} y="190" fill="white" fontSize={isMobile ? "10px" : "10px"} visibility="hidden">Begin Course 1</text>
-        <text className="milestone-text m-text2" x={isMobile ? "240" : "360"} y="360" fill="white" fontSize={isMobile ? "10px" : "10px"} visibility="hidden">Grow Through Course 1</text>
-        <text className="milestone-text m-text3" x={isMobile ? "240" : "360"} y="530" fill="white" fontSize={isMobile ? "10px" : "10px"} visibility="hidden">Certification 1 Achieved</text>
-        <text className="milestone-text m-text4" x={isMobile ? "240" : "360"} y="700" fill="white" fontSize={isMobile ? "10px" : "10px"} visibility="hidden">Start Internship 1</text>
-        <text className="milestone-text m-text5" x={isMobile ? "280" : "400"} y="870" fill="white" fontSize={isMobile ? "10px" : "10px"} visibility="hidden">Progress Internship 1</text>
-        <text className="milestone-text m-text6" x={isMobile ? "260" : "380"} y="1040" fill="white" fontSize={isMobile ? "10px" : "10px"} visibility="hidden">Complete Internship 1</text>
-        <text className="milestone-text m-text7" x={isMobile ? "280" : "400"} y="1210" fill="white" fontSize={isMobile ? "10px" : "10px"} visibility="hidden">Begin Course 2</text>
-        <text className="milestone-text m-text8" x={isMobile ? "280" : "400"} y="1380" fill="white" fontSize={isMobile ? "10px" : "10px"} visibility="hidden">Grow Through Course 2</text>
-        <text className="milestone-text m-text9" x={isMobile ? "230" : "350"} y="1550" fill="white" fontSize={isMobile ? "10px" : "10px"} visibility="hidden">Certification 2 Achieved</text>
-        <text className="milestone-text m-text10" x={isMobile ? "270" : "390"} y="1670" fill="white" fontSize={isMobile ? "10px" : "10px"} visibility="hidden">Start Internship 2</text>
-        <text className="milestone-text m-text11" x={isMobile ? "280" : "400"} y="1790" fill="white" fontSize={isMobile ? "10px" : "10px"} visibility="hidden">Progress Internship 2</text>
-        <text className="milestone-text m-text12" x={isMobile ? "380" : "500"} y="1890" fill="white" fontSize={isMobile ? "9px" : "10px"} visibility="hidden">Complete Internship 2 & Program Completion</text>
+        <text className="milestone-text m-text1" x={isMobile ? "200" : "300"} y="190" fill="white" fontSize={isMobile ? "8px" : "10px"} visibility="hidden">Begin Course 1</text>
+        <text className="milestone-text m-text2" x={isMobile ? "260" : "360"} y="360" fill="white" fontSize={isMobile ? "8px" : "10px"} visibility="hidden">Grow Through Course 1</text>
+        <text className="milestone-text m-text3" x={isMobile ? "260" : "360"} y="530" fill="white" fontSize={isMobile ? "8px" : "10px"} visibility="hidden">Certification 1 Achieved</text>
+        <text className="milestone-text m-text4" x={isMobile ? "260" : "360"} y="700" fill="white" fontSize={isMobile ? "8px" : "10px"} visibility="hidden">Start Internship 1</text>
+        <text className="milestone-text m-text5" x={isMobile ? "300" : "400"} y="870" fill="white" fontSize={isMobile ? "8px" : "10px"} visibility="hidden">Progress Internship 1</text>
+        <text className="milestone-text m-text6" x={isMobile ? "280" : "380"} y="1040" fill="white" fontSize={isMobile ? "8px" : "10px"} visibility="hidden">Complete Internship 1</text>
+        <text className="milestone-text m-text7" x={isMobile ? "300" : "400"} y="1210" fill="white" fontSize={isMobile ? "8px" : "10px"} visibility="hidden">Begin Course 2</text>
+        <text className="milestone-text m-text8" x={isMobile ? "300" : "400"} y="1380" fill="white" fontSize={isMobile ? "8px" : "10px"} visibility="hidden">Grow Through Course 2</text>
+        <text className="milestone-text m-text9" x={isMobile ? "250" : "350"} y="1550" fill="white" fontSize={isMobile ? "8px" : "10px"} visibility="hidden">Certification 2 Achieved</text>
+        <text className="milestone-text m-text10" x={isMobile ? "290" : "390"} y="1670" fill="white" fontSize={isMobile ? "8px" : "10px"} visibility="hidden">Start Internship 2</text>
+        <text className="milestone-text m-text11" x={isMobile ? "300" : "400"} y="1790" fill="white" fontSize={isMobile ? "8px" : "10px"} visibility="hidden">Progress Internship 2</text>
+        <text className="milestone-text m-text12" x={isMobile ? "400" : "500"} y="1890" fill="white" fontSize={isMobile ? "7px" : "10px"} visibility="hidden">Complete Internship 2 & Program Completion</text>
         
         {/* The curved path */}
         <path className="theLine" d="M 150,100
@@ -269,7 +265,7 @@ const ProgramStructureSection = () => {
            C 270 1850 330 1880 380 1900" 
            fill="none" 
            stroke="rgba(0, 195, 255, 0.8)" 
-           strokeWidth={isMobile ? "4px" : "4px"} 
+           strokeWidth={isMobile ? "3px" : "4px"} 
            strokeDasharray="3500" 
            strokeDashoffset="3500" 
            strokeLinecap="round" 
@@ -279,18 +275,18 @@ const ProgramStructureSection = () => {
         ></path>
         
         {/* Milestone circles - Smaller on mobile */}
-        <circle className="ball ball01" r={isMobile ? "12" : "15"} cx="200" cy="200" fill="white" visibility="hidden"></circle>
-        <circle className="ball ball02" r={isMobile ? "12" : "15"} cx="230" cy="370" fill="white" visibility="hidden"></circle>
-        <circle className="ball ball03" r={isMobile ? "12" : "15"} cx="260" cy="540" fill="white" visibility="hidden"></circle>
-        <circle className="ball ball04" r={isMobile ? "12" : "15"} cx="250" cy="710" fill="white" visibility="hidden"></circle>
-        <circle className="ball ball05" r={isMobile ? "12" : "15"} cx="300" cy="880" fill="white" visibility="hidden"></circle>
-        <circle className="ball ball06" r={isMobile ? "12" : "15"} cx="280" cy="1050" fill="white" visibility="hidden"></circle>
-        <circle className="ball ball07" r={isMobile ? "12" : "15"} cx="260" cy="1220" fill="white" visibility="hidden"></circle>
-        <circle className="ball ball08" r={isMobile ? "12" : "15"} cx="230" cy="1390" fill="white" visibility="hidden"></circle>
-        <circle className="ball ball09" r={isMobile ? "12" : "15"} cx="240" cy="1560" fill="white" visibility="hidden"></circle>
-        <circle className="ball ball10" r={isMobile ? "12" : "15"} cx="290" cy="1680" fill="white" visibility="hidden"></circle>
-        <circle className="ball ball11" r={isMobile ? "12" : "15"} cx="260" cy="1800" fill="white" visibility="hidden"></circle>
-        <circle className="ball ball12" r={isMobile ? "12" : "15"} cx="380" cy="1900" fill="white" visibility="hidden"></circle>
+        <circle className="ball ball01" r={isMobile ? "10" : "15"} cx="200" cy="200" fill="white" visibility="hidden"></circle>
+        <circle className="ball ball02" r={isMobile ? "10" : "15"} cx="230" cy="370" fill="white" visibility="hidden"></circle>
+        <circle className="ball ball03" r={isMobile ? "10" : "15"} cx="260" cy="540" fill="white" visibility="hidden"></circle>
+        <circle className="ball ball04" r={isMobile ? "10" : "15"} cx="250" cy="710" fill="white" visibility="hidden"></circle>
+        <circle className="ball ball05" r={isMobile ? "10" : "15"} cx="300" cy="880" fill="white" visibility="hidden"></circle>
+        <circle className="ball ball06" r={isMobile ? "10" : "15"} cx="280" cy="1050" fill="white" visibility="hidden"></circle>
+        <circle className="ball ball07" r={isMobile ? "10" : "15"} cx="260" cy="1220" fill="white" visibility="hidden"></circle>
+        <circle className="ball ball08" r={isMobile ? "10" : "15"} cx="230" cy="1390" fill="white" visibility="hidden"></circle>
+        <circle className="ball ball09" r={isMobile ? "10" : "15"} cx="240" cy="1560" fill="white" visibility="hidden"></circle>
+        <circle className="ball ball10" r={isMobile ? "10" : "15"} cx="290" cy="1680" fill="white" visibility="hidden"></circle>
+        <circle className="ball ball11" r={isMobile ? "10" : "15"} cx="260" cy="1800" fill="white" visibility="hidden"></circle>
+        <circle className="ball ball12" r={isMobile ? "10" : "15"} cx="380" cy="1900" fill="white" visibility="hidden"></circle>
       </svg>
 
       <div className="rocket-container absolute" ref={rocketRef}>
