@@ -1,4 +1,3 @@
-
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
@@ -135,10 +134,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       // Build redirect URL based on the current environment
       let redirectUrl;
       
-      if (hostname === 'theinternity.com' || hostname.includes('theinternity.com')) {
+      if (hostname === 'theinternity.com') {
         // Production environment
         redirectUrl = 'https://theinternity.com/#/auth/callback';
-      } else if (hostname.includes('lovable.app')) {
+      } else if (hostname.includes('lovable.app') || hostname.includes('lovableproject.com')) {
         // Lovable staging environment
         redirectUrl = `${protocol}//${hostname}/#/auth/callback`;
       } else {
@@ -155,7 +154,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             access_type: 'offline',
             prompt: 'consent',
           },
-          redirectTo: redirectUrl
+          redirectTo: redirectUrl,
+          skipBrowserRedirect: false
         }
       });
       

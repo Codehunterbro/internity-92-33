@@ -15,96 +15,106 @@ const AuthCallback = () => {
     const handleAuthCallback = async () => {
       try {
         console.log('Auth callback started');
+        console.log('Current URL:', window.location.href);
         setProgress(30);
         
-        // Get the current URL to debug any issues
-        const currentUrl = window.location.href;
-        console.log('Current callback URL:', currentUrl);
+        // First, try to get the session to see if we're already authenticated
+        const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
         
-        // Clean up the URL immediately to prevent showing confusing hash
-        const cleanUrl = window.location.origin + '/#/dashboard';
-        window.history.replaceState({}, document.title, cleanUrl);
+        if (sessionError) {
+          console.error('Session error:', sessionError);
+        }
         
-        // Handle the auth callback
-        const { data, error } = await supabase.auth.getSession();
-        setProgress(70);
-        
-        if (error) {
-          console.error('Auth callback error:', error);
-          setError(error.message);
-          toast.error('Authentication failed', {
-            description: error.message
-          });
-          setTimeout(() => navigate('/', { replace: true }), 3000);
+        if (sessionData?.session) {
+          console.log('Existing session found, redirecting to dashboard');
+          setProgress(100);
+          toast.success('Successfully logged in with Google');
+          setTimeout(() => navigate('/dashboard', { replace: true }), 1000);
           return;
         }
         
-        if (data?.session) {
-          // Successfully authenticated
-          console.log('Successfully authenticated in callback');
-          setProgress(100);
-          toast.success('Successfully logged in with Google');
+        setProgress(50);
+        
+        // Check if we have auth tokens in the URL hash
+        const hashParams = new URLSearchParams(window.location.hash.substring(1));
+        const accessToken = hashParams.get('access_token');
+        const refreshToken = hashParams.get('refresh_token');
+        const errorCode = hashParams.get('error');
+        const errorDescription = hashParams.get('error_description');
+        
+        console.log('URL hash params:', {
+          hasAccessToken: !!accessToken,
+          hasRefreshToken: !!refreshToken,
+          errorCode,
+          errorDescription
+        });
+        
+        // Handle OAuth errors
+        if (errorCode) {
+          console.error('OAuth error:', errorCode, errorDescription);
+          setError(`Authentication failed: ${errorDescription || errorCode}`);
+          toast.error('Google login failed', {
+            description: errorDescription || 'Please try again'
+          });
+          setTimeout(() => navigate('/login', { replace: true }), 3000);
+          return;
+        }
+        
+        // If we have tokens, try to set the session
+        if (accessToken && refreshToken) {
+          console.log('Found tokens in URL, setting session');
+          setProgress(70);
           
-          // Small delay to show the success message
-          setTimeout(() => {
-            navigate('/dashboard', { replace: true });
-          }, 1000);
-        } else {
-          // Try to handle URL hash parameters manually
-          console.log('No session found, checking URL hash');
+          const { data: newSessionData, error: setSessionError } = await supabase.auth.setSession({
+            access_token: accessToken,
+            refresh_token: refreshToken,
+          });
           
-          const hashParams = new URLSearchParams(window.location.hash.substring(1));
-          const accessToken = hashParams.get('access_token');
-          const refreshToken = hashParams.get('refresh_token');
-          
-          if (accessToken && refreshToken) {
-            console.log('Found tokens in URL, setting session manually');
-            setProgress(85);
-            
-            const { data: sessionData, error: setSessionError } = await supabase.auth.setSession({
-              access_token: accessToken,
-              refresh_token: refreshToken,
+          if (setSessionError) {
+            console.error('Error setting session:', setSessionError);
+            setError('Failed to complete authentication');
+            toast.error('Authentication failed', {
+              description: 'Failed to establish session'
             });
-            
-            if (setSessionError) {
-              console.error('Error setting session from URL params:', setSessionError);
-              setError('Failed to complete authentication');
-              toast.error('Authentication failed', {
-                description: 'Failed to complete the login process'
-              });
-              setTimeout(() => navigate('/', { replace: true }), 3000);
-              return;
-            }
-            
-            if (sessionData?.session) {
-              setProgress(100);
-              toast.success('Successfully logged in with Google');
-              setTimeout(() => {
-                navigate('/dashboard', { replace: true });
-              }, 1000);
-              return;
-            }
+            setTimeout(() => navigate('/login', { replace: true }), 3000);
+            return;
           }
           
-          // Final fallback
-          console.log('No authentication data found, redirecting to home');
-          setError('Authentication incomplete. Redirecting to home...');
-          toast.error('Authentication incomplete', {
-            description: 'Please try logging in again'
-          });
-          setTimeout(() => navigate('/', { replace: true }), 3000);
+          if (newSessionData?.session) {
+            console.log('Session set successfully');
+            setProgress(100);
+            toast.success('Successfully logged in with Google');
+            
+            // Clean up the URL
+            window.history.replaceState({}, document.title, window.location.pathname + '#/dashboard');
+            
+            setTimeout(() => navigate('/dashboard', { replace: true }), 1000);
+            return;
+          }
         }
+        
+        // If we reach here, something went wrong
+        console.log('No valid authentication data found');
+        setError('Authentication incomplete. Please try again.');
+        toast.error('Authentication incomplete', {
+          description: 'Please try logging in again'
+        });
+        setTimeout(() => navigate('/login', { replace: true }), 3000);
+        
       } catch (err) {
         console.error('Unexpected error in auth callback:', err);
         setError('An unexpected error occurred');
-        toast.error('An unexpected error occurred');
-        setTimeout(() => navigate('/', { replace: true }), 3000);
+        toast.error('Authentication error', {
+          description: 'An unexpected error occurred during login'
+        });
+        setTimeout(() => navigate('/login', { replace: true }), 3000);
       }
     };
     
-    // Start the auth process
-    setProgress(10);
-    handleAuthCallback();
+    // Small delay to ensure the page is fully loaded
+    const timeout = setTimeout(handleAuthCallback, 500);
+    
+    return () => clearTimeout(timeout);
   }, [navigate]);
 
   return (
@@ -116,7 +126,7 @@ const AuthCallback = () => {
           <div className="mb-4 text-red-500">
             <p className="font-medium">Error</p>
             <p className="text-sm">{error}</p>
-            <p className="text-sm mt-2">Redirecting you to home...</p>
+            <p className="text-sm mt-2">Redirecting you to login...</p>
             <Progress value={progress} className="mt-4" />
           </div>
         ) : (
